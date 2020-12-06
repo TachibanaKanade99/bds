@@ -306,7 +306,7 @@ class Table extends React.Component {
     }
 
     render() {
-        const { page, isLoading } = this.state;
+        const { page, count, isLoading } = this.state;
 
         const options = {
             filterType: 'dropdown',
@@ -315,7 +315,7 @@ class Table extends React.Component {
             serverSide: true,
             rowsPerPage: 1,
             rowsPerPageOptions: [1],
-            count: -1,
+            count: count,
             page: page,
             onTableChange: (action, tableState) => {
                 if (action === "changePage"){
