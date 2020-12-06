@@ -1,0 +1,57 @@
+1.
+    def visitIntLiteral(self, ctx, o):
+        return self.emit.emitPUSHICONST(ctx.value, o.frame), IntType()
+2.
+    def visitFloatLiteral(self, ctx, o):
+        return self.emit.emitPUSHFCONST(ctx.value, o.frame), FloatType()
+3.
+    def visitBinExpr(self, ctx, o):
+        op = ctx.op
+        lexp = self.visit(ctx.e1, o)
+        rexp = self.visit(ctx.e2, o)
+        
+        if op == '+' or op == '-':
+            return lexp[0] + rexp[0] + self.emit.emitADDOP(op, IntType(), o.frame), IntType()
+        elif op == '*' or op == '/':
+            return lexp[0] + rexp[0] + self.emit.emitMULOP(op, IntType(), o.frame), IntType()
+        elif op == '+.':
+            return lexp[0] + rexp[0] + self.emit.emitADDOP('+', FloatType(), o.frame), FloatType()
+        elif op == '-.':
+            return lexp[0] + rexp[0] + self.emit.emitADDOP('-', FloatType(), o.frame), FloatType()
+        elif op == '*.':
+            return lexp[0] + rexp[0] + self.emit.emitMULOP('*', FloatType(), o.frame), FloatType()
+        else:
+            return lexp[0] + rexp[0] + self.emit.emitMULOP('/', FloatType(), o.frame), FloatType()
+4.
+    def visitId(self, ctx, o):
+        id = list(filter(lambda x: x.name == ctx.name, o.sym))
+        if len(id) > 0:
+            if type(id[0].value.value) == str:
+                return self.emit.emitGETSTATIC(id[0].value.value + "." + id[0].name, id[0].mtype, o.frame), id[0].mtype
+            else:
+                return self.emit.emitREADVAR(id[0].name, id[0].mtype, id[0].value.value, o.frame), id[0].mtype
+        else:
+            return self.emit.emitREADVAR(ctx.name, None, None, o.frame), None
+5.
+    def visitBinExpr(self, ctx, o):
+        op = ctx.op
+        lexp = self.visit(ctx.e1, o)
+        rexp = self.visit(ctx.e2, o)
+        
+        if op == '+' or op == '-':
+            if lexp[1] == IntType() and rexp[1] == IntType():
+                return lexp[0] + rexp[0] + self.emit.emitADDOP(op, IntType(), o.frame), IntType()
+            else:
+                return lexp[0] + rexp[0] + self.emit.emitADDOP(op, FloatType(), o.frame), FLoatType()
+        elif op == '*':
+            if lexp[1] == IntType() and rexp[1] == IntType():
+                return lexp[0] + rexp[0] + self.emit.emitMULOP(op, IntType(), o.frame), IntType()
+            else:
+                return lexp[0] + rexp[0] + self.emit.emitMULOP(op, FloatType(), o.frame), FLoatType()
+        elif op == '/':
+            return lexp[0] + rexp[0] + self.emit.emitDIVOP(op, FloatType(), o.frame), FloatType()
+        elif op == '>' or op == '<' or op == '>=' or op == '<=' or op == '!=' or op == '==':
+            return lexp[0] + rexp[0] + self.emit.emit
+        
+        
+            
