@@ -15,7 +15,7 @@ class Table extends React.Component {
             
             // page: 1,
             count: 1,
-            rowsPerPage: 10,
+            rowsPerPage: 5,
             sortOrder: {},
             columns: [
                 {
@@ -394,7 +394,12 @@ class Table extends React.Component {
     changeRowsPerPage = (page, rows) => {
         console.log("Current rows", rows)
 
-        this.setState({ isLoading: true, })
+        this.setState(
+            { 
+                isLoading: true,
+                rowsPerPage: rows,
+            }
+        )
         axios
             .get("api/bdss/", {
                 params: {
@@ -413,14 +418,15 @@ class Table extends React.Component {
     }
 
     render() {
-        const { count, isLoading, } = this.state;
+        const { count, isLoading, rowsPerPage} = this.state;
 
         const options = {
             filter: true,
             filterType: 'dropdown',
             responsive: 'standard',
             serverSide: true,
-            rowsPerPageOptions: [5, 10, 20, 30, 50, 100],
+            rowsPerPage: rowsPerPage,
+            rowsPerPageOptions: [5, 10, 20, 50, 100, 200],
             selectableRows: false,
             count: count,
             // page: page,
