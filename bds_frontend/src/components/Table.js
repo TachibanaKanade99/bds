@@ -2,6 +2,7 @@ import React from 'react';
 // import { MDBDataTableV5 } from 'mdbreact';
 import { CircularProgress, Typography } from "@material-ui/core";
 import MUIDataTable from "mui-datatables";
+// import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { Row, Col } from "reactstrap";
 import axios from 'axios';
 
@@ -11,248 +12,333 @@ class Table extends React.Component {
         super(props);
         this.state = {
             // pagination:
-            limit: 1,
-            offset: 1,
-            prevPage: null,
-            nextPage: null,
-
-            page: 1,
+            
+            // page: 1,
             count: 1,
-            rowsPerPage: 5,
+            rowsPerPage: 10,
             sortOrder: {},
             columns: [
                 {
                     label: 'Url',
                     name: 'url',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "600px", maxWidth: "1600px" } })
+                    }
                 },
                 {
                     label: 'Post Title',
                     name: 'post_title',
-                    // width: 270,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "600px", maxWidth: "1600px" } })
+                    }
                 },
                 {
                     label: 'Price Unit',
                     name: 'price_unit',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "100px", maxWidth: "1000px" } })
+                    }
                 },
                 {
                     label: 'Price',
                     name: 'price',
-                    // sort: 'asc',
-                    // width: 150,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Total Site Area',
                     name: 'total_site_area',
-                    // sort: 'disabled',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Property Name',
                     name: 'property_name',
-                    // sort: 'disabled',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Address ID',
                     name: 'address_id',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "250px", maxWidth: "2500px" } })
+                    }
                 },
                 {
                     label: 'Number of Bedrooms',
                     name: 'number_of_bedrooms',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "100px", maxWidth: "1000px" } })
+                    }
                 },
                 {
                     label: 'Number of Bathrooms',
                     name: 'number_of_bathrooms',
-                    // width: 220,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "100px", maxWidth: "1000px" } })
+                    }
                 },
                 {
                     label: 'Project ID',
                     name: 'project_id',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Project Size',
                     name: 'project_size',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Post Author',
                     name: 'post_author',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Property Code',
                     name: 'property_code',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Full Description',
                     name: 'full_description',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "1800px", maxWidth: "1800px" } })
+                    }
                 },
                 {
                     label: 'Phone Number',
                     name: 'phone_number',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Email',
                     name: 'email',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "200px", maxWidth: "200px" } })
+                    }
                 },
                 {
                     label: 'Property Type ID',
                     name: 'property_type_id',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Property Sub Type ID',
                     name: 'property_sub_type_id',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Block Code',
                     name: 'block_code',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Block Name',
                     name: 'block_name',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Number of Floors',
                     name: 'number_of_floors',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Floor',
                     name: 'floor',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'House Design',
                     name: 'house_design',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Direction',
                     name: 'direction',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Building Area',
                     name: 'building_area',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Carpet Areas',
                     name: 'carpet_areas',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Unit of Measure ID',
                     name: 'unit_of_measure_id',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Owner is Author',
                     name: 'owner_is_author',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Owner ID',
                     name: 'owner_id',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Longitude',
                     name: 'longitude',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Latitude',
                     name: 'latitude',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Legal Info',
                     name: 'legal_info',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Internal Facility',
                     name: 'internal_facility',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Near Facility',
                     name: 'near_facility',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Front Length',
                     name: 'front_length',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Route Length',
                     name: 'route_length',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Updated Datetime',
                     name: 'updated_datetime',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Created Datetime',
                     name: 'created_datetime',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Expired Datetime',
                     name: 'expired_datetime',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Is Called API',
                     name: 'is_called_api',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Images',
                     name: 'images',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "800px", maxWidth: "800px" } })
+                    }
                 },
                 {
                     label: 'City',
                     name: 'city',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'District',
                     name: 'district',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Ward Commune',
                     name: 'ward_commune',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Street',
                     name: 'street',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
                 {
                     label: 'Match Location',
                     name: 'match_location',
-                    // width: 200,
+                    options: {
+                        setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+                    }
                 },
             ],
             data: [["Loading data ..."]],
@@ -269,10 +355,10 @@ class Table extends React.Component {
         this.setState({ isLoading: true });
         axios
             .get("/api/bdss/", {
-                params: {
-                    limit: this.state.limit,
-                    offset: this.state.offset,
-                }
+                // params: {
+                //     limit: this.state.limit,
+                //     offset: this.state.offset,
+                // }
             })
             .then(res => this.setState(
                 { 
@@ -281,18 +367,18 @@ class Table extends React.Component {
                     count: res.data.count, 
                 }
             ))
-            .catch(err => console.log(err));
+            // .catch(err => console.log(err));
     };
 
     changePage = (page) => {
         console.log("Go to page", page);
 
-        this.setState({ isLoading: true, offset: this.state.offset + 1 });
+        this.setState({ isLoading: true, });
         axios
             .get("api/bdss/", {
                 params: {
-                    limit: this.state.limit,
-                    offset: this.state.offset,
+                    page: page+1,
+                    // offset: this.state.offset,
                 }
             })
             .then(res => this.setState(
@@ -302,27 +388,60 @@ class Table extends React.Component {
                     count: res.data.count
                 }
             ))
-            .catch(err => console.log(err));
+            // .catch(err => console.log(err));
+    }
+
+    changeRowsPerPage = (page, rows) => {
+        console.log("Current rows", rows)
+
+        this.setState({ isLoading: true, })
+        axios
+            .get("api/bdss/", {
+                params: {
+                    page: page+1,
+                    page_size: rows
+                }
+            })
+            .then(res => this.setState(
+                {
+                    data: res.data.results,
+                    isLoading: false,
+                    count: res.data.count,
+                }
+            ))
+            // .catch(err => console.log(err));
     }
 
     render() {
-        const { page, count, isLoading } = this.state;
+        const { count, isLoading, } = this.state;
 
         const options = {
-            filterType: 'dropdown',
             filter: true,
-            responsive: 'vertical',
+            filterType: 'dropdown',
+            responsive: 'standard',
             serverSide: true,
-            rowsPerPage: 1,
-            rowsPerPageOptions: [1],
+            rowsPerPageOptions: [5, 10, 20, 30, 50, 100],
+            selectableRows: false,
             count: count,
-            page: page,
+            // page: page,
             onTableChange: (action, tableState) => {
-                if (action === "changePage"){
-                    this.changePage(tableState.page);
+                // console.log(action, tableState);
+        
+                // a developer could react to change on an action basis or
+                // examine the state as a whole and do whatever they want
+        
+                switch (action) {
+                    case 'changePage':
+                        this.changePage(tableState.page);
+                        break;
+                    case 'changeRowsPerPage':
+                        // console.log(tableState.rowsPerPage);
+                        this.changeRowsPerPage(tableState.page, tableState.rowsPerPage);
+                        break;
+                    default:
+                        console.log('action not handled.');
                 }
             },
-            // sortOrder: sortOrder,
             search: true,
         }
 
@@ -331,22 +450,22 @@ class Table extends React.Component {
                 <Row>
                     <Col md="1"></Col>
                     <Col md="10">
-                        <MUIDataTable
-                            title={
-                                <Typography variant="h6">
-                                    Real Estate Data
-                                    {isLoading && (
-                                        <CircularProgress
-                                        size={24}
-                                        style={{ marginLeft: 15, position: "relative", top: 4 }}
-                                        />
-                                    )}
-                                </Typography>
-                            }
-                            columns = { this.state.columns }
-                            data = { this.state.data }
-                            options = { options }
-                        />
+                    <MUIDataTable
+                        title={
+                            <Typography variant="h6">
+                                Real Estate Data
+                                {isLoading && (
+                                    <CircularProgress
+                                    size={24}
+                                    style={{ marginLeft: 15, position: "relative", top: 4 }}
+                                    />
+                                )}
+                            </Typography>
+                        }
+                        columns = { this.state.columns }
+                        data = { this.state.data }
+                        options = { options }
+                    />
                     </Col>
                     <Col md="1"></Col>
                 </Row>

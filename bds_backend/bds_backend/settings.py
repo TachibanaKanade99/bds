@@ -104,8 +104,10 @@ REST_FRAMEWORK = {
     ],
 
     # Pagination:
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'bds.pagination.CustomPageNumber',
     'PAGE_SIZE': 1,
+    'PAGINATE_BY_PARAM': 'page_size'
 }
 
 
