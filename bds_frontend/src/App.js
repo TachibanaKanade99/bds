@@ -16,8 +16,6 @@ class App extends Component {
   render() {
     return (
       <div>
-        <WebNavbar />
-
         <Switch>
           <Route path="/dashboard">
             <Dashboard />

@@ -1,5 +1,8 @@
 import { Component, Fragment } from 'react';
 
+// CSS:
+import './styles.css';
+
 class Register extends Component {
   constructor(props) {
     super(props);
@@ -11,7 +14,7 @@ class Register extends Component {
   render() {
     return(
       <Fragment>
-        <div className="text-center h4 font-weight-bold">
+        <div className="text-center h4 font-weight-bold mt-5">
           <p>This is register page!</p>
         </div>
 
