@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, pagination
-from .serializers import BdsSerializer
+from .serializers import BdsSerializer, GetImageSerializer
 from .pagination import CustomPageNumber
 from .models import Bds
 
@@ -13,6 +13,10 @@ from .models import Bds
 
 class BdsView(viewsets.ModelViewSet):
     serializer_class = BdsSerializer
-    # queryset = Bds.objects.all()[:5]
-    queryset = Bds.objects.all()
+    queryset = Bds.objects.all().order_by('id')
+    # queryset = Bds.objects.all()
     pagination_class = CustomPageNumber
+
+class GetImageView(viewsets.ModelViewSet):
+    serializer_class = GetImageSerializer
+    queryset = Bds.objects.all().filter(id=1)

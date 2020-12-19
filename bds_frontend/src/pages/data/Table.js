@@ -345,6 +345,7 @@ class Table extends React.Component {
             isLoading: false,
         };
         this.changePage = this.changePage.bind(this);
+        this.changeRowsPerPage = this.changeRowsPerPage.bind(this);
     }
 
     componentDidMount() {
@@ -360,18 +361,28 @@ class Table extends React.Component {
                 //     offset: this.state.offset,
                 // }
             })
-            .then(res => this.setState(
-                { 
-                    data: res.data.results,
-                    isLoading: false,
-                    count: res.data.count, 
-                }
-            ))
+            .then((res) => {
+                res.data.results["0"]["images"] = <img className="col-3 col-md-3" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
+                this.setState(
+                    {
+                        data: res.data.results,
+                        isLoading: false,
+                        count: res.data.count,
+                    }
+                )
+            })
+            // .then(res => this.setState(
+            //     { 
+            //         data: res.data.results,
+            //         isLoading: false,
+            //         count: res.data.count, 
+            //     }
+            // ))
             // .catch(err => console.log(err));
     };
 
     changePage = (page) => {
-        console.log("Go to page", page);
+        // console.log("Go to page", page);
 
         this.setState({ isLoading: true, });
         axios
@@ -392,7 +403,7 @@ class Table extends React.Component {
     }
 
     changeRowsPerPage = (page, rows) => {
-        console.log("Current rows", rows)
+        // console.log("Current rows", rows)
 
         this.setState(
             { 
@@ -418,17 +429,17 @@ class Table extends React.Component {
     }
 
     render() {
-        const { count, isLoading, rowsPerPage} = this.state;
+        // const { count, isLoading, rowsPerPage} = this.state;
 
         const options = {
             filter: true,
             filterType: 'dropdown',
             responsive: 'standard',
             serverSide: true,
-            rowsPerPage: rowsPerPage,
+            rowsPerPage: this.state.rowsPerPage,
             rowsPerPageOptions: [5, 10, 20, 50, 100, 200],
-            selectableRows: false,
-            count: count,
+            selectableRows: "none",
+            count: this.state.count,
             // page: page,
             onTableChange: (action, tableState) => {
                 // console.log(action, tableState);
@@ -445,7 +456,7 @@ class Table extends React.Component {
                         this.changeRowsPerPage(tableState.page, tableState.rowsPerPage);
                         break;
                     default:
-                        console.log('action not handled.');
+                        // console.log('action not handled.');
                 }
             },
             search: true,
@@ -460,7 +471,7 @@ class Table extends React.Component {
                         title={
                             <Typography variant="h6">
                                 Real Estate Data
-                                {isLoading && (
+                                {this.state.isLoading && (
                                     <CircularProgress
                                     size={24}
                                     style={{ marginLeft: 15, position: "relative", top: 4 }}

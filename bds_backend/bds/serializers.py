@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from .models import Bds
 
+
+class GetImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bds
+        fields = ('images',)
+
 class BdsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bds

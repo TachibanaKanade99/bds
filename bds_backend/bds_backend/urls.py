@@ -21,6 +21,7 @@ from bds import views
 
 router = routers.DefaultRouter()
 router.register(r'bdss', views.BdsView, 'bds')
+router.register(r'image', views.GetImageView, 'bds_image')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
