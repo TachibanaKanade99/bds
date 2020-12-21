@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
+import axios from 'axios';
 
 // Reactstrap:
 import {
@@ -9,8 +11,8 @@ import {
   Nav,
   NavItem,
   NavLink,
-  Button,
-  ButtonGroup
+  // Button,
+  // ButtonGroup
 } from 'reactstrap';
 
 // React-router:
@@ -21,7 +23,8 @@ class WebNavbar extends Component {
     super(props);
     this.state = {
       isOpen: false,
-      cmd: "hi",
+      isLogout: false,
+      message: '',
     }
     this.toggleOpen = this.toggleOpen.bind(this);
     this.handleClick = this.handleClick.bind(this);
@@ -34,10 +37,24 @@ class WebNavbar extends Component {
   }
 
   handleClick = (selected) => {
-    this.setState({ cmd: selected, })
+    let self = this;
+    axios
+      .post("/logout/")
+      .then(function(response) {
+        console.log(response);
+        self.setState({ isLogout: true })
+      })
+      .catch(function(errors) {
+        console.log(errors);
+        self.setState({ message: "Logout Failed!" });
+      })
   }
 
   render() {
+    if (this.state.isLogout) {
+      return <Redirect exact to="/logout/" />
+    }
+
     return(
       <div>
         <Navbar color="light" light expand="md">
@@ -53,16 +70,17 @@ class WebNavbar extends Component {
                 <NavLink tag={rNavLink} exact to="/data" activeClassName="active">Data</NavLink>
               </NavItem>
               
-              {/* <NavItem>
+              <NavItem>
                 <NavLink tag={rNavLink} exact to="/register" activeClassName="active" onClick={() => this.handleClick("register")}>Register</NavLink>
               </NavItem>
 
               <NavItem>
                 <NavLink tag={rNavLink} exact to="/login" activeClassName="active" onClick={() => this.handleClick("login")}>Login</NavLink>
-              </NavItem> */}
+              </NavItem>
 
               <NavItem>
-                <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink>
+                {/* <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink> */}
+                <NavLink onClick={() => this.handleClick("logout")}>Logout</NavLink>
               </NavItem>
             </Nav>
 
@@ -73,7 +91,7 @@ class WebNavbar extends Component {
           </Collapse>
         </Navbar>
 
-        <p>Result: {this.state.cmd}</p>
+        <p>Result: {this.state.message}</p>
     </div>
     );
   }

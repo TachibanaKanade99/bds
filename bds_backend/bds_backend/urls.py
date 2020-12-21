@@ -25,6 +25,8 @@ router.register(r'image', views.GetImageView, 'bds_image')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
     path('api/', include(router.urls)),
+    path('register/', views.register_user),
+    path('login/', views.login_user),
+    path('logout/', views.logout_user),
 ]

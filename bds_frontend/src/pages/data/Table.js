@@ -5,12 +5,16 @@ import MUIDataTable from "mui-datatables";
 // import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { Row, Col } from "reactstrap";
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 
 class Table extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            // logged in:
+            message: '',
+
             // pagination:
             
             // page: 1,
@@ -353,7 +357,8 @@ class Table extends React.Component {
     }
 
     getData = () => {
-        this.setState({ isLoading: true });
+        let self = this
+        self.setState({ isLoading: true });
         axios
             .get("/api/bdss/", {
                 // params: {
@@ -361,15 +366,26 @@ class Table extends React.Component {
                 //     offset: this.state.offset,
                 // }
             })
-            .then((res) => {
+            .then(function(res) {
                 res.data.results["0"]["images"] = <img className="col-3 col-md-3" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
-                this.setState(
+                self.setState(
                     {
                         data: res.data.results,
                         isLoading: false,
                         count: res.data.count,
                     }
                 )
+
+                // Update csrf token:
+                // console.log(axios.defaults.headers.common['X-CSRFToken'], Cookies.get('csrftoken'));
+                let axios_csrftoken = axios.defaults.headers.common['X-CSRFToken'];
+                let cookie_csrftoken = Cookies.get('csrftoken');
+                let isChanged = axios_csrftoken === cookie_csrftoken;
+                if (isChanged === false) {
+                    axios.defaults.headers.common['X-CSRFToken'] = cookie_csrftoken;
+                }
+                // console.log("After:");
+                // console.log(axios.defaults.headers.common['X-CSRFToken'], Cookies.get('csrftoken'));
             })
             // .then(res => this.setState(
             //     { 
@@ -378,7 +394,10 @@ class Table extends React.Component {
             //         count: res.data.count, 
             //     }
             // ))
-            // .catch(err => console.log(err));
+            .catch(function(errors) {
+                console.log(errors)
+                self.setState({ message: "You need to login to view content!" })
+            })
     };
 
     changePage = (page) => {
@@ -386,7 +405,7 @@ class Table extends React.Component {
 
         this.setState({ isLoading: true, });
         axios
-            .get("api/bdss/", {
+            .get("/api/bdss/", {
                 params: {
                     page: page+1,
                     // offset: this.state.offset,
@@ -412,7 +431,7 @@ class Table extends React.Component {
             }
         )
         axios
-            .get("api/bdss/", {
+            .get("/api/bdss/", {
                 params: {
                     page: page+1,
                     page_size: rows
@@ -464,6 +483,7 @@ class Table extends React.Component {
 
         return (
             <div className="mt-5">
+                <div className="text-center mb-4">{this.state.message}</div>
                 <Row>
                     <Col md="1"></Col>
                     <Col md="10">

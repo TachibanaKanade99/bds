@@ -1,4 +1,5 @@
 import { Component, Fragment } from 'react';
+import axios from 'axios';
 
 // CSS:
 import './styles.css';
@@ -7,8 +8,51 @@ class Register extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: '',
+      // first_name: '',
+      // last_name: '',
+      // email: '',
+      username: '',
+      password: '',
     }
+    
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    // console.log(name, value)
+    this.setState(
+      {
+        [name]: value
+      }
+    )
+  }
+
+  handleSubmit = (e) => {
+    // alert("Form submitted with " + this.state.firstName + " " + this.state.lastName);
+    e.preventDefault();
+    axios
+      .post('/register/', {
+        // first_name: this.state.first_name,
+        // last_name: this.state.last_name,
+        // email: this.state.email,
+        username: this.state.username,
+        password: this.state.password
+      }, 
+      // {
+      //   headers: {
+      //     'X-CSRFToken': csrftoken
+      //   }
+      // }
+      )
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
   }
 
   render() {
@@ -18,32 +62,89 @@ class Register extends Component {
           <p>This is register page!</p>
         </div>
 
-        <div className="row mt-5">
+        <div className="row mt-3">
           <div className="col-4 col-md-4"></div>
-          <form className="col-4 col-md-4 bg-light p-3">
+          <form className="col-4 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
             <h3>Login</h3>
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>First name</label>
-              <input type="text" className="form-control" placeholder="First name" />
+              <input
+                type="text"
+                name="first_name"  
+                value={this.state.first_name}
+                onChange={this.handleChange}
+                className="form-control" 
+                placeholder="First name" 
+              />
             </div>
 
             <div className="form-group">
               <label>Last name</label>
-              <input type="text" className="form-control" placeholder="Last name" />
-            </div>
+              <input 
+                type="text" 
+                name="last_name" 
+                value={this.state.last_name}
+                onChange={this.handleChange}
+                className="form-control" 
+                placeholder="Last name" 
+              />
+            </div> */}
 
             <div className="form-group">
-              <label>Email address</label>
-              <input type="email" className="form-control" placeholder="Enter email" />
+              <label>Username</label>
+              <input 
+                type="text" 
+                name="username"
+                value={this.state.username}
+                onChange={this.handleChange}
+                autocomplete="new-password"
+                className="form-control" 
+                placeholder="Username" 
+              />
             </div>
+
+            {/* <div className="form-group">
+              <label>Email address</label>
+              <input 
+                type="email" 
+                name="email"
+                value={this.state.email}
+                onChange={this.handleChange}
+                className="form-control" 
+                placeholder="Enter email" 
+              />
+            </div> */}
 
             <div className="form-group">
               <label>Password</label>
-              <input type="password" className="form-control" placeholder="Enter password" />
+              <input 
+                type="password" 
+                name="password"
+                value={this.state.password}
+                onChange={this.handleChange}
+                autocomplete="new-password"
+                className="form-control" 
+                placeholder="Enter password" 
+              />
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block">Sign Up</button>
+            <div className="form-group">
+              <label>Reenter Password</label>
+              <input 
+                type="password" 
+                className="form-control" 
+                placeholder="Reenter password" 
+              />
+            </div>
+
+            <button 
+              type="submit"
+              className="btn btn-primary btn-block"
+              defaultValue="Submit"
+            >
+              Sign Up
+            </button>
             <p className="forgot-password text-right">
               Already registered <a href="/">sign in?</a>
             </p>

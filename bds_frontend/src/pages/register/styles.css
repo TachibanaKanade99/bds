@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,500,600,700,800');
+/* @import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,500,600,700,800'); */
+
+@font-face {
+  font-family: 'Fira Sans';
+  src: local('Fira Sans'), url(./../../assets/fonts/Fira_Sans/FiraSans-Regular.ttf);
+}
 
 /* * {
   box-sizing: border-box;

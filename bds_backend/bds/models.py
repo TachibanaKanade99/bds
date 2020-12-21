@@ -1,7 +1,24 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.contrib.postgres.fields.array import ArrayField
 
 # Create your models here.
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(null=True)
+
+    # UserProfile will be updated automatically when there is an instance of User created
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            UserProfile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.userprofile.save()
+
 class Bds(models.Model):
     url = models.CharField(max_length=32767)
     post_title = models.CharField(max_length=32767,null=True)
