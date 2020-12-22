@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
 
 // Reactstrap:
@@ -11,12 +11,23 @@ import {
   Nav,
   NavItem,
   NavLink,
+  NavbarText,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
   // Button,
   // ButtonGroup
 } from 'reactstrap';
 
 // React-router:
 import { NavLink as rNavLink } from 'react-router-dom';
+
+// Import Component:
+import Login from './../../pages/login/Login';
+
+// Import CSS:
+import './style.css';
 
 class WebNavbar extends Component {
   constructor(props) {
@@ -25,9 +36,37 @@ class WebNavbar extends Component {
       isOpen: false,
       isLogout: false,
       message: '',
+      current_user: '',
+
+      // dropdown:
+      dropdownOpen: false,
     }
+    this.toggleDropdown = this.toggleDropdown.bind(this);
     this.toggleOpen = this.toggleOpen.bind(this);
     this.handleClick = this.handleClick.bind(this);
+  }
+
+  componentDidMount() {
+    this.getCurrentUser();
+  }
+
+  getCurrentUser = () => {
+    let self = this;
+    axios
+      .get("/bds/current_user/")
+      .then(function(response) {
+        console.log(response);
+        self.setState({ current_user: response.data.username })
+      })
+      .catch(function(errors) {
+        console.log(errors);
+      })
+  }
+
+  toggleDropdown = () => {
+    this.setState(state => ({
+      dropdownOpen: !state.dropdownOpen
+    }))
   }
 
   toggleOpen = () => {
@@ -39,7 +78,7 @@ class WebNavbar extends Component {
   handleClick = (selected) => {
     let self = this;
     axios
-      .post("/logout/")
+      .post("/bds/logout/")
       .then(function(response) {
         console.log(response);
         self.setState({ isLogout: true })
@@ -52,7 +91,7 @@ class WebNavbar extends Component {
 
   render() {
     if (this.state.isLogout) {
-      return <Redirect exact to="/logout/" />
+      return <Redirect exact to="/login" component={<Login message="Logout successfully!" />} />
     }
 
     return(
@@ -70,28 +109,40 @@ class WebNavbar extends Component {
                 <NavLink tag={rNavLink} exact to="/data" activeClassName="active">Data</NavLink>
               </NavItem>
               
-              <NavItem>
+              {/* <NavItem>
                 <NavLink tag={rNavLink} exact to="/register" activeClassName="active" onClick={() => this.handleClick("register")}>Register</NavLink>
               </NavItem>
 
               <NavItem>
                 <NavLink tag={rNavLink} exact to="/login" activeClassName="active" onClick={() => this.handleClick("login")}>Login</NavLink>
-              </NavItem>
+              </NavItem> */}
 
-              <NavItem>
-                {/* <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink> */}
+              {/* <NavItem>
+                <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink>
                 <NavLink onClick={() => this.handleClick("logout")}>Logout</NavLink>
-              </NavItem>
+              </NavItem> */}
             </Nav>
 
             {/* <ButtonGroup>
               <Button color="light" onClick={() => this.handleClick("register")}>Register</Button>
               <Button color="light" onClick={() => this.handleClick("login")}>Login</Button>
             </ButtonGroup> */}
+            <NavbarText className="user-text">
+            <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
+              <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen}>
+                {this.state.current_user}
+              </DropdownToggle>
+              <DropdownMenu>
+                <DropdownItem>
+                  <Link exact to="/login" onClick={() => this.handleClick("logout")}>Logout</Link>
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+            </NavbarText>
           </Collapse>
         </Navbar>
 
-        <p>Result: {this.state.message}</p>
+        {/* <p>Result: {this.state.message}</p> */}
     </div>
     );
   }

@@ -1,7 +1,10 @@
 import { Component, Fragment } from 'react';
-import { Redirect } from 'react-router-dom';
-import Data from './../data/Data';
+import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
+
+// Import Component:
+import Data from './../data/Data';
+import Register from './../register/Register';
 
 // CSS:
 import './styles.css';
@@ -34,7 +37,7 @@ class Login extends Component {
     e.preventDefault();
     let self = this
     axios
-      .post('/login/', {
+      .post('/bds/login/', {
         username: this.state.username,
         password: this.state.password
       })
@@ -58,13 +61,14 @@ class Login extends Component {
 
   render() {
     if (this.state.message === "successful") {
-      return <Redirect exact to='/data/' component={<Data />} />   
+      return <Redirect exact to='/data/' component={<Data />} />
     }
 
     return(
       <Fragment>
-        <div className="text-center h4 font-weight-bold mt-5">
-          <p>This is login page!</p>
+        <div className="text-center mt-5">
+          <p className="h4 font-weight-bold">This is login page!</p>
+          <p>{this.props.message}</p>
         </div>
 
         <div className="row mt-5">
@@ -102,13 +106,22 @@ class Login extends Component {
             </div>
 
             <button type="submit" className="btn btn-primary btn-block">Submit</button>
-            <p className="forgot-password text-right">
-                Forgot <a href="/">password?</a>
-            </p>
+            <div className="row justify-content-between">
+              <div className="col-6">
+                <span className="forgot-password">
+                    Don't have account? Register 
+                    <Link exact to="/register"> here</Link>
+                </span>
+              </div>
+              <div className="col-4">
+                <span className="forgot-password">
+                    Forgot <a href="/">password?</a>
+                </span>
+              </div>
+            </div>
           </form>
           <div className="col-4 col-md-4"></div>
         </div>
-        <div>{this.state.message}</div>
       </Fragment>
     )
   }

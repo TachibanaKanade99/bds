@@ -360,7 +360,7 @@ class Table extends React.Component {
         let self = this
         self.setState({ isLoading: true });
         axios
-            .get("/api/bdss/", {
+            .get("/bds/api/bdss/", {
                 // params: {
                 //     limit: this.state.limit,
                 //     offset: this.state.offset,
@@ -378,12 +378,14 @@ class Table extends React.Component {
 
                 // Update csrf token:
                 // console.log(axios.defaults.headers.common['X-CSRFToken'], Cookies.get('csrftoken'));
+                
                 let axios_csrftoken = axios.defaults.headers.common['X-CSRFToken'];
                 let cookie_csrftoken = Cookies.get('csrftoken');
                 let isChanged = axios_csrftoken === cookie_csrftoken;
                 if (isChanged === false) {
                     axios.defaults.headers.common['X-CSRFToken'] = cookie_csrftoken;
                 }
+                
                 // console.log("After:");
                 // console.log(axios.defaults.headers.common['X-CSRFToken'], Cookies.get('csrftoken'));
             })
@@ -405,7 +407,7 @@ class Table extends React.Component {
 
         this.setState({ isLoading: true, });
         axios
-            .get("/api/bdss/", {
+            .get("/bds/api/bdss/", {
                 params: {
                     page: page+1,
                     // offset: this.state.offset,
@@ -431,7 +433,7 @@ class Table extends React.Component {
             }
         )
         axios
-            .get("/api/bdss/", {
+            .get("/bds/api/bdss/", {
                 params: {
                     page: page+1,
                     page_size: rows

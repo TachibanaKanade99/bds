@@ -1,5 +1,9 @@
 import { Component, Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
+
+// Import Component:
+import Login from './../login/Login';
 
 // CSS:
 import './styles.css';
@@ -34,7 +38,7 @@ class Register extends Component {
     // alert("Form submitted with " + this.state.firstName + " " + this.state.lastName);
     e.preventDefault();
     axios
-      .post('/register/', {
+      .post('/bds/register/', {
         // first_name: this.state.first_name,
         // last_name: this.state.last_name,
         // email: this.state.email,
@@ -65,7 +69,7 @@ class Register extends Component {
         <div className="row mt-3">
           <div className="col-4 col-md-4"></div>
           <form className="col-4 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
-            <h3>Login</h3>
+            <h3>Register</h3>
 
             {/* <div className="form-group">
               <label>First name</label>
@@ -146,7 +150,8 @@ class Register extends Component {
               Sign Up
             </button>
             <p className="forgot-password text-right">
-              Already registered <a href="/">sign in?</a>
+              Already registered 
+              <Link exact to="/login"> sign in?</Link>
             </p>
           </form>
           <div className="col-4 col-md-4"></div>
