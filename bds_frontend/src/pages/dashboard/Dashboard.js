@@ -7,9 +7,9 @@ class Dashboard extends Component {
   render() {
     return(
       <Fragment>
-        <WebNavbar />
+        <WebNavbar name="Crawling Website" />
         <div className="text-center h4 font-weight-bold">
-          <p>This is dashboard page!</p>
+          {/* <p>This is dashboard page!</p> */}
         </div>
       </Fragment>
     )

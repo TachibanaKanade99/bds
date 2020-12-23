@@ -1,10 +1,11 @@
 import { Component, Fragment } from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 // Import Component:
+import WebNavbar from './../../components/layout/WebNavbar';
 import Data from './../data/Data';
-import Register from './../register/Register';
 
 // CSS:
 import './styles.css';
@@ -40,7 +41,13 @@ class Login extends Component {
       .post('/bds/login/', {
         username: this.state.username,
         password: this.state.password
-      })
+      }, 
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
+      )
       .then(function(response) {
         console.log(response);
         self.setState(
@@ -66,14 +73,16 @@ class Login extends Component {
 
     return(
       <Fragment>
-        <div className="text-center mt-5">
-          <p className="h4 font-weight-bold">This is login page!</p>
-          <p>{this.props.message}</p>
+        <WebNavbar name="Login" />
+        <div className="text-center login-contents">
+          {/* <p className="h4 font-weight-bold">This is login page!</p> */}
+          <p>{this.state.message}</p>
         </div>
 
-        <div className="row mt-5">
-          <div className="col-4 col-md-4"></div>
-          <form className="col-4 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
+        <div className="row mt-5 px-0">
+
+          <div className="col-3 col-md-4 px-0"></div>
+          <form className="col-6 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
             <h3>Login</h3>
 
             <div className="form-group">
@@ -120,7 +129,7 @@ class Login extends Component {
               </div>
             </div>
           </form>
-          <div className="col-4 col-md-4"></div>
+          <div className="col-3 col-md-4"></div>
         </div>
       </Fragment>
     )

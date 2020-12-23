@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 // Reactstrap:
 import {
@@ -78,7 +79,14 @@ class WebNavbar extends Component {
   handleClick = (selected) => {
     let self = this;
     axios
-      .post("/bds/logout/")
+      .post("/bds/logout/", 
+      {}, 
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
+      )
       .then(function(response) {
         console.log(response);
         self.setState({ isLogout: true })
@@ -93,11 +101,19 @@ class WebNavbar extends Component {
     if (this.state.isLogout) {
       return <Redirect exact to="/login" component={<Login message="Logout successfully!" />} />
     }
+    
+    if (this.props.name === "Login" || this.props.name === "Register") {
+      return (
+        <Navbar color="light" light expand="md" fixed="top">
+          <NavbarBrand href="/">{this.props.name}</NavbarBrand>
+        </Navbar>
+      )
+    }
 
     return(
       <div>
-        <Navbar color="light" light expand="md">
-          <NavbarBrand href="/">Crawling Website</NavbarBrand>
+        <Navbar color="light" light expand="md" fixed="top">
+          <NavbarBrand href="/">{this.props.name}</NavbarBrand>
           <NavbarToggler onClick={this.toggleOpen} />
           <Collapse isOpen={this.state.isOpen} navbar>
             <Nav className="mr-auto" navbar>

@@ -3,9 +3,8 @@ import React from 'react';
 import { CircularProgress, Typography } from "@material-ui/core";
 import MUIDataTable from "mui-datatables";
 // import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
-import { Row, Col } from "reactstrap";
+import { Row, Col, Modal, ModalHeader, ModalBody,  } from "reactstrap";
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 
 class Table extends React.Component {
@@ -13,7 +12,7 @@ class Table extends React.Component {
         super(props);
         this.state = {
             // logged in:
-            message: '',
+            // message: '',
 
             // pagination:
             
@@ -347,7 +346,10 @@ class Table extends React.Component {
             ],
             data: [["Loading data ..."]],
             isLoading: false,
+            // modal: false,
+            // picture: null,
         };
+        // this.toggleModal = this.toggleModal.bind(this);
         this.changePage = this.changePage.bind(this);
         this.changeRowsPerPage = this.changeRowsPerPage.bind(this);
     }
@@ -355,6 +357,12 @@ class Table extends React.Component {
     componentDidMount() {
         this.getData();
     }
+
+    // toggleModal = () => {
+    //     this.setState(state => ({
+    //         modal: !state.modal
+    //       }))
+    // }
 
     getData = () => {
         let self = this
@@ -365,9 +373,12 @@ class Table extends React.Component {
                 //     limit: this.state.limit,
                 //     offset: this.state.offset,
                 // }
-            })
+                }
+            )
             .then(function(res) {
                 res.data.results["0"]["images"] = <img className="col-3 col-md-3" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["1"]["images"] = <img className="col-3 col-md-3" src={res.data.results["1"]["images"]} alt="this-is-img" srcset=""/>;
+                
                 self.setState(
                     {
                         data: res.data.results,
@@ -379,12 +390,12 @@ class Table extends React.Component {
                 // Update csrf token:
                 // console.log(axios.defaults.headers.common['X-CSRFToken'], Cookies.get('csrftoken'));
                 
-                let axios_csrftoken = axios.defaults.headers.common['X-CSRFToken'];
-                let cookie_csrftoken = Cookies.get('csrftoken');
-                let isChanged = axios_csrftoken === cookie_csrftoken;
-                if (isChanged === false) {
-                    axios.defaults.headers.common['X-CSRFToken'] = cookie_csrftoken;
-                }
+                // let axios_csrftoken = axios.defaults.headers.common['X-CSRFToken'];
+                // let cookie_csrftoken = Cookies.get('csrftoken');
+                // let isChanged = axios_csrftoken === cookie_csrftoken;
+                // if (isChanged === false) {
+                //     axios.defaults.headers.common['X-CSRFToken'] = cookie_csrftoken;
+                // }
                 
                 // console.log("After:");
                 // console.log(axios.defaults.headers.common['X-CSRFToken'], Cookies.get('csrftoken'));
@@ -455,7 +466,8 @@ class Table extends React.Component {
         const options = {
             filter: true,
             filterType: 'dropdown',
-            responsive: 'standard',
+            responsive: 'scroll',
+            jumpToPage: true,
             serverSide: true,
             rowsPerPage: this.state.rowsPerPage,
             rowsPerPageOptions: [5, 10, 20, 50, 100, 200],
@@ -485,10 +497,18 @@ class Table extends React.Component {
 
         return (
             <div className="mt-5">
-                <div className="text-center mb-4">{this.state.message}</div>
-                <Row>
-                    <Col md="1"></Col>
-                    <Col md="10">
+
+            {/* <Modal isOpen={this.state.modal} toggle={this.toggleModal} className="">
+                <ModalHeader toggle={this.toggleModal}></ModalHeader>
+                <ModalBody>
+                    <img src={this.state.picture} alt="real-estate-img"/>
+                </ModalBody>
+            </Modal> */}
+
+                {/* <div className="text-center mb-4">{this.state.message}</div> */}
+                <div className="row px-0 data-table">
+                    <div class="col-1 col-md-1 px-0"></div>
+                    <div className="col-10 col-md-10 px-0">
                     <MUIDataTable
                         title={
                             <Typography variant="h6">
@@ -505,9 +525,9 @@ class Table extends React.Component {
                         data = { this.state.data }
                         options = { options }
                     />
-                    </Col>
-                    <Col md="1"></Col>
-                </Row>
+                    </div>
+                    <div className="col-1 col-md-1 px-0"></div>
+                </div>
             </div>
         )
     }

@@ -1,9 +1,10 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 // Import Component:
-import Login from './../login/Login';
+import WebNavbar from './../../components/layout/WebNavbar';
 
 // CSS:
 import './styles.css';
@@ -17,6 +18,7 @@ class Register extends Component {
       // email: '',
       username: '',
       password: '',
+      message: '',
     }
     
     this.handleChange = this.handleChange.bind(this);
@@ -45,11 +47,11 @@ class Register extends Component {
         username: this.state.username,
         password: this.state.password
       }, 
-      // {
-      //   headers: {
-      //     'X-CSRFToken': csrftoken
-      //   }
-      // }
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
       )
       .then(function (response) {
         console.log(response);
@@ -62,13 +64,15 @@ class Register extends Component {
   render() {
     return(
       <Fragment>
-        <div className="text-center h4 font-weight-bold mt-5">
-          <p>This is register page!</p>
+        <WebNavbar name="Register" />
+        <div className="text-center register-contents">
+          {/* <p className="h4 font-weight-bold">This is register page!</p> */}
+          <p>{this.state.message}</p>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-4 col-md-4"></div>
-          <form className="col-4 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
+        <div className="row mt-5">
+          <div className="col-3 col-md-4"></div>
+          <form className="col-6 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
             <h3>Register</h3>
 
             {/* <div className="form-group">
@@ -154,7 +158,7 @@ class Register extends Component {
               <Link exact to="/login"> sign in?</Link>
             </p>
           </form>
-          <div className="col-4 col-md-4"></div>
+          <div className="col-3 col-md-4"></div>
         </div>
       </Fragment>
     )

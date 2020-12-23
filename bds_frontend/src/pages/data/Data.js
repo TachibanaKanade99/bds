@@ -6,6 +6,9 @@ import { Redirect } from 'react-router-dom';
 import Login from './../login/Login';
 import Table from './Table';
 
+// Import CSS:
+import './styles.css';
+
 class Data extends Component {
   constructor(props) {
     super(props);
@@ -43,9 +46,9 @@ class Data extends Component {
 
     return (
       <Fragment>
-        <WebNavbar />
+        <WebNavbar name="Crawling Website" />
         <div className="text-center mt-5">
-          <p className="h4 font-weight-bold">This is data page</p>
+          {/* <p className="h4 font-weight-bold">This is data page</p> */}
         </div>
         <Table />
       </Fragment>
