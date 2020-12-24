@@ -74,7 +74,7 @@ class Table extends React.Component {
                     label: 'Number of Bedrooms',
                     name: 'number_of_bedrooms',
                     options: {
-                        setCellProps: () => ({ style: { minWidth: "100px", maxWidth: "1000px" } })
+                        setCellProps: () => ({ style: { minWidth: "120px", maxWidth: "1000px" } })
                     }
                 },
                 {
@@ -376,8 +376,10 @@ class Table extends React.Component {
                 }
             )
             .then(function(res) {
-                res.data.results["0"]["images"] = <img className="col-3 col-md-3" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
-                res.data.results["1"]["images"] = <img className="col-3 col-md-3" src={res.data.results["1"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["0"]["images"] = <img className="col-4 col-md-4" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["1"]["images"] = <img className="col-4 col-md-4" src={res.data.results["1"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["2"]["images"] = <img className="col-4 col-md-4" src={res.data.results["2"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["3"]["images"] = <img className="col-4 col-md-4" src={res.data.results["3"]["images"]} alt="this-is-img" srcset=""/>;
                 
                 self.setState(
                     {
@@ -417,6 +419,7 @@ class Table extends React.Component {
         // console.log("Go to page", page);
 
         this.setState({ isLoading: true, });
+        let self = this;
         axios
             .get("/bds/api/bdss/", {
                 params: {
@@ -424,13 +427,14 @@ class Table extends React.Component {
                     // offset: this.state.offset,
                 }
             })
-            .then(res => this.setState(
-                { 
-                    data: res.data.results,
-                    isLoading: false,
-                    count: res.data.count
-                }
-            ))
+            .then(function(res){
+                self.setState(
+                    { 
+                        data: res.data.results,
+                        isLoading: false,
+                        count: res.data.count
+                    })
+            })
             // .catch(err => console.log(err));
     }
 
@@ -443,6 +447,8 @@ class Table extends React.Component {
                 rowsPerPage: rows,
             }
         )
+
+        let self = this
         axios
             .get("/bds/api/bdss/", {
                 params: {
@@ -450,13 +456,19 @@ class Table extends React.Component {
                     page_size: rows
                 }
             })
-            .then(res => this.setState(
-                {
-                    data: res.data.results,
-                    isLoading: false,
-                    count: res.data.count,
-                }
-            ))
+            .then(function(res) {
+                res.data.results["0"]["images"] = <img className="col-4 col-md-4" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["1"]["images"] = <img className="col-4 col-md-4" src={res.data.results["1"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["2"]["images"] = <img className="col-4 col-md-4" src={res.data.results["2"]["images"]} alt="this-is-img" srcset=""/>;
+                res.data.results["3"]["images"] = <img className="col-4 col-md-4" src={res.data.results["3"]["images"]} alt="this-is-img" srcset=""/>;
+
+                self.setState(
+                    {
+                        data: res.data.results,
+                        isLoading: false,
+                        count: res.data.count,
+                    })
+            })
             // .catch(err => console.log(err));
     }
 

@@ -143,18 +143,18 @@ class WebNavbar extends Component {
               <Button color="light" onClick={() => this.handleClick("register")}>Register</Button>
               <Button color="light" onClick={() => this.handleClick("login")}>Login</Button>
             </ButtonGroup> */}
-            <NavbarText className="user-text">
+            <NavLink href="#" className="user-text text-dark">
             <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
               <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen}>
                 {this.state.current_user}
               </DropdownToggle>
               <DropdownMenu>
                 <DropdownItem>
-                  <Link exact to="/login" onClick={() => this.handleClick("logout")}>Logout</Link>
+                  <Link exact to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
-            </NavbarText>
+            </NavLink>
           </Collapse>
         </Navbar>
 
