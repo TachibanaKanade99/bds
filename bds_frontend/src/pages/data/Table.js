@@ -1,22 +1,14 @@
 import React from 'react';
-// import { MDBDataTableV5 } from 'mdbreact';
 import { CircularProgress, Typography } from "@material-ui/core";
 import MUIDataTable from "mui-datatables";
-// import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
-import { Row, Col, Modal, ModalHeader, ModalBody,  } from "reactstrap";
+// import { Row, Col, Modal, ModalHeader, ModalBody,  } from "reactstrap";
 import axios from 'axios';
-
+import Cookies from 'js-cookie';
 
 class Table extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            // logged in:
-            // message: '',
-
-            // pagination:
-            
-            // page: 1,
             count: 1,
             rowsPerPage: 5,
             sortOrder: {},
@@ -368,12 +360,13 @@ class Table extends React.Component {
         let self = this
         self.setState({ isLoading: true });
         axios
-            .get("/bds/api/bdss/", {
-                // params: {
-                //     limit: this.state.limit,
-                //     offset: this.state.offset,
-                // }
+            .get("/bds/api/bdss/", 
+            {}, 
+            {
+                headers: {
+                'X-CSRFToken': Cookies.get('csrftoken')
                 }
+            }
             )
             .then(function(res) {
                 res.data.results["0"]["images"] = <img className="col-4 col-md-4" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
@@ -412,7 +405,7 @@ class Table extends React.Component {
             .catch(function(errors) {
                 console.log(errors)
                 self.setState({ message: "You need to login to view content!" })
-            })
+            });
     };
 
     changePage = (page) => {
@@ -426,7 +419,13 @@ class Table extends React.Component {
                     page: page+1,
                     // offset: this.state.offset,
                 }
-            })
+            },
+            {
+                headers: {
+                'X-CSRFToken': Cookies.get('csrftoken')
+                }
+            }
+            )
             .then(function(res){
                 self.setState(
                     { 
@@ -435,7 +434,10 @@ class Table extends React.Component {
                         count: res.data.count
                     })
             })
-            // .catch(err => console.log(err));
+            .catch(function(errors) {
+                console.log(errors)
+                self.setState({ message: "Unable to change page! "})
+            });
     }
 
     changeRowsPerPage = (page, rows) => {
@@ -455,7 +457,13 @@ class Table extends React.Component {
                     page: page+1,
                     page_size: rows
                 }
-            })
+            },
+            {
+                headers: {
+                'X-CSRFToken': Cookies.get('csrftoken')
+                }
+            }
+            )
             .then(function(res) {
                 res.data.results["0"]["images"] = <img className="col-4 col-md-4" src={res.data.results["0"]["images"]} alt="this-is-img" srcset=""/>;
                 res.data.results["1"]["images"] = <img className="col-4 col-md-4" src={res.data.results["1"]["images"]} alt="this-is-img" srcset=""/>;

@@ -47,11 +47,11 @@ class Register extends Component {
         username: this.state.username,
         password: this.state.password
       }, 
-      {
-        headers: {
-          'X-CSRFToken': Cookies.get('csrftoken')
-        }
-      }
+      // {
+      //   headers: {
+      //     'X-CSRFToken': Cookies.get('csrftoken')
+      //   }
+      // }
       )
       .then(function (response) {
         console.log(response);

@@ -12,13 +12,13 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication 
+
 
 from .serializers import UserSerializer, BdsSerializer, GetImageSerializer
 from .pagination import CustomPageNumber
 from .models import Bds
 
-
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
 
     def enforce_csrf(self, request):
@@ -45,7 +45,7 @@ def current_user(request):
     serializer = UserSerializer(request.user)
     return Response({ 'username': serializer.data.get('username') })
 
-@method_decorator(csrf_protect, 'dispatch')
+# @method_decorator(csrf_protect, 'dispatch')
 class RegisterView(APIView):
     def post(self, request):
         serializer_class = UserSerializer(data=request.data)
@@ -62,7 +62,7 @@ class RegisterView(APIView):
         else:
             return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUESTS)
 
-@method_decorator(csrf_protect, 'dispatch')
+# @method_decorator(csrf_protect, 'dispatch')
 class LoginView(APIView):
     def post(self, request):
         # serializer_class = UserSerializer(data=request.data)
@@ -76,7 +76,6 @@ class LoginView(APIView):
         else:
             return Response("Failed!", status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(csrf_protect, 'dispatch')
 class LogoutView(APIView):
     def post(self, request):
         logout(request)
