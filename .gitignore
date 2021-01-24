@@ -1,2 +1,4 @@
 test_crawl/
-__pycache__/
+bds_crawler/
+virenv_linux/
+virenv_win/
