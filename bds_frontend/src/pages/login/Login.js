@@ -1,9 +1,9 @@
 import { Component, Fragment } from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 
-// Import Component:
+// Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
 import Data from './../data/Data';
 
@@ -52,7 +52,7 @@ class Login extends Component {
         console.log(response);
         self.setState(
           {
-            message: 'successful'
+            message: 'Successful!'
           }
         )
       })
@@ -67,8 +67,8 @@ class Login extends Component {
   }
 
   render() {
-    if (this.state.message === "successful") {
-      return <Redirect exact to='/data/' component={<Data />} />
+    if (this.state.message === "Successful!") {
+      return <Redirect exact to='/data' component={<Data />} />
     }
 
     return(

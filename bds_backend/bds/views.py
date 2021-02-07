@@ -60,7 +60,7 @@ class RegisterView(APIView):
             )
             return Response(serializer_class.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUESTS)
+            return Response(serializer_class.errors, status=status.HTTP_403_FORBIDDEN)
 
 # @method_decorator(csrf_protect, 'dispatch')
 class LoginView(APIView):

@@ -1,10 +1,11 @@
 import { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 
-// Import Component:
+// Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
+import Login from './../../pages/login/Login';
 
 // CSS:
 import './styles.css';
@@ -39,6 +40,7 @@ class Register extends Component {
   handleSubmit = (e) => {
     // alert("Form submitted with " + this.state.firstName + " " + this.state.lastName);
     e.preventDefault();
+    let self = this
     axios
       .post('/bds/register/', {
         // first_name: this.state.first_name,
@@ -55,13 +57,28 @@ class Register extends Component {
       )
       .then(function (response) {
         console.log(response);
+        self.setState(
+          {
+            message: "Register Successful!"
+          }
+        )
       })
       .catch(function (error) {
         console.log(error);
+        self.setState(
+          {
+            message: "Register Failed!"
+          }
+        )
       })
   }
 
   render() {
+
+    if (this.state.message === "Register Successful!") {
+      return <Redirect exact to='/login' component={<Login />} />
+    }
+
     return(
       <Fragment>
         <WebNavbar name="Register" />
