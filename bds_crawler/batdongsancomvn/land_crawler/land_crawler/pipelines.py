@@ -8,7 +8,7 @@
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from scrapy.pipelines.images import ImagesPipeline
-
+import logging
 
 class LandCrawlerPipeline:
     def process_item(self, item, spider):
@@ -19,28 +19,39 @@ class CheckCrawledDataPipeline:
         adapter = ItemAdapter(item)
         
         if not adapter.get('url'):
-            raise DropItem("Missing content in {item}")
+            logging.log(logging.ERROR, "Missing url in " + item['url'])
+            raise DropItem("Missing url in ", item['url'])
         if not adapter.get('content'):
-            raise DropItem("Missing content in {item}")
+            logging.log(logging.ERROR, "Missing content in " + item['url'])
+            raise DropItem("Missing content in ", item['url'])
         if not adapter.get('price'):
-            raise DropItem("Missing price in {item}")
+            logging.log(logging.ERROR, "Missing price in " + item['url'])
+            raise DropItem("Missing price in ", item['url'])
         if not adapter.get('area'):
-            raise DropItem("Missing area in {item}")
+            logging.log(logging.ERROR, "Missing area in " + item['url'])
+            raise DropItem("Missing area in ", item['url'])
         if not adapter.get('location'):
-            raise DropItem("Missing location in {item}")
+            logging.log(logging.ERROR, "Missing location in " + item['url'])
+            raise DropItem("Missing location in ", item['url'])
         if not adapter.get('posted_author'):
-            raise DropItem("Missing posted_author in {item}")
+            logging.log(logging.ERROR, "Missing posted_author in " + item['url'])
+            raise DropItem("Missing posted_author in ", item['url'])
         if not adapter.get('phone'):
-            raise DropItem("Missing phone in {item}")
+            logging.log(logging.ERROR, "Missing phone in " + item['url'])
+            raise DropItem("Missing phone in ", item['url'])
         if not adapter.get('posted_date'):
-            raise DropItem("Missing posted_date in {item}")
+            logging.log(logging.ERROR, "Missing posted_date in " + item['url'])
+            raise DropItem("Missing posted_date in ", item['url'])
         if not adapter.get('expired_date'):
-            raise DropItem("Missing expired_date in {item}")
+            logging.log(logging.ERROR, "Missing expired_date in " + item['url'])
+            raise DropItem("Missing expired_date in ", item['url'])
         if not adapter.get('item_code'):
-            raise DropItem("Missing item_code in {item}")
-        if not adapter.get('image_urls'):
-            raise DropItem("Missing image_urls in {item}")
+            logging.log(logging.ERROR, "Missing item_code in " + item['url'])
+            raise DropItem("Missing item_code in ", item['url'])
+        # if not adapter.get('image_urls'):
+        #     raise DropItem("Missing image_urls in {item}")
         
+        # Handle item's content:
         adapter['url'] = " ".join(adapter['url'].split())
         adapter['content'] = " ".join(adapter['content'].split())
         adapter['price'] = " ".join(adapter['price'].split())
@@ -71,8 +82,13 @@ class PriceValidationPipeline:
 
 class ImageProcessingPipeline(ImagesPipeline):
     def get_media_request(self, item, info):
-        for image_url in item['image_urls']:
-            yield scrapy.Request(image_url)
+
+        # Check if existed image_urls:
+        if len(item['image_urls']) != 0:
+            for image_url in item['image_urls']:
+                yield scrapy.Request(image_url)
+        else:
+            return item
 
     def item_completed(self, results, item, info):
         image_paths = []
