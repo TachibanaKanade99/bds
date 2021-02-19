@@ -78,3 +78,26 @@ class Bds(models.Model):
     street = models.CharField(max_length=32767,null=True)
     match_location = models.CharField(max_length=32767,null=True)
 
+class RealEstateData(models.Model):
+    urls = models.URLField(max_length=2083, null=False)
+    content = models.TextField(null=False)
+    price = models.DecimalField(null=False, max_digits=7, decimal_places=4)
+    area = models.DecimalField(null=False, max_digits=8,decimal_places=4)
+    location = models.TextField(null=False)
+    posted_author = models.CharField(null=False, max_length=255)
+    phone = models.CharField(null=False, max_length=255)
+    email = models.EmailField(null=True)
+    posted_date = models.DateField(null=False)
+    expired_date = models.DateField(null=False)
+    item_code = models.CharField(null=False, max_length=255)
+    image_urls = ArrayField(models.URLField(max_length=2083, null=True), null=True)
+
+    # Optional data types:
+    facade = models.DecimalField(null=True, max_digits=7, decimal_places=4)
+    entrance = models.DecimalField(null=True, max_digits=7, decimal_places=4)
+    orientation = models.CharField(null=True, max_length=255)
+    furniture = models.TextField(null=True)
+    policy = models.CharField(null=True, max_length=255)
+
+
+

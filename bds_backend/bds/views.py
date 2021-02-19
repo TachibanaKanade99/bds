@@ -83,7 +83,7 @@ class LogoutView(APIView):
 
 class BdsView(viewsets.ModelViewSet):
     # authentication_classes = [ CsrfExemptSessionAuthentication, BasicAuthentication ]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = BdsSerializer
     queryset = Bds.objects.all().order_by('id')
     # queryset = Bds.objects.all()
