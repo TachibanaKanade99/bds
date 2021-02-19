@@ -1,5 +1,4 @@
 __pycache__/
-*.pyc
 
 test_crawl/
 virenv_linux/
