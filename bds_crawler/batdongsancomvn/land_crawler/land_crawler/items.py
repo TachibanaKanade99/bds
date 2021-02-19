@@ -16,9 +16,19 @@ class LandCrawlerItem(scrapy.Item):
     location = scrapy.Field()
     posted_author = scrapy.Field()
     phone = scrapy.Field()
+    email = scrapy.Field()
     posted_date = scrapy.Field()
     expired_date = scrapy.Field()
     item_code = scrapy.Field()
     image_urls = scrapy.Field()
-    image_paths = scrapy.Field()
+    # image_paths = scrapy.Field()
+    post_type = scrapy.Field()
+
+    # Optional field:
+    facade = scrapy.Field()
+    entrance = scrapy.Field()
+    orientation = scrapy.Field()
+    furniture = scrapy.Field()
+    policy = scrapy.Field()
+
     pass
