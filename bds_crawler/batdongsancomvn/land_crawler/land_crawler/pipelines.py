@@ -9,6 +9,7 @@ from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from scrapy.pipelines.images import ImagesPipeline
 import logging
+from datetime import datetime
 
 class LandCrawlerPipeline:
     def process_item(self, item, spider):
@@ -39,6 +40,9 @@ class CheckCrawledDataPipeline:
         if not adapter.get('phone'):
             logging.log(logging.ERROR, "Missing phone in " + item['url'])
             raise DropItem("Missing phone in ", item['url'])
+        # if not adapter.get('email'):
+        #     logging.log(logging.ERROR, "Missing email in " + item['url'])
+        #     raise DropItem("Missing email in ", item['url'])
         if not adapter.get('posted_date'):
             logging.log(logging.ERROR, "Missing posted_date in " + item['url'])
             raise DropItem("Missing posted_date in ", item['url'])
@@ -48,6 +52,9 @@ class CheckCrawledDataPipeline:
         if not adapter.get('item_code'):
             logging.log(logging.ERROR, "Missing item_code in " + item['url'])
             raise DropItem("Missing item_code in ", item['url'])
+        if not adapter.get('post_type'):
+            logging.log(logging.ERROR, "Missing post_type in " + item['url'])
+            raise DropItem("Missing post_type in ", item['url'])
         # if not adapter.get('image_urls'):
         #     raise DropItem("Missing image_urls in {item}")
         
@@ -59,9 +66,17 @@ class CheckCrawledDataPipeline:
         adapter['location'] = " ".join(adapter['location'].split())
         adapter['posted_author'] = " ".join(adapter['posted_author'].split())
         adapter['phone'] = " ".join(adapter['phone'].split())
+        # adapter['email'] = " ".join(adapter['email'].split())
         adapter['posted_date'] = " ".join(adapter['posted_date'].split())
         adapter['expired_date'] = " ".join(adapter['expired_date'].split())
         adapter['item_code'] = " ".join(adapter['item_code'].split())
+        adapter['post_type'] = " ".join(adapter['post_type'].split())
+
+        # optional item content:
+        # adapter['facade'] = " ".join(adapter['facade'].split())
+        # adapter['entrance'] = " ".join(adapter['entrance'].split())
+        # adapter['orientation'] = " ".join(adapter['orientation'].split())
+        # adapter['furniture'] = " ".join(adapter['furniture'].split())
         
         return item
 
@@ -117,5 +132,20 @@ class ImageProcessingPipeline(ImagesPipeline):
         adapter['image_paths'] = image_paths
         return item
 
-            
-            
+class HandlingStringDataPipeline:
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        
+        adapter['area'] = float(adapter['area'][0:adapter['area'].find(" ")])
+        adapter['price'] = float(adapter['price'][0:adapter['price'].find(" ")])
+        adapter['posted_date'] = datetime.strptime(adapter['posted_date'], "%d/%m/%Y")
+        adapter['expired_date'] = datetime.strptime(adapter['expired_date'], "%d/%m/%Y")
+
+        # Optional data:
+        if adapter.get('facade'):
+            adapter['facade'] = float(adapter['facade'][0:adapter['facade'].find(" ")])
+        if adapter.get('entrance'):
+            adapter['entrance'] = float(adapter['entrance'][0:adapter['entrance'].find(" ")])
+
+        return item
+
