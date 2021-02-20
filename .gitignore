@@ -1,5 +1,6 @@
 __pycache__/
 
 test_crawl/
+test_connect_db/
 virenv_linux/
 virenv_win/
