@@ -16,7 +16,6 @@ class LandCrawlerItem(scrapy.Item):
     location = scrapy.Field()
     posted_author = scrapy.Field()
     phone = scrapy.Field()
-    email = scrapy.Field()
     posted_date = scrapy.Field()
     expired_date = scrapy.Field()
     item_code = scrapy.Field()
@@ -25,10 +24,17 @@ class LandCrawlerItem(scrapy.Item):
     post_type = scrapy.Field()
 
     # Optional field:
+    email = scrapy.Field()
     facade = scrapy.Field()
     entrance = scrapy.Field()
     orientation = scrapy.Field()
-    furniture = scrapy.Field()
     policy = scrapy.Field()
+
+    # extract data from item['location']:
+    project_name = scrapy.Field()
+    street = scrapy.Field()
+    ward = scrapy.Field()
+    district = scrapy.Field()
+    province = scrapy.Field()
 
     pass

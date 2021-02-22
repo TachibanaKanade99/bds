@@ -57,6 +57,18 @@ class CheckCrawledDataPipeline:
             raise DropItem("Missing post_type in ", item['url'])
         # if not adapter.get('image_urls'):
         #     raise DropItem("Missing image_urls in {item}")
+
+        # Handle null optional data:
+        if not adapter.get('email'):
+            adapter['email'] = None
+        if not adapter.get('facade'):
+            adapter['facade'] = None
+        if not adapter.get('entrance'):
+            adapter['entrance'] = None
+        if not adapter.get('orientation'):
+            adapter['orientation'] = None
+        if not adapter.get('policy'):
+            adapter['policy'] = None
         
         # Handle item's content:
         adapter['url'] = " ".join(adapter['url'].split())
@@ -76,7 +88,6 @@ class CheckCrawledDataPipeline:
         # adapter['facade'] = " ".join(adapter['facade'].split())
         # adapter['entrance'] = " ".join(adapter['entrance'].split())
         # adapter['orientation'] = " ".join(adapter['orientation'].split())
-        # adapter['furniture'] = " ".join(adapter['furniture'].split())
         
         return item
 
@@ -142,10 +153,46 @@ class HandlingStringDataPipeline:
         adapter['expired_date'] = datetime.strptime(adapter['expired_date'], "%d/%m/%Y")
 
         # Optional data:
-        if adapter.get('facade'):
+        if adapter['facade'] is not None:
             adapter['facade'] = float(adapter['facade'][0:adapter['facade'].find(" ")])
-        if adapter.get('entrance'):
+        if adapter['entrance'] is not None:
             adapter['entrance'] = float(adapter['entrance'][0:adapter['entrance'].find(" ")])
 
+        # extract data from item['location']:
+        splitted_location = adapter['location'].split(", ")
+        district_lst = ["Bình Tân", "Bình Thạnh", "Gò Vấp", "Phú Nhuận", "Tân Bình", "Tân Phú", "Thủ Đức", "Bình Chánh", "Cần Giờ", "Củ Chi", "Hóc Môn", "Nhà Bè"]
+
+        for content in splitted_location:
+            tmp = content.split(" ", 1)
+
+            if tmp[0] == "Dự":
+                adapter['project_name'] = tmp[1].split(" ", 1)[1]
+            if tmp[0] == "Đường":
+                adapter['street'] = tmp[1]
+            if tmp[0] in ("Phường", "Xã"):
+                adapter['ward'] = tmp[1]
+            if tmp[0] in ("Quận", "Huyện"):
+                adapter['district'] = tmp[1]
+        else:
+            # if content in district_lst:
+            #     adapter['district'] = content
+            # else:
+            #     adapter['province'] = content
+            adapter['district'] = splitted_location[-2]
+            adapter['province'] = splitted_location[-1]
+
+        # set null for non-existed value:
+        if not adapter.get('project_name'):
+            adapter['project_name'] = None
+        if not adapter.get('street'):
+            adapter['street'] = None
+        if not adapter.get('ward'):
+            adapter['ward'] = None
+        if not adapter['district']:
+            adapter['district'] = None
+        if not adapter['province']:
+            adapter['province'] = None
+
         return item
+
 

@@ -9,6 +9,7 @@ class LandSpider(scrapy.Spider):
     allowed_domains = ['batdongsan.com.vn']
 
     start_urls = [
+        # 'https://batdongsan.com.vn/ban-dat-dat-nen/-1/n-100000/-1/-1',
         'https://batdongsan.com.vn/ban-dat-dat-nen-tp-hcm/-1/n-100000/-1/-1',
         # 'https://batdongsan.com.vn/ban-dat-tp-hcm/-1/n-30000/-1/-1',
         # 'https://batdongsan.com.vn/ban-dat-nen-du-an-tp-hcm/-1/n-30000/-1/-1',
