@@ -96,8 +96,13 @@ class RealEstateData(models.Model):
     facade = models.DecimalField(null=True, max_digits=7, decimal_places=4)
     entrance = models.DecimalField(null=True, max_digits=7, decimal_places=4)
     orientation = models.CharField(null=True, max_length=255)
-    furniture = models.TextField(null=True)
     policy = models.CharField(null=True, max_length=255)
+
+    # extra field:
+    street = models.CharField(null=True, max_length=255)
+    ward = models.CharField(null=True, max_length=255)
+    district = models.CharField(null=True, max_length=255)
+    province = models.CharField(null=True, max_length=255)
 
 
 
