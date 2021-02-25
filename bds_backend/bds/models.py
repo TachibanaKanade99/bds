@@ -79,26 +79,28 @@ class Bds(models.Model):
     match_location = models.CharField(max_length=32767,null=True)
 
 class RealEstateData(models.Model):
-    urls = models.URLField(max_length=2083, null=False)
+    url = models.URLField(max_length=2083, null=False)
     content = models.TextField(null=False)
-    price = models.DecimalField(null=False, max_digits=7, decimal_places=4)
-    area = models.DecimalField(null=False, max_digits=8,decimal_places=4)
+    price = models.DecimalField(null=False, max_digits=15, decimal_places=10)
+    area = models.DecimalField(null=False, max_digits=15,decimal_places=10)
     location = models.TextField(null=False)
     posted_author = models.CharField(null=False, max_length=255)
     phone = models.CharField(null=False, max_length=255)
-    email = models.EmailField(null=True)
     posted_date = models.DateField(null=False)
     expired_date = models.DateField(null=False)
     item_code = models.CharField(null=False, max_length=255)
     image_urls = ArrayField(models.URLField(max_length=2083, null=True), null=True)
+    post_type = models.CharField(null=False, max_length=255)
 
     # Optional data types:
-    facade = models.DecimalField(null=True, max_digits=7, decimal_places=4)
-    entrance = models.DecimalField(null=True, max_digits=7, decimal_places=4)
+    email = models.EmailField(null=True)
+    facade = models.DecimalField(null=True, max_digits=15, decimal_places=10)
+    entrance = models.DecimalField(null=True, max_digits=15, decimal_places=10)
     orientation = models.CharField(null=True, max_length=255)
     policy = models.CharField(null=True, max_length=255)
 
     # extra field:
+    project_name = models.CharField(null=True, max_length=255)
     street = models.CharField(null=True, max_length=255)
     ward = models.CharField(null=True, max_length=255)
     district = models.CharField(null=True, max_length=255)
