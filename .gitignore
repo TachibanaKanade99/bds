@@ -2,5 +2,6 @@ __pycache__/
 
 test_crawl/
 test_connect_db/
+test_open_json_files/
 virenv_linux/
 virenv_win/
