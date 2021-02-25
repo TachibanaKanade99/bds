@@ -18,7 +18,7 @@ class LandSpider(scrapy.Spider):
     # log format:
     # configure_logging(install_root_handler=False)
     logging.basicConfig(
-        filename='logfile/log_' + datetime.now().strftime('%H%M%S%d%m%Y') + '.txt',
+        filename='logfile/log_' + datetime.now().strftime('%d%m%Y%H%M%S') + '.txt',
         format='%(levelname)s: %(message)s',
         level=logging.ERROR
     )
