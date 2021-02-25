@@ -66,9 +66,11 @@ ITEM_PIPELINES = {
 #   .'land_crawler.pipelines.LandCrawlerPipeline': 300,
     # 'scrapy.pipelines.images.ImagesPipeline': 1,
     'land_crawler.pipelines.CheckCrawledDataPipeline': 2,
-    'land_crawler.pipelines.PriceValidationPipeline': 3,
-    # 'land_crawler.pipelines.ImageProcessingPipeline': 4,
-    'land_crawler.pipelines.HandlingStringDataPipeline': 5,
+    'land_crawler.pipelines.CheckDuplicateItemsPipeline': 3,
+    'land_crawler.pipelines.PriceValidationPipeline': 4,
+    # 'land_crawler.pipelines.ImageProcessingPipeline': 5,
+    'land_crawler.pipelines.HandlingStringDataPipeline': 6,
+    'land_crawler.pipelines.PostgreSQLPipeline': 7,
 }
 
 IMAGES_STORE = '/media/tuanminh/DATA/Tuan_Minh/HK201/WebProgramming/bds/bds_crawler/batdongsancomvn/land_crawler/images'

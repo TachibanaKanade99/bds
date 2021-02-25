@@ -10,6 +10,8 @@ from scrapy.exceptions import DropItem
 from scrapy.pipelines.images import ImagesPipeline
 import logging
 from datetime import datetime
+import json
+import psycopg2
 
 class LandCrawlerPipeline:
     def process_item(self, item, spider):
@@ -90,6 +92,27 @@ class CheckCrawledDataPipeline:
         # adapter['orientation'] = " ".join(adapter['orientation'].split())
         
         return item
+
+class CheckDuplicateItemsPipeline:
+    def __init__(self):
+        self.item_lst = []
+
+        # f = open('sample_data_hcm.jl', encoding='utf-8')
+        # for line in f:
+        #     data = json.loads(line)
+        #     self.item_lst.append(data['item_code'])
+
+        # f.close()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+
+        if adapter['item_code'] in self.item_lst:
+            logging.log(logging.ERROR, "Duplicated item in " + item['url'])
+            raise DropItem("Duplicated item in " + item['url'])
+        else:
+            self.item_lst.append(adapter['item_code'])
+            return item
 
 class PriceValidationPipeline:
     def process_item(self, item, spider):
@@ -194,5 +217,112 @@ class HandlingStringDataPipeline:
             adapter['province'] = None
 
         return item
+
+class PostgreSQLPipeline:
+    def __init__(self):
+        self.conn = psycopg2.connect(database="real_estate_data", user="****", password="****")
+        self.cur = self.conn.cursor()
+
+    def open_spider(self, spider):
+        self.cur.execute("SELECT item_code FROM bds_realestatedata;")
+        self.item_lst = self.cur.fetchall()
+
+    def close_spider(self, spider):
+        # close cursor
+        self.cur.close()
+        # close connection
+        self.conn.close()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+
+        if len(self.item_lst) > 0:
+            for i in self.item_lst:
+                if adapter['item_code'] == i[0]:
+                    logging.log(logging.ERROR, "Duplicated item in " + item['url'])
+                    raise DropItem("Duplicated item in " + item['url'])
+        
+        try:
+            self.cur.execute("""
+                INSERT INTO bds_realestatedata (
+                    url, 
+                    content, 
+                    price, 
+                    area, 
+                    location, 
+                    posted_author, 
+                    phone, 
+                    email, 
+                    posted_date, 
+                    expired_date, 
+                    item_code, 
+                    image_urls, 
+                    facade, 
+                    entrance, 
+                    orientation, 
+                    policy, 
+                    district, 
+                    province, 
+                    street, 
+                    ward, 
+                    post_type, 
+                    project_name
+                ) 
+                VALUES (
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s
+                )""", 
+                (
+                    adapter['url'], 
+                    adapter['content'], 
+                    adapter['price'], 
+                    adapter['area'], 
+                    adapter['location'], 
+                    adapter['posted_author'], 
+                    adapter['phone'], 
+                    adapter['email'], 
+                    adapter['posted_date'], 
+                    adapter['expired_date'], 
+                    adapter['item_code'], 
+                    adapter['image_urls'], 
+                    adapter['facade'], 
+                    adapter['entrance'], 
+                    adapter['orientation'], 
+                    adapter['policy'], 
+                    adapter['district'], 
+                    adapter['province'], 
+                    adapter['street'], 
+                    adapter['ward'], 
+                    adapter['post_type'], 
+                    adapter['project_name']
+                )
+            )
+            self.conn.commit()
+        except:
+            self.conn.rollback()
+        return item
+
+
+
 
 
