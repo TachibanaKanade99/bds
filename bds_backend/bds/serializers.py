@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth.models import User
-from .models import Bds
+from .models import RealEstateData, Bds
 
 # class UserSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -53,6 +53,40 @@ class GetImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bds
         fields = ('images',)
+
+class RealEstateDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RealEstateData
+        fields = (
+            'id',
+            'url',
+            'content',
+            'price',
+            'area',
+            'location',
+            'posted_author',
+            'phone',
+            'posted_date',
+            'expired_date',
+            'item_code',
+            'image_urls',
+            'post_type',
+            'email',
+            'facade',
+            'entrance',
+            'orientation',
+            'balcony_orientation',
+            'number_of_floors',
+            'number_of_bedrooms',
+            'number_of_toilets',
+            'furniture',
+            'policy',
+            'project_name',
+            'street',
+            'ward',
+            'district',
+            'province'
+        )
 
 class BdsSerializer(serializers.ModelSerializer):
     class Meta:

@@ -15,9 +15,11 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication 
 
 
-from .serializers import UserSerializer, BdsSerializer, GetImageSerializer
+from .serializers import UserSerializer, RealEstateDataSerializer, BdsSerializer, GetImageSerializer
 from .pagination import CustomPageNumber
-from .models import Bds
+from .models import Bds, RealEstateData
+
+from datetime import datetime
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
 
@@ -81,6 +83,39 @@ class LogoutView(APIView):
         logout(request)
         return Response("Logout Successfully!", status=status.HTTP_200_OK)
 
+class RealEstateDataView(viewsets.ModelViewSet):
+    # permission_classes = [IsAuthenticated]
+    serializer_class = RealEstateDataSerializer
+    # queryset = RealEstateData.objects.filter(expired_date__gt=datetime.today()).order_by('id')
+    queryset = RealEstateData.objects.all().order_by('id')
+    pagination_class = CustomPageNumber
+
+class CountView(APIView):
+    # permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        all = RealEstateData.objects.all().count()
+        lands = RealEstateData.objects.filter(post_type__contains='đất').count()
+        houses = RealEstateData.objects.filter(post_type__contains='nhà').count()
+        departments = RealEstateData.objects.filter(post_type__contains='căn hộ').count()
+        others = RealEstateData.objects.filter(post_type__contains='khác').count()
+        belong_to_projects = RealEstateData.objects.filter(project_name__isnull=False).count()
+        has_policy = RealEstateData.objects.filter(policy__isnull=False).count()
+        new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today()).count()
+        has_furniture = RealEstateData.objects.filter(furniture__isnull=False).count()
+        counts = {
+            'all': all,
+            'lands': lands,
+            'houses': houses,
+            'departments': departments,
+            'others': others,
+            'belong_to_projects': belong_to_projects,
+            'has_policy': has_policy,
+            'new_updates': new_updates,
+            'has_furniture': has_furniture,
+        }
+        return Response(counts, status=status.HTTP_200_OK)
+
 class BdsView(viewsets.ModelViewSet):
     # authentication_classes = [ CsrfExemptSessionAuthentication, BasicAuthentication ]
     # permission_classes = [IsAuthenticated]
@@ -89,7 +124,7 @@ class BdsView(viewsets.ModelViewSet):
     # queryset = Bds.objects.all()
     pagination_class = CustomPageNumber
 
-class GetImageView(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = GetImageSerializer
-    queryset = Bds.objects.all().filter(id=1)
+# class GetImageView(viewsets.ModelViewSet):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = GetImageSerializer
+#     queryset = Bds.objects.all().filter(id=1)

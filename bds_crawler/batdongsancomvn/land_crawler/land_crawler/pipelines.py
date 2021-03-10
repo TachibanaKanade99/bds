@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 import json
 import psycopg2
+import scrapy
 
 class LandCrawlerPipeline:
     def process_item(self, item, spider):
@@ -42,9 +43,6 @@ class CheckCrawledDataPipeline:
         if not adapter.get('phone'):
             logging.log(logging.ERROR, "Missing phone in " + item['url'])
             raise DropItem("Missing phone in ", item['url'])
-        # if not adapter.get('email'):
-        #     logging.log(logging.ERROR, "Missing email in " + item['url'])
-        #     raise DropItem("Missing email in ", item['url'])
         if not adapter.get('posted_date'):
             logging.log(logging.ERROR, "Missing posted_date in " + item['url'])
             raise DropItem("Missing posted_date in ", item['url'])
@@ -57,8 +55,6 @@ class CheckCrawledDataPipeline:
         if not adapter.get('post_type'):
             logging.log(logging.ERROR, "Missing post_type in " + item['url'])
             raise DropItem("Missing post_type in ", item['url'])
-        # if not adapter.get('image_urls'):
-        #     raise DropItem("Missing image_urls in {item}")
 
         # Handle null optional data:
         if not adapter.get('email'):
@@ -69,6 +65,16 @@ class CheckCrawledDataPipeline:
             adapter['entrance'] = None
         if not adapter.get('orientation'):
             adapter['orientation'] = None
+        if not adapter.get('balcony_orientation'):
+            adapter['balcony_orientation'] = None
+        if not adapter.get('number_of_floors'):
+            adapter['number_of_floors'] = None
+        if not adapter.get('number_of_bedrooms'):
+            adapter['number_of_bedrooms'] = None
+        if not adapter.get('number_of_toilets'):
+            adapter['number_of_toilets'] = None
+        if not adapter.get('furniture'):
+            adapter['furniture'] = None
         if not adapter.get('policy'):
             adapter['policy'] = None
         
@@ -80,16 +86,10 @@ class CheckCrawledDataPipeline:
         adapter['location'] = " ".join(adapter['location'].split())
         adapter['posted_author'] = " ".join(adapter['posted_author'].split())
         adapter['phone'] = " ".join(adapter['phone'].split())
-        # adapter['email'] = " ".join(adapter['email'].split())
         adapter['posted_date'] = " ".join(adapter['posted_date'].split())
         adapter['expired_date'] = " ".join(adapter['expired_date'].split())
         adapter['item_code'] = " ".join(adapter['item_code'].split())
         adapter['post_type'] = " ".join(adapter['post_type'].split())
-
-        # optional item content:
-        # adapter['facade'] = " ".join(adapter['facade'].split())
-        # adapter['entrance'] = " ".join(adapter['entrance'].split())
-        # adapter['orientation'] = " ".join(adapter['orientation'].split())
         
         return item
 
@@ -180,6 +180,12 @@ class HandlingStringDataPipeline:
             adapter['facade'] = float(adapter['facade'][0:adapter['facade'].find(" ")])
         if adapter['entrance'] is not None:
             adapter['entrance'] = float(adapter['entrance'][0:adapter['entrance'].find(" ")])
+        if adapter['number_of_floors'] is not None:
+            adapter['number_of_floors'] = int(adapter['number_of_floors'][0:adapter['number_of_floors'].find(" ")])
+        if adapter['number_of_bedrooms'] is not None:
+            adapter['number_of_bedrooms'] = int(adapter['number_of_bedrooms'][0:adapter['number_of_bedrooms'].find(" ")])
+        if adapter['number_of_toilets'] is not None:
+            adapter['number_of_toilets'] = int(adapter['number_of_toilets'][0:adapter['number_of_toilets'].find(" ")])
 
         # extract data from item['location']:
         splitted_location = adapter['location'].split(", ")
@@ -220,7 +226,7 @@ class HandlingStringDataPipeline:
 
 class PostgreSQLPipeline:
     def __init__(self):
-        self.conn = psycopg2.connect(database="real_estate_data", user="****", password="****")
+        self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
         self.cur = self.conn.cursor()
 
     def open_spider(self, spider):
@@ -266,7 +272,12 @@ class PostgreSQLPipeline:
                     street, 
                     ward, 
                     post_type, 
-                    project_name
+                    project_name,
+                    balcony_orientation,
+                    furniture,
+                    number_of_bedrooms,
+                    number_of_floors,
+                    number_of_toilets
                 ) 
                 VALUES (
                     %s, 
@@ -290,6 +301,11 @@ class PostgreSQLPipeline:
                     %s, 
                     %s, 
                     %s, 
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
                     %s
                 )""", 
                 (
@@ -314,7 +330,12 @@ class PostgreSQLPipeline:
                     adapter['street'], 
                     adapter['ward'], 
                     adapter['post_type'], 
-                    adapter['project_name']
+                    adapter['project_name'],
+                    adapter['balcony_orientation'],
+                    adapter['furniture'],
+                    adapter['number_of_bedrooms'],
+                    adapter['number_of_floors'],
+                    adapter['number_of_toilets']
                 )
             )
             self.conn.commit()
@@ -322,6 +343,36 @@ class PostgreSQLPipeline:
             self.conn.rollback()
         return item
 
+class UpdateDatabasePipeline:
+    # def __init__(self):
+    #     self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+    #     self.cur = self.conn.cursor()
+
+    # def close_spider(self, spider):
+    #     # close cursor
+    #     self.cur.close()
+    #     # close connection
+    #     self.conn.close()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+
+        if adapter.get('latitude'):
+            res = adapter['latitude']
+            latitude = res[res.find("q="):res.find(",")]
+            longitude = res[res.find(",")+1:res.find("&")]
+
+            latitude = float(''.join(x for x in latitude if x.isdigit() or x == '.'))
+            longitude = float(longitude)
+
+            # format value:
+            adapter['latitude'] = "{:5.10f}".format(latitude)
+            adapter['longitude'] = "{:5.10f}".format(longitude)
+
+        return item
+
+    
+    
 
 
 
