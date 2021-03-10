@@ -5,3 +5,8 @@ test_connect_db/
 test_open_json_files/
 virenv_linux/
 virenv_win/
+
+
+bds_realestatedata_202103071456.csv
+chromedriver.exe
+propzy/
