@@ -28,7 +28,14 @@ class LandCrawlerItem(scrapy.Item):
     facade = scrapy.Field()
     entrance = scrapy.Field()
     orientation = scrapy.Field()
+    balcony_orientation = scrapy.Field()
+    number_of_floors = scrapy.Field()
+    number_of_bedrooms = scrapy.Field()
+    number_of_toilets = scrapy.Field()
+    furniture = scrapy.Field()
     policy = scrapy.Field()
+    latitude = scrapy.Field()
+    longitude = scrapy.Field()
 
     # extract data from item['location']:
     project_name = scrapy.Field()

@@ -4,16 +4,24 @@ import logging
 # from scrapy.utils.log import configure_logging
 from datetime import datetime
 
+# Selenium:
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import psycopg2
+
 class LandSpider(scrapy.Spider):
     name = "land_spider"
     allowed_domains = ['batdongsan.com.vn']
 
-    start_urls = [
+    # start_urls = [
         # 'https://batdongsan.com.vn/ban-dat-dat-nen/-1/n-100000/-1/-1',
-        'https://batdongsan.com.vn/ban-dat-dat-nen-tp-hcm/-1/n-100000/-1/-1',
+        # 'http://quotes.toscrape.com',
+        # 'https://batdongsan.com.vn/ban-dat-dat-nen-tp-hcm/-1/n-100000/-1/-1'
         # 'https://batdongsan.com.vn/ban-dat-tp-hcm/-1/n-30000/-1/-1',
         # 'https://batdongsan.com.vn/ban-dat-nen-du-an-tp-hcm/-1/n-30000/-1/-1',
-    ]
+    # ]
 
     # log format:
     # configure_logging(install_root_handler=False)
@@ -23,29 +31,45 @@ class LandSpider(scrapy.Spider):
         level=logging.ERROR
     )
 
+    def start_requests(self):
+        # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
+        # yield scrapy.Request(url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p151', callback=self.parse, meta={'selenium': True}, dont_filter=True)
+        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        cur = conn.cursor()
+        cur.execute("SELECT url FROM bds_realestatedata WHERE expired_date > now();")
+        url_lst = cur.fetchall()
+
+        for url in url_lst[0:5]:
+            yield scrapy.Request(url=url[0], callback=self.parse, meta={'selenium': True}, dont_filter=True)
+
     def parse(self, response):
-        for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
-            item_url = "https://batdongsan.com.vn" + item.xpath('./a').attrib["href"]
-            yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(url=item_url))
+        item = LandCrawlerItem()
+        item['url'] = response.url
+        item['latitude'] = response.xpath('//*[@id="product-detail-web"]/div[5]/div[3]/div/iframe/@src').get()
+        yield item
+        # for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
+        #     item_url = "https://batdongsan.com.vn" + item.xpath('./a').attrib["href"]
+        #     yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
 
-        # next page
-        next_page = response.xpath('//div[@class="pagination"]/a[@class="actived"]/following-sibling::*')
+        
+        # # next page
+        # next_page = response.xpath('//div[@class="pagination"]/a[@class="actived"]/following-sibling::*')
 
-        if next_page.get() is not None:
-            nextpage_url = response.urljoin(next_page.attrib["href"])
-            yield scrapy.Request(nextpage_url, callback=self.parse)
-
+        # if next_page.get() is not None:
+        #     nextpage_url = response.urljoin(next_page.attrib["href"])
+        #     yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
+        
         # close logging
         # handlers = logging.handlers[:]
         # for handler in handlers:
         #     handler.close()
         #     logging.removeHandler(handler)
 
-    def parse_item(self, response, url):
+    def parse_item(self, response, item_url):
         item = LandCrawlerItem()
 
         for land_item in response.xpath('//div[@class="form-content"]/div[contains(@class, "main-container clearfix")]'):
-            item['url'] = url
+            item['url'] = item_url
             item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/h1[@class="tile-product"]/text()').get()
             
             item['price'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[1]/span[@class="sp2"]/text()').get()
@@ -72,9 +96,19 @@ class LandSpider(scrapy.Spider):
                     item['policy'] = post_content
                 elif post_name == 'Hướng nhà:':
                     item['orientation'] = post_content
+                elif post_name == 'Hướng ban công:':
+                    item['balcony_orientation'] = post_content
+                elif post_name == 'Số tầng:':
+                    item['number_of_floors'] = post_content
+                elif post_name == 'Số phòng ngủ:':
+                    item['number_of_bedrooms'] = post_content
+                elif post_name == 'Số toilet:':
+                    item['number_of_toilets'] = post_content
+                elif post_name == 'Nội thất:':
+                    item['furniture'] = post_content
 
             item['posted_author'] = land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="name"]/text()').get()
-            item['phone'] = land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="phone text-center"]/span/text()').get()
+            item['phone'] = land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="phone text-center"]/span').attrib["raw"]
 
             # Check if existed email:
             email_item =  land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="mail btn-border-grey text-center"]/a[@id="email"]')
@@ -88,7 +122,7 @@ class LandSpider(scrapy.Spider):
 
             # crawl image:
             image_urls = []
-            for url in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@class="slide-product"]/div[@class="swiper-container gallery-top"]/ul/li'):
+            for url in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@class="slide-product"]/div[contains(@class, "swiper-container gallery-top")]/ul/li'):
                 image_url = url.xpath('./div[@class="ioverlay"]/img/@src-lazy').get()
                 image_urls.append(image_url)
 

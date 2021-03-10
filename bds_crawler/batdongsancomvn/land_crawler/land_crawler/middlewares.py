@@ -8,6 +8,13 @@ from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
+from scrapy.utils.response import response_status_message
+
+# Selenium:
+from selenium import webdriver
+from scrapy.http.response.html import HtmlResponse
+from selenium.webdriver.support.wait import WebDriverWait
 
 class LandCrawlerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -101,3 +108,39 @@ class LandCrawlerDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class SeleniumDownloaderMiddleware:
+
+    # Scrapy middleware for handling the requests using Selenium:
+    def __init__(self):
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        options.add_argument('window-size=1200x600')
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+        self.driver = webdriver.Chrome('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\chromedriver.exe', options=options)
+        self.driver.minimize_window()
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        """Initialize the middleware with the crawler settings"""
+        middleware = cls()
+        crawler.signals.connect(middleware.spider_closed, signals.spider_closed)
+        return middleware
+        
+    
+    def process_request(self, request, spider):
+        if not request.meta.get('selenium', False):
+            return request
+
+        self.driver.get(request.url)
+        self.driver.implicitly_wait(3)
+
+        body = str.encode(self.driver.page_source)
+        return HtmlResponse(self.driver.current_url, body=body, encoding='utf-8')
+
+    def spider_closed(self):
+        # Shutdown driver when spider closed:
+        self.driver.quit()
+        
+
