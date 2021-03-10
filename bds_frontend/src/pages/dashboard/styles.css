@@ -1,0 +1,11 @@
+.mail-list a {
+    text-decoration: none !important;
+    display: block;
+    color: #343a40;
+    line-height: 24px;
+    padding: 6px 5px;
+}
+
+button, a {
+    outline: none !important;
+}

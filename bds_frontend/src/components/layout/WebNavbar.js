@@ -28,7 +28,7 @@ import { NavLink as rNavLink } from 'react-router-dom';
 import Login from './../../pages/login/Login';
 
 // Import CSS:
-import './style.css';
+import './styles.css';
 
 class WebNavbar extends Component {
   constructor(props) {
@@ -56,7 +56,7 @@ class WebNavbar extends Component {
     axios
       .get("/bds/current_user/")
       .then(function(response) {
-        console.log(response);
+        // console.log(response);
         self.setState({ current_user: response.data.username })
       })
       .catch(function(errors) {
@@ -111,56 +111,52 @@ class WebNavbar extends Component {
     }
 
     return(
-      <div>
-        <Navbar color="light" light expand="md" fixed="top">
-          <NavbarBrand href="/">{this.props.name}</NavbarBrand>
-          <NavbarToggler onClick={this.toggleOpen} />
-          <Collapse isOpen={this.state.isOpen} navbar>
-            <Nav className="mr-auto" navbar>
-              <NavItem>
-                <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active">Dashboard</NavLink>
-              </NavItem>
-              
-              <NavItem>
-                <NavLink tag={rNavLink} exact to="/data" activeClassName="active">Data</NavLink>
-              </NavItem>
-              
-              {/* <NavItem>
-                <NavLink tag={rNavLink} exact to="/register" activeClassName="active" onClick={() => this.handleClick("register")}>Register</NavLink>
-              </NavItem>
+      <Navbar light expand="md" id="customNavbar" fixed="top">
+        <NavbarBrand href="/">{this.props.name}</NavbarBrand>
+        <NavbarToggler onClick={this.toggleOpen} />
+        <Collapse isOpen={this.state.isOpen} navbar>
+          <Nav className="mr-auto" navbar>
+            <NavItem>
+              <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active">Dashboard</NavLink>
+            </NavItem>
+            
+            <NavItem>
+              <NavLink tag={rNavLink} exact to="/data" activeClassName="active">Data</NavLink>
+            </NavItem>
+            
+            {/* <NavItem>
+              <NavLink tag={rNavLink} exact to="/register" activeClassName="active" onClick={() => this.handleClick("register")}>Register</NavLink>
+            </NavItem>
 
-              <NavItem>
-                <NavLink tag={rNavLink} exact to="/login" activeClassName="active" onClick={() => this.handleClick("login")}>Login</NavLink>
-              </NavItem> */}
+            <NavItem>
+              <NavLink tag={rNavLink} exact to="/login" activeClassName="active" onClick={() => this.handleClick("login")}>Login</NavLink>
+            </NavItem> */}
 
-              {/* <NavItem>
-                <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink>
-                <NavLink onClick={() => this.handleClick("logout")}>Logout</NavLink>
-              </NavItem> */}
-            </Nav>
+            {/* <NavItem>
+              <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink>
+              <NavLink onClick={() => this.handleClick("logout")}>Logout</NavLink>
+            </NavItem> */}
+          </Nav>
 
-            {/* <ButtonGroup>
-              <Button color="light" onClick={() => this.handleClick("register")}>Register</Button>
-              <Button color="light" onClick={() => this.handleClick("login")}>Login</Button>
-            </ButtonGroup> */}
-            <NavLink href="#" className="user-text text-dark">
-            <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
-              <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen}>
-                {this.state.current_user}
-              </DropdownToggle>
-              <DropdownMenu>
-                <DropdownItem>
-                  <Link exact to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-            </NavLink>
-          </Collapse>
-        </Navbar>
-
-        {/* <p>Result: {this.state.message}</p> */}
-    </div>
-    );
+          {/* <ButtonGroup>
+            <Button color="light" onClick={() => this.handleClick("register")}>Register</Button>
+            <Button color="light" onClick={() => this.handleClick("login")}>Login</Button>
+          </ButtonGroup> */}
+          <NavLink href="#" className="user-text text-dark">
+          <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
+            <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen}>
+              {this.state.current_user}
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem>
+                <Link exact to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+          </NavLink>
+        </Collapse>
+      </Navbar>
+    )
   }
 }
 

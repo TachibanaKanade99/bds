@@ -1,7 +1,7 @@
 import { Component, Fragment } from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
-// import Cookies from 'js-cookie';
+import Cookies from 'js-cookie';
 
 // Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
@@ -42,11 +42,11 @@ class Login extends Component {
         username: this.state.username,
         password: this.state.password
       }, 
-      // {
-      //   headers: {
-      //     'X-CSRFToken': Cookies.get('csrftoken')
-      //   }
-      // }
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
       )
       .then(function(response) {
         console.log(response);
