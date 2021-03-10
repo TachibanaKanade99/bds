@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/node_modules_linux
+/node_modules_win
 /.pnp
 .pnp.js
 
