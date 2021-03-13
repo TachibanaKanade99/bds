@@ -222,6 +222,23 @@ class HandlingStringDataPipeline:
         if not adapter['province']:
             adapter['province'] = None
 
+        # handling latitude & longitude:
+        if adapter.get('latitude'):
+            res = adapter['latitude']
+            latitude = res[res.find("q="):res.find(",")]
+            longitude = res[res.find(",")+1:res.find("&")]
+
+            latitude = float(''.join(x for x in latitude if x.isdigit() or x == '.'))
+            longitude = float(longitude)
+
+            # format value:
+            adapter['latitude'] = "{:5.10f}".format(latitude)
+            adapter['longitude'] = "{:5.10f}".format(longitude)
+
+        else:
+            adapter['latitude'] = None
+            adapter['longitude'] = None
+
         return item
 
 class PostgreSQLPipeline:
@@ -277,7 +294,9 @@ class PostgreSQLPipeline:
                     furniture,
                     number_of_bedrooms,
                     number_of_floors,
-                    number_of_toilets
+                    number_of_toilets,
+                    latitude,
+                    longitude
                 ) 
                 VALUES (
                     %s, 
@@ -301,6 +320,8 @@ class PostgreSQLPipeline:
                     %s, 
                     %s, 
                     %s, 
+                    %s,
+                    %s,
                     %s,
                     %s,
                     %s,
@@ -335,7 +356,9 @@ class PostgreSQLPipeline:
                     adapter['furniture'],
                     adapter['number_of_bedrooms'],
                     adapter['number_of_floors'],
-                    adapter['number_of_toilets']
+                    adapter['number_of_toilets'],
+                    adapter['latitude'],
+                    adapter['longitude']
                 )
             )
             self.conn.commit()
@@ -344,15 +367,15 @@ class PostgreSQLPipeline:
         return item
 
 class UpdateDatabasePipeline:
-    # def __init__(self):
-    #     self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
-    #     self.cur = self.conn.cursor()
+    def __init__(self):
+        self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        self.cur = self.conn.cursor()
 
-    # def close_spider(self, spider):
-    #     # close cursor
-    #     self.cur.close()
-    #     # close connection
-    #     self.conn.close()
+    def close_spider(self, spider):
+        # close cursor
+        self.cur.close()
+        # close connection
+        self.conn.close()
 
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
@@ -369,6 +392,20 @@ class UpdateDatabasePipeline:
             adapter['latitude'] = "{:5.10f}".format(latitude)
             adapter['longitude'] = "{:5.10f}".format(longitude)
 
+        else:
+            adapter['latitude'] = None
+            adapter['longitude'] = None
+
+        try:
+            self.cur.execute("""
+                UPDATE bds_realestatedata
+                SET latitude = %s,
+                    longitude = %s
+                WHERE url = %s;
+            """, (adapter['latitude'], adapter['longitude'], adapter['url']))
+            self.conn.commit()
+        except:
+            self.conn.rollback()
         return item
 
     

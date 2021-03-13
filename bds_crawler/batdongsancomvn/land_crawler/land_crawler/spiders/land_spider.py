@@ -33,31 +33,20 @@ class LandSpider(scrapy.Spider):
 
     def start_requests(self):
         # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
-        # yield scrapy.Request(url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p151', callback=self.parse, meta={'selenium': True}, dont_filter=True)
-        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
-        cur = conn.cursor()
-        cur.execute("SELECT url FROM bds_realestatedata WHERE expired_date > now();")
-        url_lst = cur.fetchall()
-
-        for url in url_lst[0:5]:
-            yield scrapy.Request(url=url[0], callback=self.parse, meta={'selenium': True}, dont_filter=True)
+        yield scrapy.Request(url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p520', callback=self.parse, meta={'selenium': True}, dont_filter=True)
 
     def parse(self, response):
-        item = LandCrawlerItem()
-        item['url'] = response.url
-        item['latitude'] = response.xpath('//*[@id="product-detail-web"]/div[5]/div[3]/div/iframe/@src').get()
-        yield item
-        # for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
-        #     item_url = "https://batdongsan.com.vn" + item.xpath('./a').attrib["href"]
-        #     yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
+        for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
+            item_url = "https://batdongsan.com.vn" + item.xpath('./a').attrib["href"]
+            yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
 
         
-        # # next page
-        # next_page = response.xpath('//div[@class="pagination"]/a[@class="actived"]/following-sibling::*')
+        # next page
+        next_page = response.xpath('//div[@class="pagination"]/a[@class="actived"]/following-sibling::*')
 
-        # if next_page.get() is not None:
-        #     nextpage_url = response.urljoin(next_page.attrib["href"])
-        #     yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
+        if next_page.get() is not None:
+            nextpage_url = response.urljoin(next_page.attrib["href"])
+            yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
         # handlers = logging.handlers[:]
@@ -119,6 +108,9 @@ class LandSpider(scrapy.Spider):
             item['posted_date'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[1]/span[@class="sp3"]/text()').get()
             item['expired_date'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[2]/span[@class="sp3"]/text()').get()
             item['item_code'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[4]/span[@class="sp3"]/text()').get()
+
+            # Latitude & longitude:
+            item['latitude'] = response.xpath('//*[@id="product-detail-web"]/div[5]/div[3]/div/iframe/@src').get()
 
             # crawl image:
             image_urls = []

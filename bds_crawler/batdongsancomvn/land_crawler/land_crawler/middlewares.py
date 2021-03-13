@@ -134,7 +134,7 @@ class SeleniumDownloaderMiddleware:
             return request
 
         self.driver.get(request.url)
-        self.driver.implicitly_wait(3)
+        self.driver.implicitly_wait(4)
 
         body = str.encode(self.driver.page_source)
         return HtmlResponse(self.driver.current_url, body=body, encoding='utf-8')
