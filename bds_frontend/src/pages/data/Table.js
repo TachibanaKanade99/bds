@@ -1,7 +1,6 @@
 import React from 'react';
 import { CircularProgress, Typography } from "@material-ui/core";
 import MUIDataTable from "mui-datatables";
-// import { Row, Col, Modal, ModalHeader, ModalBody,  } from "reactstrap";
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
