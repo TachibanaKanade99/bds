@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max
 
 from rest_framework import generics, pagination, status, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
@@ -12,7 +13,8 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.renderers import JSONRenderer
 
 
 from .serializers import UserSerializer, RealEstateDataSerializer, BdsSerializer, GetImageSerializer
@@ -83,6 +85,49 @@ class LogoutView(APIView):
         logout(request)
         return Response("Logout Successfully!", status=status.HTTP_200_OK)
 
+# class FilterView(APIView):
+#     # permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         website = request.data['website']
+#         price = request.data['price']
+#         rows_per_page = request.data['rowsPerPage']
+
+#         if website is not None and price is not None:
+#             results = RealEstateData.objects.filter(url__contains=website, price__lte=price).order_by('id')
+
+#             # pagination
+#             paginator = CustomPageNumber()
+#             paginator.page_size = rows_per_page
+#             results_page = paginator.paginate_queryset(results, request)
+#             results_serializer = RealEstateDataSerializer(results_page, many=True)
+
+#             return paginator.get_paginated_response(results_serializer.data)
+
+class FilterView(generics.ListAPIView):
+    # permission_classes = [IsAuthenticated]
+    serializer_class = RealEstateDataSerializer
+
+    def get_queryset(self):
+        # get query parameter:
+        website = self.request.query_params.get('website', None)
+        price = self.request.query_params.get('price', None)
+        post_type = self.request.query_params.get('post_type', None)
+
+        min_price = price[0:price.find("-")]
+        max_price = price[price.find("-")+1:]
+
+        if max_price == "max":
+            max_price = RealEstateData.objects.aggregate(Max('price'))['price__max']
+        
+        min_price = float(min_price)
+        max_price = float(max_price)
+
+        # Overwrite queryset with filter options:
+        queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type).order_by('id')
+        
+        return queryset
+
 class RealEstateDataView(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
     serializer_class = RealEstateDataSerializer
@@ -121,7 +166,6 @@ class BdsView(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
     serializer_class = BdsSerializer
     queryset = Bds.objects.all().order_by('id')
-    # queryset = Bds.objects.all()
     pagination_class = CustomPageNumber
 
 # class GetImageView(viewsets.ModelViewSet):
