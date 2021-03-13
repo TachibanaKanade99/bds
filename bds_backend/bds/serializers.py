@@ -58,7 +58,6 @@ class RealEstateDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = RealEstateData
         fields = (
-            'id',
             'url',
             'content',
             'price',
@@ -79,6 +78,8 @@ class RealEstateDataSerializer(serializers.ModelSerializer):
             'number_of_floors',
             'number_of_bedrooms',
             'number_of_toilets',
+            'latitude',
+            'longitude',
             'furniture',
             'policy',
             'project_name',
