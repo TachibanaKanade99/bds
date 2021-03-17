@@ -149,6 +149,39 @@ class RealEstateDataView(generics.ListAPIView):
 
 class CountView(APIView):
     # permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        start_date = request.data['start_date']
+        end_date = request.data['end_date']
+
+        if start_date is None and end_date is None:
+            return Response("Null values!", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # format date:
+        start_date = datetime.strptime(start_date, "%m/%d/%Y")
+        end_date = datetime.strptime(end_date, "%m/%d/%Y")
+
+        all = RealEstateData.objects.filter(posted_date__range=[start_date, end_date]).count()
+        lands = RealEstateData.objects.filter(post_type__contains='đất', posted_date__range=[start_date, end_date]).count()
+        houses = RealEstateData.objects.filter(post_type__contains='nhà', posted_date__range=[start_date, end_date]).count()
+        departments = RealEstateData.objects.filter(post_type__contains='căn hộ', posted_date__range=[start_date, end_date]).count()
+        others = RealEstateData.objects.filter(post_type__contains='khác', posted_date__range=[start_date, end_date]).count()
+        belong_to_projects = RealEstateData.objects.filter(project_name__isnull=False, posted_date__range=[start_date, end_date]).count()
+        has_policy = RealEstateData.objects.filter(policy__isnull=False, posted_date__range=[start_date, end_date]).count()
+        new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today(), posted_date__range=[start_date, end_date]).count()
+        has_furniture = RealEstateData.objects.filter(furniture__isnull=False, posted_date__range=[start_date, end_date]).count()
+        counts = {
+            'all': all,
+            'lands': lands,
+            'houses': houses,
+            'departments': departments,
+            'others': others,
+            'belong_to_projects': belong_to_projects,
+            'has_policy': has_policy,
+            'new_updates': new_updates,
+            'has_furniture': has_furniture,
+        }
+        return Response(counts, status=status.HTTP_200_OK)
     
     def get(self, request):
         all = RealEstateData.objects.all().count()
