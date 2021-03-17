@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+# from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -56,9 +56,6 @@ class RegisterView(APIView):
 
         if serializer_class.is_valid():
             User.objects.create_user(
-                #first_name=serializer_class.data['first_name'],
-                #last_name=serializer_class.data['last_name'],
-                #email=serializer_class.data['email'],
                 username=serializer_class.data['username'],
                 password=serializer_class.data['password'],
             )
@@ -104,7 +101,7 @@ class LogoutView(APIView):
 
 #             return paginator.get_paginated_response(results_serializer.data)
 
-class FilterView(generics.ListAPIView):
+class RealEstateDataView(generics.ListAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = RealEstateDataSerializer
 
@@ -113,6 +110,12 @@ class FilterView(generics.ListAPIView):
         website = self.request.query_params.get('website', None)
         price = self.request.query_params.get('price', None)
         post_type = self.request.query_params.get('post_type', None)
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+
+        start_date = datetime.strptime(start_date, "%m/%d/%Y")
+        end_date = datetime.strptime(end_date, "%m/%d/%Y")
+        now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         min_price = price[0:price.find("-")]
         max_price = price[price.find("-")+1:]
@@ -124,16 +127,25 @@ class FilterView(generics.ListAPIView):
         max_price = float(max_price)
 
         # Overwrite queryset with filter options:
-        queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type).order_by('id')
+        if start_date == end_date and start_date == now:
+            if post_type == "Bán đất":
+                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type).order_by('id')
+            else:
+                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type).order_by('id')
+        else:
+            if post_type == "Bán đất":
+                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type, posted_date__range=[start_date, end_date]).order_by('id')
+            else:
+                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type, posted_date__range=[start_date, end_date]).order_by('id')
         
         return queryset
 
-class RealEstateDataView(viewsets.ModelViewSet):
-    # permission_classes = [IsAuthenticated]
-    serializer_class = RealEstateDataSerializer
-    # queryset = RealEstateData.objects.filter(expired_date__gt=datetime.today()).order_by('id')
-    queryset = RealEstateData.objects.all().order_by('id')
-    pagination_class = CustomPageNumber
+# class RealEstateDataView(viewsets.ModelViewSet):
+#     # permission_classes = [IsAuthenticated]
+#     serializer_class = RealEstateDataSerializer
+#     # queryset = RealEstateData.objects.filter(expired_date__gt=datetime.today()).order_by('id')
+#     queryset = RealEstateData.objects.all().order_by('id')
+#     pagination_class = CustomPageNumber
 
 class CountView(APIView):
     # permission_classes = [IsAuthenticated]
