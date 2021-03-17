@@ -99,7 +99,7 @@ class WebNavbar extends Component {
 
   render() {
     if (this.state.isLogout) {
-      return <Redirect exact to="/login" component={<Login message="Logout successfully!" />} />
+      return <Redirect exact="true" to="/login" component={<Login message="Logout successfully!" />} />
     }
     
     if (this.props.name === "Login" || this.props.name === "Register") {
@@ -149,7 +149,7 @@ class WebNavbar extends Component {
             </DropdownToggle>
             <DropdownMenu>
               <DropdownItem>
-                <Link exact to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
+                <Link exact="true" to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>

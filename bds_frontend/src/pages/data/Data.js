@@ -18,6 +18,14 @@ import { FormGroup, Label, Button, } from 'reactstrap';
 // react-select:
 import Select from "react-select";
 
+// datepicker:
+import DayPickerInput from 'react-day-picker/DayPickerInput';
+import 'react-day-picker/lib/style.css';
+
+import 'moment/locale/vi';
+
+import MomentLocaleUtils, { formatDate, parseDate, } from 'react-day-picker/moment';
+
 // Import CSS:
 import './styles.css';
 
@@ -28,7 +36,7 @@ class Data extends Component {
       isLogged: null,
 
       // Table state:
-      count: 1,
+      count: null,
       rowsPerPage: 10,
       sortOrder: {},
       columns: [
@@ -242,12 +250,13 @@ class Data extends Component {
 
       // select state:
       isMenuOpen: false,
-      price: "0-max",
       website: "",
+      price: "0-max",
       post_type: "",
+      page_size: 10,
+      startDate: new Date().toLocaleDateString(),
+      endDate: new Date().toLocaleDateString(),
     }
-
-    this.isAuthorized = this.isAuthorized.bind(this);
 
     this.getData = this.getData.bind(this);
     this.formatDataForImage = this.formatDataForImage.bind(this);
@@ -259,27 +268,15 @@ class Data extends Component {
     this.handleChangeRowsPerPage = this.handleChangeRowsPerPage.bind(this);
     this.handleChangePrice = this.handleChangePrice.bind(this);
     this.handleChangePostType = this.handleChangePostType.bind(this);
+    this.handleStartDate = this.handleStartDate.bind(this);
+    this.handleEndDate = this.handleEndDate.bind(this);
 
     // Submit:
     this.submitData = this.submitData.bind(this);
   }
 
   componentDidMount() {
-    this.isAuthorized();
-  }
-
-  isAuthorized = () => {
-    let self = this
-    axios
-      .get("/bds/api/realestatedata/")
-      .then(function(res) {
-        // console.log(res);
-        self.getData();
-      })
-      .catch(function(errors) {
-          console.log(errors)
-          self.setState({ isLogged: false })
-      })
+    this.getData();
   }
 
   getMuiTheme = () => createMuiTheme({
@@ -287,7 +284,7 @@ class Data extends Component {
     }
   })
 
-  formatDataForImage = (res, url) => {
+  formatDataForImage = (res) => {
     let self = this
     // console.log(res.data.results[0].image_urls[0])
     let results = res.data.results
@@ -306,7 +303,7 @@ class Data extends Component {
         data: results,
         isLoading: false,
         count: res.data.count,
-        url: url
+        rowsPerPage: results.length
       }
     )
   }
@@ -316,7 +313,16 @@ class Data extends Component {
     self.setState({ isLoading: true });
     axios
       .get("/bds/api/realestatedata/", 
-        {}, 
+        {
+          params: {
+            website: self.state.website,
+            price: self.state.price,
+            post_type: self.state.post_type,
+            page_size: self.state.page_size,
+            start_date: self.state.startDate,
+            end_date: self.state.endDate
+          }
+        }, 
         {
           headers: {
           'X-CSRFToken': Cookies.get('csrftoken')
@@ -324,11 +330,12 @@ class Data extends Component {
         }
       )
       .then(function(res){
-        self.formatDataForImage(res, "/bds/api/realestatedata/");
+        console.log(res);
+        self.formatDataForImage(res);
       })
-      .catch(function(errors) {
-        // console.log(errors)
-        self.setState({ message: "You need to login to view content!" })
+      .catch(function(err) {
+        // console.log(err);
+        self.setState({ message: "Failed!" })
       });
   };
 
@@ -337,54 +344,33 @@ class Data extends Component {
     this.setState({ isLoading: true, });
     let self = this;
     
-    if (self.state.url === "/bds/filter/") {
-      axios
-        .get(self.state.url, {
-          params: {
-              page: page+1,
-              website: self.state.website,
-              price: self.state.price,
-              post_type: self.post_type,
-              rowsPerPage: self.state.rowsPerPage
-              // offset: this.state.offset,
-          },
+    axios
+      .get("/bds/api/realestatedata/", {
+        params: {
+            page: page+1,
+            website: self.state.website,
+            price: self.state.price,
+            post_type: self.state.post_type,
+            page_size: self.state.page_size,
+            start_date: self.state.startDate,
+            end_date: self.state.endDate
+            // offset: this.state.offset,
         },
-        {
-          headers: {
-          'X-CSRFToken': Cookies.get('csrftoken')
-          }
+      },
+      {
+        headers: {
+        'X-CSRFToken': Cookies.get('csrftoken')
         }
-      )
-      .then(function(res){
-          self.formatDataForImage(res, self.state.url);
-      })
-      .catch(function(errors) {
-          console.log(errors)
-          self.setState({ message: "Unable to change page! "})
-      });
-    }
-    else {
-      axios
-        .get(self.state.url, {
-          params: {
-              page: page+1,
-              // offset: this.state.offset,
-          }
-        },
-        {
-          headers: {
-          'X-CSRFToken': Cookies.get('csrftoken')
-          }
-        }
-      )
-      .then(function(res){
-          self.formatDataForImage(res, self.state.url);
-      })
-      .catch(function(errors) {
-          console.log(errors)
-          self.setState({ message: "Unable to change page! "})
-      });
       }
+    )
+    .then(function(res){
+        console.log(res)
+        self.formatDataForImage(res);
+    })
+    .catch(function(err) {
+        // console.log(err)
+        self.setState({ message: "Unable to change page! "})
+    });
   }
 
   changeRowsPerPage = (page, rows) => {
@@ -421,58 +407,34 @@ class Data extends Component {
     this.setState({ isMenuOpen: !this.state.isMenuOpen })
   }
 
-  handleWebsiteChange = selectedOption => {
+  handleWebsiteChange = (selectedOption) => {
     this.setState({ website: selectedOption.value })
   }
 
-  handleChangeRowsPerPage = selectedOption => {
-    this.setState({ rowsPerPage: selectedOption.value })
+  handleChangeRowsPerPage = (selectedOption) => {
+    this.setState({ page_size: selectedOption.value })
   }
 
-  handleChangePrice = selectedOption => {
+  handleChangePrice = (selectedOption) => {
     this.setState({ price: selectedOption.value })
   }
 
-  handleChangePostType = selectedOption => {
+  handleChangePostType = (selectedOption) => {
     this.setState({ post_type: selectedOption.value })
+  }
+
+  handleStartDate = (date) => {
+    this.setState({ startDate: date.toLocaleDateString()})
+    console.log(this.state.startDate);
+  }
+
+  handleEndDate = (date) => {
+    this.setState({ endDate: date.toLocaleDateString()})
   }
 
   submitData = (e) => {
     // e.preventDefault();
-    let self = this
-    axios
-      .get('/bds/filter/', {
-        params: {
-          website: self.state.website,
-          price: self.state.price,
-          post_type: self.state.post_type,
-          page_size: self.state.rowsPerPage
-        }
-      }, 
-      {
-        headers: {
-          'X-CSRFToken': Cookies.get('csrftoken')
-        }
-      }
-      )
-      .then(function(res) {
-        console.log(res);
-        self.setState(
-          {
-            message: 'Successful!',
-            url: "/bds/filter/"
-          }
-        )
-        self.formatDataForImage(res, self.state.url)
-      })
-      .catch(function(err) {
-        // console.log(err);
-        self.setState(
-          {
-            message: 'Failed to load filtered data'
-          }
-        )
-      })
+    this.getData();
   }
 
   render() {
@@ -490,7 +452,7 @@ class Data extends Component {
       responsive: 'vertical',
       jumpToPage: false,
       serverSide: true,
-      rowsPerPageOptions:{},
+      // rowsPerPageOptions:{},
       rowsPerPage: this.state.rowsPerPage,
       // rowsPerPageOptions: [10, 50, 100, 200, 500, 1000],
       download: false,
@@ -607,7 +569,7 @@ class Data extends Component {
                 </div>
 
                 <div className="col-3 col-md-3">
-                  <Button color="primary" className="ml-3 mt-5" onClick={this.submitData}>Submit</Button>
+                  <Button color="primary" className="ml-3 mt-5" onClick={this.submitData}>Search</Button>
                 </div>
               </div>
               
@@ -623,6 +585,43 @@ class Data extends Component {
                       />
                   </FormGroup>
                 </div>
+
+                <div className="col-2 col-md-2">
+                  <FormGroup>
+                    <Label className="control-label">From</Label>
+                    <br/>
+                    <DayPickerInput
+                      formatDate={formatDate}
+                      parseDate={parseDate}
+                      format="L"
+                      placeholder={`${formatDate(this.state.startDate, 'L', 'en')}`}
+                      dayPickerProps={{
+                        locale: 'en',
+                        localeUtils: MomentLocaleUtils,
+                      }} 
+                      onDayChange={day => this.handleStartDate(day)} 
+                    />
+                  </FormGroup>
+                </div>
+
+                <div className="col-2 col-md-2">
+                  <FormGroup>
+                    <Label className="control-label">To</Label>
+                    <br/>
+                    <DayPickerInput
+                      formatDate={formatDate}
+                      parseDate={parseDate}
+                      format="L"
+                      placeholder={`${formatDate(this.state.endDate, 'L', 'en')}`}
+                      dayPickerProps={{
+                        locale: 'en',
+                        localeUtils: MomentLocaleUtils,
+                      }} 
+                      onDayChange={day => this.handleEndDate(day)} 
+                    />
+                  </FormGroup>
+                </div>
+
               </div>
 
               {/* Table */}

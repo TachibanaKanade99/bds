@@ -50,7 +50,7 @@ class Dashboard extends Component {
   handleCount = () => {
     let self = this
     axios
-      .get("/bds/count/")
+      .get("/bds/api/realestatedata/count/")
       .then(function(res) {
         console.log(res);
         self.setState({
