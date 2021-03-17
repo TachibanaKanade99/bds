@@ -191,24 +191,41 @@ class HandlingStringDataPipeline:
         splitted_location = adapter['location'].split(", ")
         district_lst = ["Bình Tân", "Bình Thạnh", "Gò Vấp", "Phú Nhuận", "Tân Bình", "Tân Phú", "Thủ Đức", "Bình Chánh", "Cần Giờ", "Củ Chi", "Hóc Môn", "Nhà Bè"]
 
+        location_dict = {
+            'dự': 'project_name',
+            'đường': 'street',
+            'phường': 'ward',
+            'phố': 'ward',
+            'xã': 'ward',
+            'quận': 'district',
+            'huyện': 'district',
+        }
+        location_keys_lst = list(location_dict.keys())
+
         for content in splitted_location:
             tmp = content.split(" ", 1)
 
-            if tmp[0] == "Dự":
-                adapter['project_name'] = tmp[1].split(" ", 1)[1]
-            if tmp[0] == "Đường":
-                adapter['street'] = tmp[1]
-            if tmp[0] in ("Phường", "Xã"):
-                adapter['ward'] = tmp[1]
-            if tmp[0] in ("Quận", "Huyện"):
-                adapter['district'] = tmp[1]
-        else:
-            # if content in district_lst:
-            #     adapter['district'] = content
-            # else:
-            #     adapter['province'] = content
-            adapter['district'] = splitted_location[-2]
-            adapter['province'] = splitted_location[-1]
+            if tmp[0].isdigit():
+                tmp.remove(tmp[0])
+            else:
+                tmp[0] = tmp[0].lower()
+
+            if tmp[0] in location_keys_lst:
+                if tmp[0] == "dự":
+                    adapter['project_name'] = tmp[1].split(" ", 1)[1]
+                else:
+                    adapter[location_dict[tmp[0]]] = tmp[1]
+
+            # if tmp[0] == "Dự":
+            #     adapter['project_name'] = tmp[1].split(" ", 1)[1]
+            # if tmp[0] == "Đường":
+            #     adapter['street'] = tmp[1]
+            # if tmp[0] in ("Phường", "Xã"):
+            #     adapter['ward'] = tmp[1]
+            # if tmp[0] in ("Quận", "Huyện"):
+            #     adapter['district'] = tmp[1]
+            
+        adapter['province'] = splitted_location[-1]
 
         # set null for non-existed value:
         if not adapter.get('project_name'):
@@ -217,10 +234,12 @@ class HandlingStringDataPipeline:
             adapter['street'] = None
         if not adapter.get('ward'):
             adapter['ward'] = None
-        if not adapter['district']:
-            adapter['district'] = None
-        if not adapter['province']:
-            adapter['province'] = None
+        if not adapter.get('district'):
+            district = splitted_location[-2]
+            if district in district_lst:
+                adapter['district'] = district
+            else:
+                adapter['district'] = None
 
         # handling latitude & longitude:
         if adapter.get('latitude'):

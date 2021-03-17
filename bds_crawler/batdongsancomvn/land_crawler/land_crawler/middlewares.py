@@ -14,7 +14,9 @@ from scrapy.utils.response import response_status_message
 # Selenium:
 from selenium import webdriver
 from scrapy.http.response.html import HtmlResponse
-from selenium.webdriver.support.wait import WebDriverWait
+# from selenium.webdriver.support.wait import WebDriverWait
+# from selenium.webdriver.support import expected_conditions
+# from selenium.webdriver.common.by import By
 
 class LandCrawlerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -134,7 +136,9 @@ class SeleniumDownloaderMiddleware:
             return request
 
         self.driver.get(request.url)
-        self.driver.implicitly_wait(4)
+        # self.driver.implicitly_wait(2)
+        # map_locator = self.driver.find_element(By.XPATH, '//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src')
+        # WebDriverWait(self.driver, timeout=5).until(expected_conditions.visibility_of_element_located(map_locator))
 
         body = str.encode(self.driver.page_source)
         return HtmlResponse(self.driver.current_url, body=body, encoding='utf-8')

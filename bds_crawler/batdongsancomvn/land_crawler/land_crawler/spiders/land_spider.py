@@ -5,11 +5,11 @@ import logging
 from datetime import datetime
 
 # Selenium:
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import psycopg2
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# import psycopg2
 
 class LandSpider(scrapy.Spider):
     name = "land_spider"
@@ -33,7 +33,7 @@ class LandSpider(scrapy.Spider):
 
     def start_requests(self):
         # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
-        yield scrapy.Request(url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p520', callback=self.parse, meta={'selenium': True}, dont_filter=True)
+        yield scrapy.Request(url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p1115', callback=self.parse, meta={'selenium': True}, dont_filter=True)
 
     def parse(self, response):
         for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
@@ -110,7 +110,7 @@ class LandSpider(scrapy.Spider):
             item['item_code'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[4]/span[@class="sp3"]/text()').get()
 
             # Latitude & longitude:
-            item['latitude'] = response.xpath('//*[@id="product-detail-web"]/div[5]/div[3]/div/iframe/@src').get()
+            item['latitude'] = response.xpath('//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src').get()
 
             # crawl image:
             image_urls = []
