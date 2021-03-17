@@ -62,11 +62,11 @@ class WebChart extends Component {
   }
 
   render() {
-    console.log(this.props.data);
+    console.log(this.props.series);
     return (
       <Chart 
         options={this.state.options}
-        series={this.state.series}
+        series={this.props.series}
         type="bar"
         width="100%"
         height="450"

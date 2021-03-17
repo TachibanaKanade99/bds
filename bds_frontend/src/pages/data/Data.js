@@ -21,7 +21,7 @@ import Select from "react-select";
 // datepicker:
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
-
+// moment js:
 import 'moment/locale/vi';
 
 import MomentLocaleUtils, { formatDate, parseDate, } from 'react-day-picker/moment';
@@ -588,7 +588,7 @@ class Data extends Component {
 
                 <div className="col-2 col-md-2">
                   <FormGroup>
-                    <Label className="control-label">From</Label>
+                    <Label className="control-label">From Date</Label>
                     <br/>
                     <DayPickerInput
                       formatDate={formatDate}
@@ -606,7 +606,7 @@ class Data extends Component {
 
                 <div className="col-2 col-md-2">
                   <FormGroup>
-                    <Label className="control-label">To</Label>
+                    <Label className="control-label">To Date</Label>
                     <br/>
                     <DayPickerInput
                       formatDate={formatDate}

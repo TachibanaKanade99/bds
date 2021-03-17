@@ -1,11 +1,15 @@
 import { Component, Fragment } from 'react';
 
 // reactstrap
-import { Card, CardBody, } from 'reactstrap';
+import { Card, CardBody, FormGroup, Label, Button, } from 'reactstrap';
 
-// import components:
-import WebNavbar from './../../components/layout/WebNavbar';
-import WebChart from '../../components/charts/WebChart';
+// datepicker:
+import DayPickerInput from 'react-day-picker/DayPickerInput';
+import 'react-day-picker/lib/style.css';
+// moment js:
+import 'moment/locale/vi';
+
+import MomentLocaleUtils, { formatDate, parseDate, } from 'react-day-picker/moment';
 
 // font awesome
 import './../../../node_modules/@fortawesome/fontawesome-free/css/all.css';
@@ -14,9 +18,15 @@ import { Link } from "react-router-dom";
 
 // axios
 import axios from 'axios';
+// cookie
+import Cookies from 'js-cookie';
 
 // multiple select
 // import Select from 'react-select';
+
+// import components:
+import WebNavbar from './../../components/layout/WebNavbar';
+import WebChart from '../../components/charts/WebChart';
 
 // CSS:
 import './styles.css'
@@ -38,9 +48,14 @@ class Dashboard extends Component {
         has_furniture: 0,
       },
       chart: null,
+      startDate: new Date().toLocaleDateString(),
+      endDate: new Date().toLocaleDateString(),
     }
 
     this.handleCount = this.handleCount.bind(this);
+    this.handleStartDate = this.handleStartDate.bind(this);
+    this.handleEndDate = this.handleEndDate.bind(this);
+    this.submitFilter = this.submitFilter.bind(this);
   }
 
   componentDidMount() {
@@ -52,7 +67,7 @@ class Dashboard extends Component {
     axios
       .get("/bds/api/realestatedata/count/")
       .then(function(res) {
-        console.log(res);
+        // console.log(res);
         self.setState({
           count: {
             all: res.data.all,
@@ -63,9 +78,44 @@ class Dashboard extends Component {
             belong_to_projects: res.data.belong_to_projects,
             has_policy: res.data.has_policy,
             new_updates: res.data.new_updates,
-            has_furniture: res.data.has_furniture,
+            has_furniture: res.data.has_furniture
           },
-          chart: <WebChart className="mx-2" categories={['All', 'Lands', 'Houses', 'Departments', 'Others']} data={[res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} />
+          chart: <WebChart className="mx-2" categories={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />
+        })
+      })
+      .catch(function(err){
+        // console.log(err);
+      })
+  }
+
+  handleStartDate = (date) => {
+    this.setState({ startDate: date.toLocaleDateString()})
+    console.log(this.state.startDate);
+  }
+
+  handleEndDate = (date) => {
+    this.setState({ endDate: date.toLocaleDateString()})
+  }
+
+  submitFilter = (e) => {
+    // e.preventDefault();
+    let self = this
+    axios
+      .post("/bds/api/realestatedata/count/", 
+        {
+          start_date: self.state.startDate,
+          end_date: self.state.endDate
+        },
+        {
+          headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+          }
+        } 
+      )
+      .then(function(res) {
+        console.log(res);
+        self.setState({
+          chart: <WebChart className="mx-2" categories={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />
         })
       })
       .catch(function(err){
@@ -163,6 +213,51 @@ class Dashboard extends Component {
                       </CardBody>
                   </Card>
                 </div>
+              </div>
+
+              <br/>
+              <div className="row">
+                <div className="col-7 col-md-7"></div>
+                <div className="col-2 col-md-2 float-right">
+                  <FormGroup>
+                    <Label className="control-label">From Date</Label>
+                    <br/>
+                    <DayPickerInput
+                      formatDate={formatDate}
+                      parseDate={parseDate}
+                      format="L"
+                      placeholder={`${formatDate(this.state.startDate, 'L', 'en')}`}
+                      dayPickerProps={{
+                        locale: 'en',
+                        localeUtils: MomentLocaleUtils,
+                      }} 
+                      onDayChange={day => this.handleStartDate(day)} 
+                    />
+                  </FormGroup>
+                </div>
+
+                <div className="col-2 col-md-2 float-right">
+                  <FormGroup>
+                    <Label className="control-label">To Date</Label>
+                    <br/>
+                    <DayPickerInput
+                      formatDate={formatDate}
+                      parseDate={parseDate}
+                      format="L"
+                      placeholder={`${formatDate(this.state.endDate, 'L', 'en')}`}
+                      dayPickerProps={{
+                        locale: 'en',
+                        localeUtils: MomentLocaleUtils,
+                      }} 
+                      onDayChange={day => this.handleEndDate(day)} 
+                    />
+                  </FormGroup>
+                </div>
+
+                <div className="col-1 col-md-1">
+                  <Button color="primary" className="text-center mt-3" onClick={this.submitFilter}>Submit</Button>
+                </div>
+
               </div>
 
               <hr/>
