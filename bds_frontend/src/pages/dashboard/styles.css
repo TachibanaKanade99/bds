@@ -9,3 +9,7 @@
 button, a {
     outline: none !important;
 }
+
+.web-btn {
+	background: #3C5999 !important;
+}

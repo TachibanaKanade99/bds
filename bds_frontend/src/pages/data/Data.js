@@ -521,7 +521,7 @@ class Data extends Component {
 
     return (
       <Fragment>
-        <WebNavbar name="Crawling Website" />
+        <WebNavbar name="Crawling WebApp" />
         
         <div className="container-fluid mt-5">
           <div className="row mt-5">
@@ -569,7 +569,7 @@ class Data extends Component {
                 </div>
 
                 <div className="col-3 col-md-3">
-                  <Button color="primary" className="ml-3 mt-5" onClick={this.submitData}>Search</Button>
+                  <Button className="ml-3 mt-5 web-btn" onClick={this.submitData}>Search</Button>
                 </div>
               </div>
               

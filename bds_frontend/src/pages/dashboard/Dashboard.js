@@ -126,7 +126,7 @@ class Dashboard extends Component {
   render() {
     return(
       <Fragment>
-        <WebNavbar name="Crawling Website" />
+        <WebNavbar name="Crawling WebApp" />
         
         <div className="container-fluid mt-5">
           <div className="row mt-5">
@@ -255,7 +255,7 @@ class Dashboard extends Component {
                 </div>
 
                 <div className="col-1 col-md-1">
-                  <Button color="primary" className="text-center mt-3" onClick={this.submitFilter}>Submit</Button>
+                  <Button className="text-center mt-3 web-btn" onClick={this.submitFilter}>Filter</Button>
                 </div>
 
               </div>

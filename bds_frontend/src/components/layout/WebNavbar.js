@@ -104,24 +104,24 @@ class WebNavbar extends Component {
     
     if (this.props.name === "Login" || this.props.name === "Register") {
       return (
-        <Navbar color="light" light expand="md" fixed="top">
-          <NavbarBrand href="/">{this.props.name}</NavbarBrand>
+        <Navbar expand="md" id="customNavbar" fixed="top">
+          <NavbarBrand href="/" className="text-light">{this.props.name}</NavbarBrand>
         </Navbar>
       )
     }
 
     return(
-      <Navbar light expand="md" id="customNavbar" fixed="top">
-        <NavbarBrand href="/">{this.props.name}</NavbarBrand>
+      <Navbar expand="md" id="customNavbar" fixed="top">
+        <NavbarBrand href="/" className="text-light">{this.props.name}</NavbarBrand>
         <NavbarToggler onClick={this.toggleOpen} />
         <Collapse isOpen={this.state.isOpen} navbar>
           <Nav className="mr-auto" navbar>
             <NavItem>
-              <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active">Dashboard</NavLink>
+              <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active" className="text-light">Dashboard</NavLink>
             </NavItem>
             
             <NavItem>
-              <NavLink tag={rNavLink} exact to="/data" activeClassName="active">Data</NavLink>
+              <NavLink tag={rNavLink} exact to="/data" activeClassName="active" className="text-light">Data</NavLink>
             </NavItem>
             
             {/* <NavItem>
@@ -144,7 +144,7 @@ class WebNavbar extends Component {
           </ButtonGroup> */}
           <NavLink href="#" className="user-text text-dark">
           <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
-            <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen}>
+            <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-light">
               {this.state.current_user}
             </DropdownToggle>
             <DropdownMenu>
