@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 
 // Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
-import Data from './../data/Data';
+import Dashboard from './../dashboard/Dashboard';
 
 // CSS:
 import './styles.css';
@@ -68,7 +68,7 @@ class Login extends Component {
 
   render() {
     if (this.state.message === "Successful!") {
-      return <Redirect exact to='/data' component={<Data />} />
+      return <Redirect exact to='/dashboard' component={<Dashboard />} />
     }
 
     return(
