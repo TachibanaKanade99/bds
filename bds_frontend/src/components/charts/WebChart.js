@@ -28,7 +28,7 @@ class WebChart extends Component {
             enabled: true,
           },
           toolbar: {
-            show: true,
+            show: false,
           },
           fontFamily: 'Helvetica, Arial, sans-serif',
         },
@@ -47,17 +47,11 @@ class WebChart extends Component {
         noData: {
           text: 'Loading...',
         },
-        xaxis: {
-          categories: this.props.categories
-        }
+        labels: this.props.labels
       },
 
-      series: [
-        {
-          name: '',
-          data: this.props.data,
-        },
-      ],
+      categories: [],
+      series: [],
     }
   }
 
@@ -67,9 +61,11 @@ class WebChart extends Component {
       <Chart 
         options={this.state.options}
         series={this.props.series}
-        type="bar"
-        width="100%"
-        height="450"
+        // labels={this.props.labels}
+        categories={this.props.categories}
+        type={this.props.type}
+        width={this.props.width}
+        height={this.props.height}
       />
     )
   }
