@@ -42,13 +42,14 @@ class Dashboard extends Component {
         houses: 0,
         departments: 0,
         others: 0,
-        belong_to_projects: 0,
-        has_policy: 0,
-        new_updates: 0,
-        has_furniture: 0,
       },
+      belong_to_projects: 0,
+      has_policy: 0,
+      new_updates: 0,
+      has_furniture: 0,
       chart: null,
-      startDate: new Date().toLocaleDateString(),
+      lands_chart: null,
+      startDate: new Date(2020, 7, 31).toLocaleDateString(),
       endDate: new Date().toLocaleDateString(),
     }
 
@@ -75,12 +76,18 @@ class Dashboard extends Component {
             houses: res.data.houses,
             departments: res.data.departments,
             others: res.data.others,
-            belong_to_projects: res.data.belong_to_projects,
-            has_policy: res.data.has_policy,
-            new_updates: res.data.new_updates,
-            has_furniture: res.data.has_furniture
           },
-          chart: <WebChart className="mx-2" categories={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />
+
+          belong_to_projects: res.data.belong_to_projects,
+          has_policy: res.data.has_policy,
+          new_updates: res.data.new_updates,
+          has_furniture: res.data.has_furniture,
+          
+          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />,
+
+          lands_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Lands', 'Lands in Project']} series={[res.data.only_land / res.data.lands * 100, res.data.land_in_project / res.data.lands * 100]} />,
+
+          houses_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Villa', 'Town House', 'Individual House']} series={[res.data.villa / res.data.houses * 100, res.data.town_house / res.data.houses * 100, res.data.individual_house / res.data.houses * 100]} />
         })
       })
       .catch(function(err){
@@ -115,7 +122,16 @@ class Dashboard extends Component {
       .then(function(res) {
         console.log(res);
         self.setState({
-          chart: <WebChart className="mx-2" categories={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />
+          belong_to_projects: res.data.belong_to_projects,
+          has_policy: res.data.has_policy,
+          new_updates: res.data.new_updates,
+          has_furniture: res.data.has_furniture,
+
+          chart: <WebChart className="mx-2" type={"bar"}  width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />,
+
+          lands_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Lands', 'Lands in Project']} series={[res.data.only_land / res.data.lands * 100, res.data.land_in_project / res.data.lands * 100]} />,
+
+          houses_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Villa', 'Town House', 'Individual House']} series={[res.data.villa / res.data.houses * 100, res.data.town_house / res.data.houses * 100, res.data.individual_house / res.data.houses * 100]} />
         })
       })
       .catch(function(err){
@@ -220,7 +236,7 @@ class Dashboard extends Component {
                 <div className="col-7 col-md-7"></div>
                 <div className="col-2 col-md-2 float-right">
                   <FormGroup>
-                    <Label className="control-label">From Date</Label>
+                    <Label className="control-label dashboard-text">From Date</Label>
                     <br/>
                     <DayPickerInput
                       formatDate={formatDate}
@@ -238,7 +254,7 @@ class Dashboard extends Component {
 
                 <div className="col-2 col-md-2 float-right">
                   <FormGroup>
-                    <Label className="control-label">To Date</Label>
+                    <Label className="control-label dashboard-text">To Date</Label>
                     <br/>
                     <DayPickerInput
                       formatDate={formatDate}
@@ -266,19 +282,52 @@ class Dashboard extends Component {
               </div>
 
               <br/>
-              <p className="font-weight-bold h4">Details</p>
+              <p className="font-weight-bold h4 dashboard-text">Details</p>
               <div className="row mt-2 mb-4">
                 <div className="col-6 col-md-6">
                   <Card>
                     <CardBody>
                       <div className="mail-list mt-3">
-                        <Link to="#">
-                          <span className="mdi mdi-arrow-right-drop-circle text-success float-right mt-1  ml-2">{this.state.count.belong_to_projects}</span>
-                          Belong to projects
+                        <div className="font-weight-bold text-center dashboard-text">Lands</div>
+                        {this.state.lands_chart}
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+
+                <div className="col-6 col-md-6">
+                  <Card>
+                    <CardBody>
+                      <div className="mail-list mt-3">
+                        <div className="font-weight-bold text-center dashboard-text">Houses</div>
+                        {this.state.houses_chart}
+                        {/*<Link to="#">
+                            <span className="mdi mdi-arrow-right-drop-circle text-info float-right mt-1 ml-2">{this.state.count.new_updates}</span>
+                            New updates
                         </Link>
                         
                         <Link to="#">
-                          <span className="mdi mdi-arrow-right-drop-circle text-primary float-right mt-1 ml-2">{this.state.count.has_policy}</span>
+                          <span className="mdi mdi-arrow-right-drop-circle text-warning float-right mt-1 ml-2">{this.state.count.has_furniture}</span>
+                          Has furniture
+                        </Link>*/}
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+              </div>
+
+              <div className="row mt-3 mb-5">
+                <div className="col-6 col-md-6">
+                  <Card>
+                    <CardBody>
+                      <div className="mail-list mt-3">
+                        <Link to="#" className="dashboard-text">
+                            <span className="mdi mdi-arrow-right-drop-circle text-info float-right mt-1 ml-2">{this.state.belong_to_projects}</span>
+                            Belong to projects
+                        </Link>
+                        
+                        <Link to="#" className="dashboard-text">
+                          <span className="mdi mdi-arrow-right-drop-circle text-warning float-right mt-1 ml-2">{this.state.has_policy}</span>
                           Has policy
                         </Link>
                       </div>
@@ -290,13 +339,13 @@ class Dashboard extends Component {
                   <Card>
                     <CardBody>
                       <div className="mail-list mt-3">
-                        <Link to="#">
-                            <span className="mdi mdi-arrow-right-drop-circle text-info float-right mt-1 ml-2">{this.state.count.new_updates}</span>
+                        <Link to="#" className="dashboard-text">
+                            <span className="mdi mdi-arrow-right-drop-circle text-info float-right mt-1 ml-2">{this.state.new_updates}</span>
                             New updates
                         </Link>
                         
-                        <Link to="#">
-                          <span className="mdi mdi-arrow-right-drop-circle text-warning float-right mt-1 ml-2">{this.state.count.has_furniture}</span>
+                        <Link to="#" className="dashboard-text">
+                          <span className="mdi mdi-arrow-right-drop-circle text-warning float-right mt-1 ml-2">{this.state.has_furniture}</span>
                           Has furniture
                         </Link>
                       </div>
@@ -304,6 +353,7 @@ class Dashboard extends Component {
                   </Card>
                 </div>
               </div>
+
             </div>
             <div className="col-1 col-md-1 bg-light"></div>
           </div>
