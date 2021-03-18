@@ -127,16 +127,16 @@ class RealEstateDataView(generics.ListAPIView):
         max_price = float(max_price)
 
         # Overwrite queryset with filter options:
-        if start_date == end_date and start_date == now:
-            if post_type == "Bán đất":
-                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type).order_by('id')
-            else:
-                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type).order_by('id')
+        # if start_date == end_date and start_date == now:
+        #     if post_type == "Bán đất":
+        #         queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type).order_by('id')
+        #     else:
+        #         queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type).order_by('id')
+        # else:
+        if post_type == "Bán đất":
+            queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type, posted_date__range=[start_date, end_date]).order_by('id')
         else:
-            if post_type == "Bán đất":
-                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type, posted_date__range=[start_date, end_date]).order_by('id')
-            else:
-                queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type, posted_date__range=[start_date, end_date]).order_by('id')
+            queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type, posted_date__range=[start_date, end_date]).order_by('id')
         
         return queryset
 
@@ -162,10 +162,21 @@ class CountView(APIView):
         end_date = datetime.strptime(end_date, "%m/%d/%Y")
 
         all = RealEstateData.objects.filter(posted_date__range=[start_date, end_date]).count()
+
+        # land props:
         lands = RealEstateData.objects.filter(post_type__contains='đất', posted_date__range=[start_date, end_date]).count()
+        only_land = RealEstateData.objects.filter(post_type='Bán đất', posted_date__range=[start_date, end_date]).count()
+        land_in_project = RealEstateData.objects.filter(post_type='Bán đất nền dự án (đất trong dự án quy hoạch)', posted_date__range=[start_date, end_date]).count()
+
         houses = RealEstateData.objects.filter(post_type__contains='nhà', posted_date__range=[start_date, end_date]).count()
+        villa = RealEstateData.objects.filter(post_type__contains='Bán nhà biệt thự, liền kề', posted_date__range=[start_date, end_date]).count()
+        town_house = RealEstateData.objects.filter(post_type__contains='Bán nhà mặt phố', posted_date__range=[start_date, end_date]).count()
+        individual_house = RealEstateData.objects.filter(post_type__contains='Bán nhà riêng', posted_date__range=[start_date, end_date]).count()
         departments = RealEstateData.objects.filter(post_type__contains='căn hộ', posted_date__range=[start_date, end_date]).count()
-        others = RealEstateData.objects.filter(post_type__contains='khác', posted_date__range=[start_date, end_date]).count()
+
+        farms = RealEstateData.objects.filter(post_type__contains='trang trại', posted_date__range=[start_date, end_date]).count()
+        warehouses = RealEstateData.objects.filter(post_type__contains='kho, nhà xưởng', posted_date__range=[start_date, end_date]).count()
+        others = RealEstateData.objects.filter(post_type__contains='khác', posted_date__range=[start_date, end_date]).count() + farms + warehouses
         belong_to_projects = RealEstateData.objects.filter(project_name__isnull=False, posted_date__range=[start_date, end_date]).count()
         has_policy = RealEstateData.objects.filter(policy__isnull=False, posted_date__range=[start_date, end_date]).count()
         new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today(), posted_date__range=[start_date, end_date]).count()
@@ -173,7 +184,12 @@ class CountView(APIView):
         counts = {
             'all': all,
             'lands': lands,
+            'only_land': only_land,
+            'land_in_project': land_in_project,
             'houses': houses,
+            'villa': villa,
+            'town_house': town_house,
+            'individual_house': individual_house,
             'departments': departments,
             'others': others,
             'belong_to_projects': belong_to_projects,
@@ -185,10 +201,22 @@ class CountView(APIView):
     
     def get(self, request):
         all = RealEstateData.objects.all().count()
+
+        # land props:
         lands = RealEstateData.objects.filter(post_type__contains='đất').count()
+        only_land = RealEstateData.objects.filter(post_type='Bán đất').count()
+        land_in_project = RealEstateData.objects.filter(post_type='Bán đất nền dự án (đất trong dự án quy hoạch)').count()
+
         houses = RealEstateData.objects.filter(post_type__contains='nhà').count()
+        villa = RealEstateData.objects.filter(post_type__contains='Bán nhà biệt thự, liền kề').count()
+        town_house = RealEstateData.objects.filter(post_type__contains='Bán nhà mặt phố').count()
+        individual_house = RealEstateData.objects.filter(post_type__contains='Bán nhà riêng').count()
         departments = RealEstateData.objects.filter(post_type__contains='căn hộ').count()
-        others = RealEstateData.objects.filter(post_type__contains='khác').count()
+
+        farms = RealEstateData.objects.filter(post_type__contains='trang trại').count()
+        warehouses = RealEstateData.objects.filter(post_type__contains='kho, nhà xưởng').count()
+        others = RealEstateData.objects.filter(post_type__contains='khác').count() + farms + warehouses
+
         belong_to_projects = RealEstateData.objects.filter(project_name__isnull=False).count()
         has_policy = RealEstateData.objects.filter(policy__isnull=False).count()
         new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today()).count()
@@ -196,7 +224,12 @@ class CountView(APIView):
         counts = {
             'all': all,
             'lands': lands,
+            'only_land': only_land,
+            'land_in_project': land_in_project,
             'houses': houses,
+            'villa': villa,
+            'town_house': town_house,
+            'individual_house': individual_house,
             'departments': departments,
             'others': others,
             'belong_to_projects': belong_to_projects,
