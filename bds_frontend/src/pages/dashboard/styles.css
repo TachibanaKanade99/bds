@@ -11,5 +11,14 @@ button, a {
 }
 
 .web-btn {
-	background: #3C5999 !important;
+	background: #3C5999;
+}
+
+.dashboard-text {
+	color: #3C5999;
+}
+
+a.dashboard-text {
+	color: #3C5999 !important;
+	font-weight: 600 !important;
 }
