@@ -105,23 +105,23 @@ class WebNavbar extends Component {
     if (this.props.name === "Login" || this.props.name === "Register") {
       return (
         <Navbar expand="md" id="customNavbar" fixed="top">
-          <NavbarBrand href="/" className="text-light">{this.props.name}</NavbarBrand>
+          <NavbarBrand href="/" className="text-white">{this.props.name}</NavbarBrand>
         </Navbar>
       )
     }
 
     return(
       <Navbar expand="md" id="customNavbar" fixed="top">
-        <NavbarBrand href="/" className="text-light">{this.props.name}</NavbarBrand>
+        <NavbarBrand href="/" className="text-white">{this.props.name}</NavbarBrand>
         <NavbarToggler onClick={this.toggleOpen} />
         <Collapse isOpen={this.state.isOpen} navbar>
           <Nav className="mr-auto" navbar>
             <NavItem>
-              <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active" className="text-light">Dashboard</NavLink>
+              <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active" className="text-white">Dashboard</NavLink>
             </NavItem>
             
             <NavItem>
-              <NavLink tag={rNavLink} exact to="/data" activeClassName="active" className="text-light">Data</NavLink>
+              <NavLink tag={rNavLink} exact to="/data" activeClassName="active" className="text-white">Data</NavLink>
             </NavItem>
             
             {/* <NavItem>
@@ -144,7 +144,7 @@ class WebNavbar extends Component {
           </ButtonGroup> */}
           <NavLink href="#" className="user-text text-dark">
           <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
-            <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-light">
+            <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-white">
               {this.state.current_user}
             </DropdownToggle>
             <DropdownMenu>
