@@ -254,7 +254,7 @@ class Data extends Component {
       price: "0-max",
       post_type: "",
       page_size: 10,
-      startDate: new Date().toLocaleDateString(),
+      startDate: new Date(2020, 7, 31).toLocaleDateString(),
       endDate: new Date().toLocaleDateString(),
     }
 
@@ -516,6 +516,7 @@ class Data extends Component {
       { label: "Bán nhà biệt thự, liền kề", value: "Bán nhà biệt thự" },
       { label: "Bán căn hộ chung cư", value: "Bán căn hộ chung cư" },
       { label: "Bán kho, nhà xưởng", value: "Bán kho nhà xưởng" },
+      { label: "Bán trang trại, khu nghỉ dưỡng", value: "Bán trang trại, khu nghỉ dưỡng"},
       { label: "Bán loại đất động sản khác", value: "Bán loại bất động sản khác" }
     ]
 
