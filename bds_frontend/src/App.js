@@ -60,7 +60,7 @@ class App extends Component {
 
           {/* Set default page: */}
           <Route exact path="/">
-            <Redirect to="/data" />
+            <Redirect to="/dashboard" />
           </Route>
         </Switch>
       </div>
