@@ -7,6 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+
 BOT_NAME = 'homedy'
 
 SPIDER_MODULES = ['homedy.spiders']
@@ -89,6 +90,7 @@ ITEM_PIPELINES = {
     'homedy.pipelines.CheckDuplicateItemsPipeline': 3,
     'homedy.pipelines.PriceValidationPipeline': 4,
     'homedy.pipelines.HandlingStringDataPipeline': 5,
+    'homedy.pipelines.PostgreSQLPipeline': 6,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -100,7 +102,7 @@ AUTOTHROTTLE_START_DELAY = 3
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
 #AUTOTHROTTLE_DEBUG = False
 

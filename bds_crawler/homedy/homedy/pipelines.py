@@ -7,12 +7,12 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
-from scrapy.pipelines.images import ImagesPipeline
+# from scrapy.pipelines.images import ImagesPipeline
 import logging
 from datetime import datetime
-import json
+# import json
 import psycopg2
-import scrapy
+# import scrapy
 from _datetime import timedelta
 
 
@@ -56,12 +56,20 @@ class CheckCrawledDataPipeline:
             raise DropItem("Missing post_type in ", item['url'])
 
         # Handle null optional data:
+        if not adapter.get('street'):
+            adapter['street'] = None
+        if not adapter.get('ward'):
+            adapter['ward'] = None
+        if not adapter.get('district'):
+            adapter['district'] = None
         if not adapter.get('policy'):
             adapter['policy'] = None
         if not adapter.get('latitude'):
             adapter['latitude'] = None
         if not adapter.get('longitude'):
             adapter['longitude'] = None
+        if not adapter.get('email'):
+            adapter['email'] = None
 
         # Handling area, price if having "-" or ",":
         if adapter['area'].find("-") != -1:
@@ -69,28 +77,42 @@ class CheckCrawledDataPipeline:
             # raise DropItem("Multiple areas in ", item['url'], " price = ", item['price'])
             area = adapter['area']
             area = area[area.find("-")+1:]
-            adapter['area'] = " ".join(adapter['area'].split())
+            adapter['area'] = " ".join(area.split())
 
         if adapter['price'].find("-") != -1:
             # logging.log(logging.ERROR, "Multiple prices in " + item['url'] + " price = " + item['price'])
             # raise DropItem("Multiple prices in ", item['url'], " price = ", item['price'])
             price = adapter['price']
             price = price[price.find("-")+1:]
-            adapter['price'] = " ".join(adapter['price'].split())
+            adapter['price'] = " ".join(price.split())
 
         # Price format:
         price = adapter['price']
-        comma_idx = price.find(",")
-        if comma_idx != -1:
-            new_str = ''
+        price_comma_idx = price.find(",")
+        if price_comma_idx != -1:
+            new_price = ''
 
             for i in range(len(price)):
-                if i == comma_idx:
-                    new_str = new_str + "."
+                if i == price_comma_idx:
+                    new_price = new_price + "."
                 else:
-                    new_str = new_str + price[i]
+                    new_price = new_price + price[i]
             
-            adapter['price'] = new_str
+            adapter['price'] = new_price
+
+        # Another f**cking bullshit:
+        area = adapter['area']
+        area_comma_idx = area.find(",")
+        if area_comma_idx != -1:
+            new_area = ''
+
+            for i in range(len(area)):
+                if i == area_comma_idx:
+                    new_area = new_area + "."
+                else:
+                    new_area = new_area + area[i]
+
+            adapter['area'] = new_area
         
         # Handle item's content:
         adapter['url'] = " ".join(adapter['url'].split())
@@ -169,6 +191,20 @@ class HandlingStringDataPipeline:
         adapter['posted_date'] = datetime.strptime(adapter['posted_date'], "%d/%m/%Y")
         adapter['expired_date'] = datetime.strptime(adapter['expired_date'], "%d/%m/%Y")
 
+        # location:
+        if adapter['street'] is None and adapter['ward'] is None and adapter['district'] is None:
+            adapter['location'] = None
+        else:
+            adapter['location'] = ""
+            if adapter['street'] is not None:
+                adapter['location'] = adapter['location'] + "Đường " + adapter['street'] + ", "
+            if adapter['ward'] is not None:
+                adapter['location'] = adapter['location'] + "Phường " + adapter['ward'] + ", "
+            if adapter['district'] is not None:
+                adapter['location'] = adapter['location'] + "Quận " + adapter['district'] + ", "
+            if adapter['province'] is not None:
+                adapter['location'] = adapter['location'] + adapter['province']
+
         # Optional data:
         # if adapter['facade'] is not None:
         #     adapter['facade'] = float(adapter['facade'][0:adapter['facade'].find(" ")])
@@ -233,4 +269,105 @@ class HandlingStringDataPipeline:
         #     adapter['latitude'] = None
         #     adapter['longitude'] = None
 
+        return item
+
+class PostgreSQLPipeline:
+    def __init__(self):
+        self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        self.cur = self.conn.cursor()
+
+    def open_spider(self, spider):
+        self.cur.execute("SELECT url FROM bds_realestatedata;")
+        self.item_lst = self.cur.fetchall()
+
+    def close_spider(self, spider):
+        # close cursor
+        self.cur.close()
+        # close connection
+        self.conn.close()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+
+        if len(self.item_lst) > 0:
+            for i in self.item_lst:
+                if adapter['url'] == i[0]:
+                    logging.log(logging.ERROR, "Duplicated item in " + item['url'])
+                    raise DropItem("Duplicated item in " + item['url'])
+        
+        try:
+            self.cur.execute("""
+                INSERT INTO bds_realestatedata (
+                    url, 
+                    content, 
+                    price, 
+                    area, 
+                    location, 
+                    posted_author, 
+                    phone, 
+                    email, 
+                    posted_date, 
+                    expired_date, 
+                    item_code, 
+                    image_urls, 
+                    policy, 
+                    district, 
+                    province, 
+                    street, 
+                    ward, 
+                    post_type, 
+                    project_name,
+                    latitude,
+                    longitude
+                ) 
+                VALUES (
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s
+                )""", 
+                (
+                    adapter['url'], 
+                    adapter['content'], 
+                    adapter['price'], 
+                    adapter['area'], 
+                    adapter['location'], 
+                    adapter['posted_author'], 
+                    adapter['phone'], 
+                    adapter['email'], 
+                    adapter['posted_date'], 
+                    adapter['expired_date'], 
+                    adapter['item_code'], 
+                    adapter['image_urls'],  
+                    adapter['policy'], 
+                    adapter['district'], 
+                    adapter['province'], 
+                    adapter['street'], 
+                    adapter['ward'], 
+                    adapter['post_type'], 
+                    adapter['project_name'],
+                    adapter['latitude'],
+                    adapter['longitude']
+                )
+            )
+            self.conn.commit()
+        except:
+            self.conn.rollback()
         return item

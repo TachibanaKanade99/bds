@@ -11,7 +11,7 @@ class HomedySpider(scrapy.Spider):
     name = 'homedy_spider'
     allowed_domains = ['homedy.com']
     start_urls = [
-        'https://homedy.com/ban-nha-dat-tp-ho-chi-minh?sort=new',
+        'https://homedy.com/ban-nha-dat-tp-ho-chi-minh-gia-tren-300-trieu?sort=new',
     ]
 
     # log format:
@@ -23,19 +23,20 @@ class HomedySpider(scrapy.Spider):
     )
 
     def parse(self, response):
-        # for item in response.xpath('//div[@id="MainPage"]/div[@class="content"]/div[@class="tab-content"]/div[@class=" product-item"]'):
-        #     item_url = "https://homedy.com/" + item.xpath('./div[@class="product-item-top"]/a').attrib["href"]
-        #     yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
-        yield scrapy.Request('https://homedy.com/can-ban-dat-ta-quang-buu-quan-8-gia-159-ty-90m2-bao-so-gan-truong-hoc-cho-cong-vien-kd-tot-es1334705', callback=self.parse_item, cb_kwargs=dict(item_url='https://homedy.com/can-ban-dat-ta-quang-buu-quan-8-gia-159-ty-90m2-bao-so-gan-truong-hoc-cho-cong-vien-kd-tot-es1334705'))
+        for item in response.xpath('//div[@id="MainPage"]/div[@class="content"]/div[@class="tab-content"]/div[@class=" product-item"]'):
+            item_url = "https://homedy.com/" + item.xpath('./div[@class="product-item-top"]/a').attrib["href"]
+            yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
+        # url = 'https://homedy.com/ban-gap-dat-kdc-ha-do-le-thi-rieng-thoi-an-quan-12-so-do-tho-cu-100-gia-goc-23tr-m2-es1435719'
+        # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
 
         # next_page:
-        # next_page = response.xpath('//div[@class="page-nav"]/ul/li[@class="active"]/following-sibling::*')
+        next_page = response.xpath('//div[@class="page-nav"]/ul/li[@class="active"]/following-sibling::*')
 
-        # if next_page.get() is not None:
-        #     nextpage_url = response.urljoin(next_page.xpath('./a').attrib["href"])
+        if next_page.get() is not None:
+            nextpage_url = response.urljoin(next_page.xpath('./a').attrib["href"])
 
-        #     if nextpage_url != 'https://homedy.com/ban-nha-dat-tp-ho-chi-minh/p5?sort=new':
-        #         yield scrapy.Request(nextpage_url, callback=self.parse)
+            # if nextpage_url != 'https://homedy.com/ban-nha-dat-tp-ho-chi-minh/p1000?sort=new':
+            yield scrapy.Request(nextpage_url, callback=self.parse)
 
     def parse_item(self, response, item_url):
         item = HomedyItem()
@@ -50,19 +51,32 @@ class HomedySpider(scrapy.Spider):
         post_type = response.xpath('//div[@class="address"]/a/span/text()').get()
 
         # Handle null for post_type:
-        if post_type is not None:
-            if "Đường" in post_type:
-                street = post_type[post_type.find("Đường"):]
-                item['street'] = street[street.find(" ")+1:]
-            if "Phố" in post_type:
-                street = post_type[post_type.find("Phố"):]
-                item['street'] = street[street.find(" ")+1:]
-        else:
-            post_type = response.xpath('//div[@class="address"]/a/@title').get()
+        if post_type is None:
+            post_type = response.xpath('//div[@class="address"]/a/text()').get()
+
+        if "Đường" in post_type:
+            street = post_type[post_type.find("Đường"):]
+            item['street'] = street[street.find(" ")+1:]
+        if "Phố" in post_type:
+            street = post_type[post_type.find("Phố"):]
+            item['street'] = street[street.find(" ")+1:]
+        if "Phường" in post_type:
+            ward = post_type[post_type.find("Phường"):]
+            item['ward'] = ward[ward.find(" ")+1:]
+        if "Xã" in post_type:
+            ward = post_type[post_type.find("Xã"):]
+            item['ward'] = ward[ward.find(" ")+1:]
+        if "Quận" in post_type:
+            district = post_type[post_type.find("Quận"):]
+            item['district'] = district[district.find(" ")+1:]
+        if "Huyện" in post_type:
+            district = post_type[post_type.find("Quận"):]
+            item['district'] = district[district.find(" ")+1:]
 
         location_dict = {
             'Dự': 'project_name',
             'Đường': 'street',
+            'Phố': 'street',
             'Phường': 'ward',
             'Xã': 'ward',
             'Quận': 'district',
@@ -102,6 +116,7 @@ class HomedySpider(scrapy.Spider):
             'Bán Căn hộ': 'Bán căn hộ chung cư',
             'Bán Bất động sản khác': 'Bán loại bất động sản khác',
             'Bán Nhà biệt thự, liền kề': 'Bán nhà biệt thự, liền kề (nhà trong dự án quy hoạch)',
+            'Bán Nhà phố thương mại Shophouse': 'Bán nhà mặt phố',
             'Bán Nhà mặt phố': 'Bán nhà mặt phố',
             'Bán Nhà riêng': 'Bán nhà riêng',
             'Bán Đất': 'Bán đất',
@@ -133,14 +148,27 @@ class HomedySpider(scrapy.Spider):
 
         # Latitude & Longitude:
         js = response.xpath('//div[@id="modal_street_view"]/following-sibling::*/text()').get()
-        xml = lxml.etree.tostring(js2xml.parse(js), encoding='unicode')
-        selector = Selector(text=xml)
+        if js is not None:
+            xml = lxml.etree.tostring(js2xml.parse(js), encoding='unicode')
+            selector = Selector(text=xml)
 
-        latitude = selector.css('var[name="_latitude"] number').attrib["value"]
-        item['latitude'] = float(latitude)
+            latitude = selector.css('var[name="_latitude"] number').attrib["value"]
+            item['latitude'] = float(latitude)
 
-        longtitude = selector.css('var[name="_longtitude"] number').attrib["value"]
-        item['longitude'] = float(longtitude)
+            longtitude = selector.css('var[name="_longtitude"] number').attrib["value"]
+            item['longitude'] = float(longtitude)
+
+
+        # image:
+        image_urls = []
+        first_image = response.xpath('//div[@class="image-view"]/div[@class="container"]/div[@class="image-carousel owl-carousel owl-theme"]/div[contains(@class, "image-default")]/a').attrib["href"]
+        image_urls.append(first_image)
+
+        for other in response.xpath('//div[@class="image-view"]/div[@class="container"]/div[@class="image-carousel owl-carousel owl-theme"]/div[contains(@class, "image-item")]/div[@class="item"]'):
+            image_url = other.xpath('./div[@class="animate-box"]/a').attrib["href"]
+            image_urls.append(image_url)
+
+        item['image_urls'] = image_urls
 
         yield item
 
