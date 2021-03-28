@@ -33,7 +33,9 @@ class LandSpider(scrapy.Spider):
 
     def start_requests(self):
         # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
-        yield scrapy.Request(url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p1115', callback=self.parse, meta={'selenium': True}, dont_filter=True)
+        url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p419'
+        # 'https://batdongsan.com.vn/ban-dat-dat-nen-tp-hcm/-1/n-100000/-1/-1/p435'
+        yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
 
     def parse(self, response):
         for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
