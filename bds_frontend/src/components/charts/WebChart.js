@@ -56,7 +56,7 @@ class WebChart extends Component {
   }
 
   render() {
-    console.log(this.props.series);
+    // console.log(this.props.series);
     return (
       <Chart 
         options={this.state.options}

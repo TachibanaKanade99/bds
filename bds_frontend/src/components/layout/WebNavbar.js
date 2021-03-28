@@ -37,7 +37,6 @@ class WebNavbar extends Component {
       isOpen: false,
       isLogout: false,
       message: '',
-      current_user: '',
 
       // dropdown:
       dropdownOpen: false,
@@ -47,22 +46,22 @@ class WebNavbar extends Component {
     this.handleClick = this.handleClick.bind(this);
   }
 
-  componentDidMount() {
-    this.getCurrentUser();
-  }
+  // componentDidMount() {
+  //   this.getCurrentUser();
+  // }
 
-  getCurrentUser = () => {
-    let self = this;
-    axios
-      .get("/bds/current_user/")
-      .then(function(response) {
-        // console.log(response);
-        self.setState({ current_user: response.data.username })
-      })
-      .catch(function(errors) {
-        console.log(errors);
-      })
-  }
+  // getCurrentUser = () => {
+  //   let self = this;
+  //   axios
+  //     .get("/bds/current_user/")
+  //     .then(function(response) {
+  //       // console.log(response);
+  //       self.setState({ current_user: response.data.username })
+  //     })
+  //     .catch(function(errors) {
+  //       console.log(errors);
+  //     })
+  // }
 
   toggleDropdown = () => {
     this.setState(state => ({
@@ -145,7 +144,7 @@ class WebNavbar extends Component {
           <NavLink href="#" className="user-text text-dark">
           <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
             <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-white">
-              {this.state.current_user}
+              {this.props.current_user}
             </DropdownToggle>
             <DropdownMenu>
               <DropdownItem>

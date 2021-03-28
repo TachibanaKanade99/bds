@@ -14,3 +14,7 @@ th.MuiTableCell-root {
 	color: white;
 	background: #3C5999 !important;
 }
+
+.data-text {
+	color: #3C5999;
+}

@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 
 // Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
-import Dashboard from './../dashboard/Dashboard';
+// import Dashboard from './../dashboard/Dashboard';
 
 // CSS:
 import './styles.css';
@@ -16,11 +16,18 @@ class Login extends Component {
     this.state = {
       username: '',
       password: '',
-      message: '',
+      message: null,
     }
 
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+  }
+
+  componentDidMount() {
+    if (this.props.location.state !== undefined) {
+      console.log(this.props.location.state.message);
+      this.setState({ message: this.props.location.state.message })
+    }
   }
 
   handleChange = (e) => {
@@ -48,16 +55,17 @@ class Login extends Component {
         }
       }
       )
-      .then(function(response) {
-        console.log(response);
+      .then(function(res) {
+        console.log(res);
         self.setState(
           {
             message: 'Successful!'
           }
         )
+        
       })
-      .catch(function(error) {
-        console.log(error);
+      .catch(function(err) {
+        console.log(err);
         self.setState(
           {
             message: 'Your username or password is not correct! Try again!'
@@ -68,15 +76,15 @@ class Login extends Component {
 
   render() {
     if (this.state.message === "Successful!") {
-      return <Redirect exact to='/dashboard' component={<Dashboard />} />
+      return <Redirect to={{ pathname: "/dashboard", state: { isAuthenticated: true } }} />
     }
 
     return(
       <Fragment>
-        <WebNavbar name="Login" />
+        <WebNavbar name="Login" current_user="" />
         <div className="text-center login-contents">
           {/* <p className="h4 font-weight-bold">This is login page!</p> */}
-          <p>{this.state.message}</p>
+          <p className="font-weight-bold">{this.state.message}</p>
         </div>
 
         <div className="row mt-5 px-0">
@@ -119,7 +127,7 @@ class Login extends Component {
               <div className="col-6">
                 <span className="forgot-password">
                     Don't have account? Register 
-                    <Link exact to="/register"> here</Link>
+                    <Link to="/register"> here</Link>
                 </span>
               </div>
               <div className="col-4">

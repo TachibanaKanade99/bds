@@ -36,6 +36,7 @@ class Dashboard extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      current_user: null,
       count: {
         all: 0,
         lands: 0,
@@ -53,6 +54,7 @@ class Dashboard extends Component {
       endDate: new Date().toLocaleDateString(),
     }
 
+    this.getCurrentUser = this.getCurrentUser.bind(this);
     this.handleCount = this.handleCount.bind(this);
     this.handleStartDate = this.handleStartDate.bind(this);
     this.handleEndDate = this.handleEndDate.bind(this);
@@ -60,7 +62,21 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
+    this.getCurrentUser();
     this.handleCount();
+  }
+
+  getCurrentUser = () => {
+    let self = this;
+    axios
+      .get("/bds/current_user/")
+      .then(function(response) {
+        // console.log(response);
+        self.setState({ current_user: response.data.username })
+      })
+      .catch(function(err) {
+        // console.log(err);
+      })
   }
 
   handleCount = () => {
@@ -83,7 +99,7 @@ class Dashboard extends Component {
           new_updates: res.data.new_updates,
           has_furniture: res.data.has_furniture,
           
-          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: '', data: [res.data.all, res.data.lands, res.data.houses, res.data.departments, res.data.others]} ]} />,
+          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: 'batdongsan.com.vn', data: [res.data.bds_all, res.data.bds_lands, res.data.bds_houses, res.data.bds_departments, res.data.bds_others]}, { name: 'homedy.com', data: [res.data.homedy_all, res.data.homedy_lands, res.data.homedy_houses, res.data.homedy_departments, res.data.homedy_others]} ]} />,
 
           lands_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Lands', 'Lands in Project']} series={[res.data.only_land / res.data.lands * 100, res.data.land_in_project / res.data.lands * 100]} />,
 
@@ -97,7 +113,7 @@ class Dashboard extends Component {
 
   handleStartDate = (date) => {
     this.setState({ startDate: date.toLocaleDateString()})
-    console.log(this.state.startDate);
+    // console.log(this.state.startDate);
   }
 
   handleEndDate = (date) => {
@@ -120,7 +136,7 @@ class Dashboard extends Component {
         } 
       )
       .then(function(res) {
-        console.log(res);
+        // console.log(res);
         self.setState({
           belong_to_projects: res.data.belong_to_projects,
           has_policy: res.data.has_policy,
@@ -135,14 +151,14 @@ class Dashboard extends Component {
         })
       })
       .catch(function(err){
-        console.log(err);
+        // console.log(err);
       })
   }
 
   render() {
     return(
       <Fragment>
-        <WebNavbar name="Crawling WebApp" />
+        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} />
         
         <div className="container-fluid mt-5">
           <div className="row mt-5">
@@ -167,7 +183,7 @@ class Dashboard extends Component {
                 </div>
 
                 <div className="col-2 col-md-2 mx-2">
-                  <Card className="text-white bg-primary">
+                  <Card className="text-white bg-success">
                       <CardBody>
                           <blockquote className="card-blockquote mb-0">
                             <h1 className="text-center">

@@ -33,7 +33,7 @@ class Data extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isLogged: null,
+      current_user: null,
 
       // Table state:
       count: null,
@@ -180,20 +180,20 @@ class Data extends Component {
             setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
           }
         },
-        // {
-        //     label: 'Latitude',
-        //     name: 'latitude',
-        //     options: {
-        //         setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
-        //     }
-        // },
-        // {
-        //     label: 'Longitude',
-        //     name: 'longitude',
-        //     options: {
-        //         setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
-        //     }
-        // },
+        {
+            label: 'Latitude',
+            name: 'latitude',
+            options: {
+                setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+            }
+        },
+        {
+            label: 'Longitude',
+            name: 'longitude',
+            options: {
+                setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+            }
+        },
         {
           label: 'Furniture',
           name: 'furniture',
@@ -250,6 +250,8 @@ class Data extends Component {
 
       // select state:
       isMenuOpen: false,
+
+      // Filter options:
       website: "",
       price: "0-max",
       post_type: "",
@@ -258,6 +260,7 @@ class Data extends Component {
       endDate: new Date().toLocaleDateString(),
     }
 
+    this.getCurrentUser = this.getCurrentUser.bind(this);
     this.getData = this.getData.bind(this);
     this.formatDataForImage = this.formatDataForImage.bind(this);
     this.changePage = this.changePage.bind(this);
@@ -276,7 +279,21 @@ class Data extends Component {
   }
 
   componentDidMount() {
+    this.getCurrentUser();
     this.getData();
+  }
+
+  getCurrentUser = () => {
+    let self = this;
+    axios
+      .get("/bds/current_user/")
+      .then(function(res) {
+        // console.log(res);
+        self.setState({ current_user: res.data.username })
+      })
+      .catch(function(err) {
+        console.log(err);
+      })
   }
 
   getMuiTheme = () => createMuiTheme({
@@ -330,7 +347,7 @@ class Data extends Component {
         }
       )
       .then(function(res){
-        console.log(res);
+        // console.log(res);
         self.formatDataForImage(res);
       })
       .catch(function(err) {
@@ -447,13 +464,14 @@ class Data extends Component {
     // Table variables:
     const options = {
       filterType: 'dropdown',
-      tableBodyHeight: '430px',
+      tableBodyHeight: '420px',
       tableBodyMaxHeight: '100%',
       responsive: 'vertical',
       jumpToPage: false,
       serverSide: true,
       // rowsPerPageOptions:{},
       rowsPerPage: this.state.rowsPerPage,
+      rowsPerPageOptions: [],
       // rowsPerPageOptions: [10, 50, 100, 200, 500, 1000],
       download: false,
       filter: false,
@@ -522,7 +540,7 @@ class Data extends Component {
 
     return (
       <Fragment>
-        <WebNavbar name="Crawling WebApp" />
+        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} />
         
         <div className="container-fluid mt-5">
           <div className="row mt-5">
@@ -653,6 +671,8 @@ class Data extends Component {
                   {/* <div className="col-1 col-md-1 px-0"></div> */}
                 </div>
               </div>
+
+              
             </div>
             <div className="col-1 col-md-1 bg-light"></div>
           </div>
