@@ -24,7 +24,6 @@ from .models import Bds, RealEstateData
 from datetime import datetime
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
-
     def enforce_csrf(self, request):
         return  # To not perform the csrf check previously happening
 
@@ -48,6 +47,11 @@ def current_user(request):
     permission_classes = [IsAuthenticated]
     serializer = UserSerializer(request.user)
     return Response({ 'username': serializer.data.get('username') })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_authentication(request):
+    return Response({ 'detail': 'User is authenticated' }, status=status.HTTP_200_OK)
 
 # @method_decorator(csrf_protect, 'dispatch')
 class RegisterView(APIView):
@@ -221,6 +225,25 @@ class CountView(APIView):
         has_policy = RealEstateData.objects.filter(policy__isnull=False).count()
         new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today()).count()
         has_furniture = RealEstateData.objects.filter(furniture__isnull=False).count()
+
+        # batdongsan.com.vn
+        bds_all = RealEstateData.objects.filter(url__contains='batdongsan.com.vn').count()
+        bds_lands = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='đất').count()
+        bds_houses = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='nhà').count()
+        bds_departments = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='căn hộ').count()
+        bds_farms = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='trang trại').count()
+        bds_warehouses = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='kho, nhà xưởng').count()
+        bds_others = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='khác').count() + bds_farms + bds_warehouses
+
+        # homedy.com
+        homedy_all = RealEstateData.objects.filter(url__contains='homedy.com').count()
+        homedy_lands = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='đất').count()
+        homedy_houses = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='nhà').count()
+        homedy_departments = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='căn hộ').count()
+        homedy_farms = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='trang trại').count()
+        homedy_warehouses = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='kho, nhà xưởng').count()
+        homedy_others = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='khác').count() + homedy_farms + homedy_warehouses
+
         counts = {
             'all': all,
             'lands': lands,
@@ -236,6 +259,18 @@ class CountView(APIView):
             'has_policy': has_policy,
             'new_updates': new_updates,
             'has_furniture': has_furniture,
+            # batdongsan.com.vn
+            'bds_all': bds_all,
+            'bds_lands': bds_lands,
+            'bds_houses': bds_houses,
+            'bds_departments': bds_departments,
+            'bds_others': bds_others,
+            # homedy.com
+            'homedy_all': homedy_all,
+            'homedy_lands': homedy_lands,
+            'homedy_houses': homedy_houses,
+            'homedy_departments': homedy_departments,
+            'homedy_others': homedy_others
         }
         return Response(counts, status=status.HTTP_200_OK)
 
