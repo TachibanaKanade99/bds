@@ -266,7 +266,7 @@ class PostgreSQLPipeline:
         self.cur = self.conn.cursor()
 
     def open_spider(self, spider):
-        self.cur.execute("SELECT item_code FROM bds_realestatedata;")
+        self.cur.execute("SELECT url FROM bds_realestatedata;")
         self.item_lst = self.cur.fetchall()
 
     def close_spider(self, spider):
@@ -280,7 +280,7 @@ class PostgreSQLPipeline:
 
         if len(self.item_lst) > 0:
             for i in self.item_lst:
-                if adapter['item_code'] == i[0]:
+                if adapter['url'] == i[0]:
                     logging.log(logging.ERROR, "Duplicated item in " + item['url'])
                     raise DropItem("Duplicated item in " + item['url'])
         
