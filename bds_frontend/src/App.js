@@ -79,7 +79,7 @@ class App extends Component {
           {/* <Route path="/data"> <Data /> </Route> */}
           <Route path="/dashboard" render={(props) => {
             let auth = this.state.isAuthenticated;
-            if (props.location.state !== null || props.location.state !== undefined) {
+            if (props.location.state !== null && props.location.state !== undefined) {
               auth = props.location.state.isAuthenticated;
             }
             return auth === true ? <Dashboard {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
