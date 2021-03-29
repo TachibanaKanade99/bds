@@ -262,8 +262,10 @@ class HandlingStringDataPipeline:
         #     longitude = float(longitude)
 
         # format value:
-        adapter['latitude'] = "{:5.10f}".format(adapter['latitude'])
-        adapter['longitude'] = "{:5.10f}".format(adapter['longitude'])
+        if adapter['latitude'] is not None:
+            adapter['latitude'] = "{:5.10f}".format(adapter['latitude'])
+        if adapter['longitude'] is not None:
+            adapter['longitude'] = "{:5.10f}".format(adapter['longitude'])
 
         # else:
         #     adapter['latitude'] = None
