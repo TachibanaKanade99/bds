@@ -2,6 +2,7 @@ import scrapy
 from homedy.items import HomedyItem
 import logging
 from datetime import datetime
+import psycopg2
 
 import js2xml
 import lxml.etree
@@ -23,10 +24,26 @@ class HomedySpider(scrapy.Spider):
     )
 
     def parse(self, response):
+
+        # open db connection:
+        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        cur = conn.cursor()
+        cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%homedy%';")
+        item_lst = cur.fetchall()
+        
+        new_lst = []
+        for item in item_lst:
+            new_lst.append(item[0])
+
         for item in response.xpath('//div[@id="MainPage"]/div[@class="content"]/div[@class="tab-content"]/div[@class=" product-item"]'):
             item_url = "https://homedy.com/" + item.xpath('./div[@class="product-item-top"]/a').attrib["href"]
-            yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
-        # url = 'https://homedy.com/ban-gap-dat-kdc-ha-do-le-thi-rieng-thoi-an-quan-12-so-do-tho-cu-100-gia-goc-23tr-m2-es1435719'
+
+            if item_url not in new_lst:
+                yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
+            else:
+                logging.log(logging.ERROR, "Duplicated item in " + item_url)
+                continue
+        # url = 'https://homedy.com/can-ho-can-trung-tam-tphcm-cach-quan-1-chi-20-phut-gia-17-ty-can-thanh-toan-30-nhan-nha-es1485571'
         # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
 
         # next_page:
@@ -35,7 +52,7 @@ class HomedySpider(scrapy.Spider):
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.xpath('./a').attrib["href"])
 
-            # if nextpage_url != 'https://homedy.com/ban-nha-dat-tp-ho-chi-minh/p1000?sort=new':
+            # if nextpage_url != 'https://homedy.com/ban-nha-dat-tp-ho-chi-minh-gia-tren-300-trieu/p2?sort=new':
             yield scrapy.Request(nextpage_url, callback=self.parse)
 
     def parse_item(self, response, item_url):

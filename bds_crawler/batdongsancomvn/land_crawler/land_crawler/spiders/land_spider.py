@@ -3,6 +3,7 @@ from land_crawler.items import LandCrawlerItem
 import logging
 # from scrapy.utils.log import configure_logging
 from datetime import datetime
+import psycopg2
 
 # Selenium:
 # from selenium import webdriver
@@ -33,15 +34,29 @@ class LandSpider(scrapy.Spider):
 
     def start_requests(self):
         # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
-        url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p419'
-        # 'https://batdongsan.com.vn/ban-dat-dat-nen-tp-hcm/-1/n-100000/-1/-1/p435'
+        url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p110'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
 
     def parse(self, response):
+
+        # open db connection:
+        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        cur = conn.cursor()
+        cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%batdongsan%';")
+        item_lst = cur.fetchall()
+        
+        new_lst = []
+        for item in item_lst:
+            new_lst.append(item[0])
+
         for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
             item_url = "https://batdongsan.com.vn" + item.xpath('./a').attrib["href"]
-            yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
 
+            if item_url not in new_lst:
+                yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
+            else:
+                logging.log(logging.ERROR, "Duplicated item in " + item_url)
+                continue
         
         # next page
         next_page = response.xpath('//div[@class="pagination"]/a[@class="actived"]/following-sibling::*')
