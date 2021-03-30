@@ -185,6 +185,25 @@ class CountView(APIView):
         has_policy = RealEstateData.objects.filter(policy__isnull=False, posted_date__range=[start_date, end_date]).count()
         new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today(), posted_date__range=[start_date, end_date]).count()
         has_furniture = RealEstateData.objects.filter(furniture__isnull=False, posted_date__range=[start_date, end_date]).count()
+
+        # batdongsan.com.vn
+        bds_all = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', posted_date__range=[start_date, end_date]).count()
+        bds_lands = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='đất', posted_date__range=[start_date, end_date]).count()
+        bds_houses = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='nhà', posted_date__range=[start_date, end_date]).count()
+        bds_departments = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='căn hộ', posted_date__range=[start_date, end_date]).count()
+        bds_farms = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='trang trại', posted_date__range=[start_date, end_date]).count()
+        bds_warehouses = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='kho, nhà xưởng', posted_date__range=[start_date, end_date]).count()
+        bds_others = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', post_type__contains='khác', posted_date__range=[start_date, end_date]).count() + bds_farms + bds_warehouses
+
+        # homedy.com
+        homedy_all = RealEstateData.objects.filter(url__contains='homedy.com', posted_date__range=[start_date, end_date]).count()
+        homedy_lands = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='đất', posted_date__range=[start_date, end_date]).count()
+        homedy_houses = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='nhà', posted_date__range=[start_date, end_date]).count()
+        homedy_departments = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='căn hộ', posted_date__range=[start_date, end_date]).count()
+        homedy_farms = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='trang trại', posted_date__range=[start_date, end_date]).count()
+        homedy_warehouses = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='kho, nhà xưởng', posted_date__range=[start_date, end_date]).count()
+        homedy_others = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='khác', posted_date__range=[start_date, end_date]).count() + homedy_farms + homedy_warehouses
+
         counts = {
             'all': all,
             'lands': lands,
@@ -200,6 +219,18 @@ class CountView(APIView):
             'has_policy': has_policy,
             'new_updates': new_updates,
             'has_furniture': has_furniture,
+            # batdongsan.com.vn
+            'bds_all': bds_all,
+            'bds_lands': bds_lands,
+            'bds_houses': bds_houses,
+            'bds_departments': bds_departments,
+            'bds_others': bds_others,
+            # homedy.com
+            'homedy_all': homedy_all,
+            'homedy_lands': homedy_lands,
+            'homedy_houses': homedy_houses,
+            'homedy_departments': homedy_departments,
+            'homedy_others': homedy_others,
         }
         return Response(counts, status=status.HTTP_200_OK)
     
@@ -270,7 +301,7 @@ class CountView(APIView):
             'homedy_lands': homedy_lands,
             'homedy_houses': homedy_houses,
             'homedy_departments': homedy_departments,
-            'homedy_others': homedy_others
+            'homedy_others': homedy_others,
         }
         return Response(counts, status=status.HTTP_200_OK)
 
