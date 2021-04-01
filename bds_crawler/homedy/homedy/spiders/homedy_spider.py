@@ -43,7 +43,7 @@ class HomedySpider(scrapy.Spider):
             else:
                 logging.log(logging.ERROR, "Duplicated item in " + item_url)
                 continue
-        # url = 'https://homedy.com/can-ho-can-trung-tam-tphcm-cach-quan-1-chi-20-phut-gia-17-ty-can-thanh-toan-30-nhan-nha-es1485571'
+        # url = 'https://homedy.com/sang-lo-dat-khu-dan-cu-galaxy-phuong-binh-an-quan-2-so-do-gia-28-ty-nen-80m2-es1490004'
         # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
 
         # next_page:
@@ -71,79 +71,82 @@ class HomedySpider(scrapy.Spider):
         if post_type is None:
             post_type = response.xpath('//div[@class="address"]/a/text()').get()
 
-        if "Đường" in post_type:
-            street = post_type[post_type.find("Đường"):]
-            item['street'] = street[street.find(" ")+1:]
-        if "Phố" in post_type:
-            street = post_type[post_type.find("Phố"):]
-            item['street'] = street[street.find(" ")+1:]
-        if "Phường" in post_type:
-            ward = post_type[post_type.find("Phường"):]
-            item['ward'] = ward[ward.find(" ")+1:]
-        if "Xã" in post_type:
-            ward = post_type[post_type.find("Xã"):]
-            item['ward'] = ward[ward.find(" ")+1:]
-        if "Quận" in post_type:
-            district = post_type[post_type.find("Quận"):]
-            item['district'] = district[district.find(" ")+1:]
-        if "Huyện" in post_type:
-            district = post_type[post_type.find("Quận"):]
-            item['district'] = district[district.find(" ")+1:]
+        # fu*ck again =.=:
+        if post_type is not None:
 
-        location_dict = {
-            'Dự': 'project_name',
-            'Đường': 'street',
-            'Phố': 'street',
-            'Phường': 'ward',
-            'Xã': 'ward',
-            'Quận': 'district',
-            'Huyện': 'district',
-            'TP': 'province'
-        }
-        location_keys_lst = list(location_dict.keys())
+            if "Đường" in post_type:
+                street = post_type[post_type.find("Đường"):]
+                item['street'] = street[street.find(" ")+1:]
+            if "Phố" in post_type:
+                street = post_type[post_type.find("Phố"):]
+                item['street'] = street[street.find(" ")+1:]
+            if "Phường" in post_type:
+                ward = post_type[post_type.find("Phường"):]
+                item['ward'] = ward[ward.find(" ")+1:]
+            if "Xã" in post_type:
+                ward = post_type[post_type.find("Xã"):]
+                item['ward'] = ward[ward.find(" ")+1:]
+            if "Quận" in post_type:
+                district = post_type[post_type.find("Quận"):]
+                item['district'] = district[district.find(" ")+1:]
+            if "Huyện" in post_type:
+                district = post_type[post_type.find("Huyện"):]
+                item['district'] = district[district.find(" ")+1:]
 
-        for content in response.xpath('//div[@class="address"]/span'):
-            text = content.xpath('./text()').get()
-            tmp = text.split(" ", 1)
+            location_dict = {
+                'Dự': 'project_name',
+                'Đường': 'street',
+                'Phố': 'street',
+                'Phường': 'ward',
+                'Xã': 'ward',
+                'Quận': 'district',
+                'Huyện': 'district',
+                'TP': 'province'
+            }
+            location_keys_lst = list(location_dict.keys())
 
-            if tmp[0] == "": # Fuck
-                tmp = tmp[1].split(" ", 1)
+            for content in response.xpath('//div[@class="address"]/span'):
+                text = content.xpath('./text()').get()
+                tmp = text.split(" ", 1)
 
-            for key in location_keys_lst:
-                if tmp[0] == key:
-                    if tmp[0] == 'Dự':
-                        item[location_dict[key]] = tmp[1].split(" ", 1)[1]
-                    else:
-                        if tmp[0] == 'Đường':
-                            print(tmp)
-                        item[location_dict[key]] = tmp[1]
-            
-            # if tmp[0] == "": # Fuck
-            #     second_tmp = tmp[1].split(" ", 1)
+                if tmp[0] == "": # Fuck
+                    tmp = tmp[1].split(" ", 1)
 
-            #     for key in location_keys_lst:
-            #         if second_tmp[0] == key:
-            #             if second_tmp[0] == 'Dự':
-            #                 item[location_dict[key]] = second_tmp[1].split(" ", 1)[1]
-            #             else:
-            #                 item[location_dict[key]] = second_tmp[1]
+                for key in location_keys_lst:
+                    if tmp[0] == key:
+                        if tmp[0] == 'Dự':
+                            item[location_dict[key]] = tmp[1].split(" ", 1)[1]
+                        else:
+                            if tmp[0] == 'Đường':
+                                print(tmp)
+                            item[location_dict[key]] = tmp[1]
+                
+                # if tmp[0] == "": # Fuck
+                #     second_tmp = tmp[1].split(" ", 1)
 
-        post_type_dict = {
-            'Bán Căn hộ chung cư': 'Bán căn hộ chung cư',
-            'Bán Căn hộ': 'Bán căn hộ chung cư',
-            'Bán Bất động sản khác': 'Bán loại bất động sản khác',
-            'Bán Nhà biệt thự, liền kề': 'Bán nhà biệt thự, liền kề (nhà trong dự án quy hoạch)',
-            'Bán Nhà phố thương mại Shophouse': 'Bán nhà mặt phố',
-            'Bán Nhà mặt phố': 'Bán nhà mặt phố',
-            'Bán Nhà riêng': 'Bán nhà riêng',
-            'Bán Đất': 'Bán đất',
-            'Bán Đất nền dự án': 'Bán đất nền dự án (đất trong dự án quy hoạch)'
-        }
-        post_type_keys_lst = list(post_type_dict.keys())
+                #     for key in location_keys_lst:
+                #         if second_tmp[0] == key:
+                #             if second_tmp[0] == 'Dự':
+                #                 item[location_dict[key]] = second_tmp[1].split(" ", 1)[1]
+                #             else:
+                #                 item[location_dict[key]] = second_tmp[1]
 
-        for key in post_type_keys_lst:
-            if key in post_type:
-                item['post_type'] = post_type_dict[key]
+            post_type_dict = {
+                'Bán Căn hộ chung cư': 'Bán căn hộ chung cư',
+                'Bán Căn hộ': 'Bán căn hộ chung cư',
+                'Bán Bất động sản khác': 'Bán loại bất động sản khác',
+                'Bán Nhà biệt thự, liền kề': 'Bán nhà biệt thự, liền kề (nhà trong dự án quy hoạch)',
+                'Bán Nhà phố thương mại Shophouse': 'Bán nhà mặt phố',
+                'Bán Nhà mặt phố': 'Bán nhà mặt phố',
+                'Bán Nhà riêng': 'Bán nhà riêng',
+                'Bán Đất': 'Bán đất',
+                'Bán Đất nền dự án': 'Bán đất nền dự án (đất trong dự án quy hoạch)'
+            }
+            post_type_keys_lst = list(post_type_dict.keys())
+
+            for key in post_type_keys_lst:
+                if key in post_type:
+                    item['post_type'] = post_type_dict[key]
 
         price = response.xpath('//div[@class="product-detail"]/div[@class="row"][1]/div[contains(@class, "cell-right")]/span/text()').get()
         price_unit = response.xpath('//div[@class="product-detail"]/div[@class="row"][1]/div[contains(@class, "cell-right")]/text()[2]').get()
