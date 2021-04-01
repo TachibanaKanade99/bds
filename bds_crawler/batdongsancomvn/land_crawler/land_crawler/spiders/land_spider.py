@@ -34,8 +34,10 @@ class LandSpider(scrapy.Spider):
 
     def start_requests(self):
         # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
-        url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p110'
+        url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p235'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
+        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-duong-truong-quoc-dung-phuong-8-13-prj-newton-residence/ban-gap-novaland-2pn-full-noi-that-cuc-dep-lh-0973034874-pr28541296'
+        # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
 
     def parse(self, response):
 
