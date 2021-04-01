@@ -210,11 +210,12 @@ class HandlingStringDataPipeline:
             else:
                 tmp[0] = tmp[0].lower()
 
-            if tmp[0] in location_keys_lst:
-                if tmp[0] == "dự":
-                    adapter['project_name'] = tmp[1].split(" ", 1)[1]
-                else:
-                    adapter[location_dict[tmp[0]]] = tmp[1]
+            if len(tmp) > 0:
+                if tmp[0] in location_keys_lst:
+                    if tmp[0] == "dự":
+                        adapter['project_name'] = tmp[1].split(" ", 1)[1]
+                    else:
+                        adapter[location_dict[tmp[0]]] = tmp[1]
 
             # if tmp[0] == "Dự":
             #     adapter['project_name'] = tmp[1].split(" ", 1)[1]
