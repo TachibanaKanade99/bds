@@ -4,7 +4,6 @@ test_crawl/
 test_connect_db/
 test_open_json_files/
 test_selenium/
-test_prediction_model/
 virenv_linux/
 virenv_win/
 
