@@ -155,10 +155,8 @@ class PriceValidationPipeline:
         price = adapter['price']
         
         if price.find("Triệu") != -1:
-            area = adapter['area']
-            area_value = float(area)
             price_value = float(price[0:price.find("T")])
-            total_price = price_value * area_value / 1000.0
+            total_price = price_value / 1000.0
             adapter['price'] = str(total_price) + " Tỷ"
             return item
         else:
