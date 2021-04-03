@@ -588,7 +588,7 @@ class Data extends Component {
                 </div>
 
                 <div className="col-3 col-md-3">
-                  <Button className="ml-3 mt-5 web-btn" onClick={this.submitData}>Search</Button>
+                  <Button className="ml-3 mt-5 web-btn" onClick={this.submitData}>Filter</Button>
                 </div>
               </div>
               
