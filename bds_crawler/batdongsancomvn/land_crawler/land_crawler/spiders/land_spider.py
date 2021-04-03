@@ -5,13 +5,6 @@ import logging
 from datetime import datetime
 import psycopg2
 
-# Selenium:
-# from selenium import webdriver
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# import psycopg2
-
 class LandSpider(scrapy.Spider):
     name = "land_spider"
     allowed_domains = ['batdongsan.com.vn']
@@ -27,34 +20,35 @@ class LandSpider(scrapy.Spider):
     # log format:
     # configure_logging(install_root_handler=False)
     logging.basicConfig(
-        filename='logfile/log_' + datetime.now().strftime('%d%m%Y%H%M%S') + '.txt',
+        filename='logfile/log_' + datetime.now().strftime('%Y%m%d%H%M%S') + '.txt',
         format='%(levelname)s: %(message)s',
         level=logging.ERROR
     )
 
+    def __init__(self, *arg, **kwargs):
+        super(LandSpider, self).__init__(*arg, **kwargs)
+
+        # open db connection:
+        self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        self.cur = self.conn.cursor()
+        self.cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%batdongsan%';")
+        self.item_lst = self.cur.fetchall()
+
+        self.new_lst = []
+        for item in self.item_lst:
+            self.new_lst.append(item[0])
+
     def start_requests(self):
-        # url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1'
-        url='https://batdongsan.com.vn/nha-dat-ban-tp-hcm/-1/n-100000/-1/-1/p235'
+        url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
         # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-duong-truong-quoc-dung-phuong-8-13-prj-newton-residence/ban-gap-novaland-2pn-full-noi-that-cuc-dep-lh-0973034874-pr28541296'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
 
     def parse(self, response):
-
-        # open db connection:
-        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
-        cur = conn.cursor()
-        cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%batdongsan%';")
-        item_lst = cur.fetchall()
-        
-        new_lst = []
-        for item in item_lst:
-            new_lst.append(item[0])
-
         for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
             item_url = "https://batdongsan.com.vn" + item.xpath('./a').attrib["href"]
 
-            if item_url not in new_lst:
+            if item_url not in self.new_lst:
                 yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
             else:
                 logging.log(logging.ERROR, "Duplicated item in " + item_url)
@@ -65,6 +59,7 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
+            # if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p243?gcn=100-ty':
             yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
@@ -78,7 +73,7 @@ class LandSpider(scrapy.Spider):
 
         for land_item in response.xpath('//div[@class="form-content"]/div[contains(@class, "main-container clearfix")]'):
             item['url'] = item_url
-            item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/h1[@class="tile-product"]/text()').get()
+            item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="containerTitle"]/h1[@class="tile-product"]/text()').get()
             
             item['price'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[1]/span[@class="sp2"]/text()').get()
             item['area'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[2]/span[@class="sp2"]/text()').get()

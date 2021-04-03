@@ -188,7 +188,10 @@ class HandlingStringDataPipeline:
             adapter['number_of_toilets'] = int(adapter['number_of_toilets'][0:adapter['number_of_toilets'].find(" ")])
 
         # extract data from item['location']:
-        splitted_location = adapter['location'].split(", ")
+        if adapter['location'].find('-') != -1:
+            splitted_location = adapter['location'].split(" - ")
+        else:
+            splitted_location = adapter['location'].split(", ")
         district_lst = ["Bình Tân", "Bình Thạnh", "Gò Vấp", "Phú Nhuận", "Tân Bình", "Tân Phú", "Thủ Đức", "Bình Chánh", "Cần Giờ", "Củ Chi", "Hóc Môn", "Nhà Bè"]
 
         location_dict = {
