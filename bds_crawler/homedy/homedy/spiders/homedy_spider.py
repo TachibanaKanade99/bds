@@ -18,33 +18,43 @@ class HomedySpider(scrapy.Spider):
     # log format:
     # configure_logging(install_root_handler=False)
     logging.basicConfig(
-        filename='logfile/log_' + datetime.now().strftime('%d%m%Y%H%M%S') + '.txt',
+        filename='logfile/log_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt',
         format='%(levelname)s: %(message)s',
         level=logging.ERROR
     )
 
-    def parse(self, response):
+    def __init__(self, *arg, **kwargs):
+        super(HomedySpider, self).__init__(*arg, **kwargs)
 
         # open db connection:
-        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
-        cur = conn.cursor()
-        cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%homedy%';")
-        item_lst = cur.fetchall()
+        self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        self.cur = self.conn.cursor()
+        self.cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%homedy%';")
+        self.item_lst = self.cur.fetchall()
+
+        # close connection:
+        self.cur.close()
+        self.conn.close()
         
-        new_lst = []
-        for item in item_lst:
-            new_lst.append(item[0])
+        self.new_lst = []
+        for item in self.item_lst:
+            self.new_lst.append(item[0])
+
+    def parse(self, response):
 
         for item in response.xpath('//div[@id="MainPage"]/div[@class="content"]/div[@class="tab-content"]/div[@class=" product-item"]'):
             item_url = "https://homedy.com/" + item.xpath('./div[@class="product-item-top"]/a').attrib["href"]
 
-            if item_url not in new_lst:
+            if item_url not in self.new_lst:
                 yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
             else:
                 logging.log(logging.ERROR, "Duplicated item in " + item_url)
                 continue
-        # url = 'https://homedy.com/sang-lo-dat-khu-dan-cu-galaxy-phuong-binh-an-quan-2-so-do-gia-28-ty-nen-80m2-es1490004'
-        # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
+        # url = 'https://homedy.com/ban-gap-can-nha-2-lau-3-phong-ngu-le-van-khuong-quan-12-gan-metro-es1501413'
+        # if url not in self.new_lst:
+        #     yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
+        # else:
+        #    logging.log(logging.ERROR, "Duplicated item in " + url)
 
         # next_page:
         next_page = response.xpath('//div[@class="page-nav"]/ul/li[@class="active"]/following-sibling::*')
@@ -149,10 +159,16 @@ class HomedySpider(scrapy.Spider):
                     item['post_type'] = post_type_dict[key]
 
         price = response.xpath('//div[@class="product-detail"]/div[@class="row"][1]/div[contains(@class, "cell-right")]/span/text()').get()
+
+        if price is None:
+            price = response.xpath('//div[@class="product-detail"]/div[@class="row"][1]/div[contains(@class, "cell-right")]/em/text()').get()
+
         price_unit = response.xpath('//div[@class="product-detail"]/div[@class="row"][1]/div[contains(@class, "cell-right")]/text()[2]').get()
         price_unit = price_unit[price_unit.find("T"):price_unit.find(" ")]
         
-        if price is None or price_unit is None:
+        if price == 'Thương lượng':
+            item['price'] = price
+        elif price is None or price_unit is None:
             item['price'] = None
         else:
             item['price'] = price + " " + price_unit
@@ -189,6 +205,13 @@ class HomedySpider(scrapy.Spider):
             image_urls.append(image_url)
 
         item['image_urls'] = image_urls
+
+        # get project name:
+        project_name_component = response.xpath('//div[@class="product-project"]/div[@class="product-project-bg"]').get()
+
+        if project_name_component is not None:
+            project_name = project_name_component.xpath('./div[@class="project"]/div[@class="project-detail"]/div[contains(@class, "item")]/div[@class="info"]/a/text()').get()
+            item['project_name'] = " ".join(project_name.split())
 
         yield item
 
