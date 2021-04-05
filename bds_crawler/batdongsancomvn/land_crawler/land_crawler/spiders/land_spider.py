@@ -20,7 +20,7 @@ class LandSpider(scrapy.Spider):
     # log format:
     # configure_logging(install_root_handler=False)
     logging.basicConfig(
-        filename='logfile/log_' + datetime.now().strftime('%Y%m%d%H%M%S') + '.txt',
+        filename='logfile/log_' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.txt',
         format='%(levelname)s: %(message)s',
         level=logging.ERROR
     )
@@ -33,6 +33,10 @@ class LandSpider(scrapy.Spider):
         self.cur = self.conn.cursor()
         self.cur.execute("SELECT url FROM bds_realestatedata WHERE url LIKE '%batdongsan%';")
         self.item_lst = self.cur.fetchall()
+        
+        # close connection:
+        self.cur.close()
+        self.conn.close()
 
         self.new_lst = []
         for item in self.item_lst:
@@ -59,7 +63,7 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            # if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p243?gcn=100-ty':
+            # if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p2?gcn=100-ty':
             yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
@@ -133,4 +137,4 @@ class LandSpider(scrapy.Spider):
                 image_urls.append(image_url)
 
             item['image_urls'] = image_urls
-            yield item
+        yield item
