@@ -167,7 +167,9 @@ class HandlingStringDataPipeline:
         adapter = ItemAdapter(item)
         
         adapter['area'] = float(adapter['area'])
-        adapter['price'] = float(adapter['price'][0:adapter['price'].find(" ")])
+
+        if adapter['price'] != 'Thương lượng':
+            adapter['price'] = float(adapter['price'][0:adapter['price'].find(" ")])
 
         # Handle posted_date:
         posted_date = adapter['posted_date']
