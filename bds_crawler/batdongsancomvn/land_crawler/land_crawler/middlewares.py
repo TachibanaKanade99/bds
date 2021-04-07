@@ -10,6 +10,7 @@ from itemadapter import is_item, ItemAdapter
 
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.utils.response import response_status_message
+import random
 
 # Selenium:
 from selenium import webdriver
@@ -118,20 +119,30 @@ class SeleniumDownloaderMiddleware:
 
     # Scrapy middleware for handling the requests using Selenium:
     def __init__(self):
-        # options = webdriver.ChromeOptions()
-        options = EdgeOptions()
-        options.use_chromnium = True
-        options.add_argument('headless')
-        options.add_argument('window-size=1200x600')
+        options = webdriver.ChromeOptions()
+        # options = EdgeOptions()
+        # options.use_chromnium = True
+        # options.add_argument('headless')
+        # options.add_argument('window-size=1200x600')
         options.add_argument('no-sandbox')
         options.add_argument('no-default-browser-check')
         options.add_argument('disable-gpu')
         options.add_argument('disable-default-apps')
         options.add_argument('disable-extensions')
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36')
-        # self.driver = webdriver.Chrome('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\chromedriver.exe', options=options)
-        self.driver = Edge('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\msedgedriver.exe', options=options)
-        self.driver.minimize_window()
+        options.add_argument('incognito')
+
+        options.add_argument("start-maximized")
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        options.add_experimental_option('useAutomationExtension', False)
+        # options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36')
+        
+        self.driver = webdriver.Chrome('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\chromedriver.exe', options=options)
+        self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'})
+
+        # self.driver = Edge('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\msedgedriver.exe', options=options)
+        # self.driver.minimize_window()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -146,7 +157,7 @@ class SeleniumDownloaderMiddleware:
             return request
 
         self.driver.get(request.url)
-        # self.driver.implicitly_wait(2)
+        self.driver.implicitly_wait(random.randint(1, 5))
         # map_locator = self.driver.find_element(By.XPATH, '//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src')
         # WebDriverWait(self.driver, timeout=5).until(expected_conditions.visibility_of_element_located(map_locator))
 
