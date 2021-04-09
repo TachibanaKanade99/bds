@@ -142,7 +142,7 @@ class SeleniumDownloaderMiddleware:
         self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'})
 
         # self.driver = Edge('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\msedgedriver.exe', options=options)
-        # self.driver.minimize_window()
+        self.driver.minimize_window()
 
     @classmethod
     def from_crawler(cls, crawler):
