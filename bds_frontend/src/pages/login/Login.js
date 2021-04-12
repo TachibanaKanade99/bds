@@ -16,11 +16,13 @@ class Login extends Component {
     this.state = {
       username: '',
       password: '',
+      rememberMe: false,
       message: null,
     }
 
-    this.handleChange = this.handleChange.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleChangeCheckbox = this.handleChangeCheckbox.bind(this);
   }
 
   componentDidMount() {
@@ -28,6 +30,13 @@ class Login extends Component {
       console.log(this.props.location.state.message);
       this.setState({ message: this.props.location.state.message })
     }
+
+    // Handle value from localStorage:
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
+    const username = rememberMe ? localStorage.getItem('username') : '';
+    const password = rememberMe ? localStorage.getItem('password') : '';
+
+    this.setState({ username, password, rememberMe })
   }
 
   handleChange = (e) => {
@@ -41,8 +50,21 @@ class Login extends Component {
     )
   }
 
+  handleChangeCheckbox = (e) => {
+    const name = e.target.name;
+    const checked = e.target.checked;
+    this.setState({ [name]: checked })
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Handle remember me function:
+    const { username, password, rememberMe } = this.state;
+    localStorage.setItem('username', rememberMe ? username : '');
+    localStorage.setItem('password', rememberMe ? password : '');
+    localStorage.setItem('rememberMe', rememberMe);
+
     let self = this
     axios
       .post('/bds/login/', {
@@ -96,28 +118,34 @@ class Login extends Component {
             <div className="form-group">
                 <label>Username</label>
                 <input 
-                type="text"
-                name="username"
-                value={this.state.username}
-                onChange={this.handleChange}
-                className="form-control" 
-                placeholder="Enter username" />
+                  type="text"
+                  name="username"
+                  value={this.state.username}
+                  onChange={this.handleChange}
+                  className="form-control" 
+                  placeholder="Enter username" />
             </div>
 
             <div className="form-group">
                 <label>Password</label>
                 <input 
-                type="password"
-                name="password"
-                value={this.state.password}
-                onChange={this.handleChange}
-                className="form-control" 
-                placeholder="Enter password" />
+                  type="password"
+                  name="password"
+                  value={this.state.password}
+                  onChange={this.handleChange}
+                  className="form-control" 
+                  placeholder="Enter password" />
             </div>
 
             <div className="form-group">
                 <div className="custom-control custom-checkbox">
-                    <input type="checkbox" className="custom-control-input" id="customCheck1" />
+                    <input 
+                      type="checkbox" 
+                      name="rememberMe"
+                      id="customCheck1" 
+                      checked={this.state.rememberMe} 
+                      onChange={this.handleChangeCheckbox}
+                      className="custom-control-input" />
                     <label className="custom-control-label" htmlFor="customCheck1">Remember me</label>
                 </div>
             </div>
