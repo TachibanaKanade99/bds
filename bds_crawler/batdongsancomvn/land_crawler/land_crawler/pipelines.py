@@ -118,13 +118,21 @@ class PriceValidationPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
         price = adapter['price']
-        
+        area = adapter['area']
+        area_value = float(area[0:area.find(" ")])
+        price_value = float(price[0:price.find(" ")])
+
         if price.find("triệu/m²") != -1:
-            area = adapter['area']
-            area_value = float(area[0:area.find("m")])
-            price_value = float(price[0:price.find("t")])
-            total_price = price_value * area_value / 1000.0
-            adapter['price'] = str(total_price) + " tỷ"
+            converted_price = price_value * area_value / 1000.0
+            adapter['price'] = str(converted_price) + " tỷ"
+            return item
+        elif price.find("nghìn/m²") != -1:
+            converted_price = price_value * area_value / 1000000.0
+            adapter['price'] = str(converted_price) + " tỷ"
+            return item
+        elif price.find("triệu") != -1:
+            converted_price = price_value / 1000.0
+            adapter['price'] = str(converted_price) + " tỷ"
             return item
         else:
             return item
@@ -196,6 +204,7 @@ class HandlingStringDataPipeline:
 
         location_dict = {
             'dự': 'project_name',
+            'phố': 'street',
             'đường': 'street',
             'phường': 'ward',
             'phố': 'ward',
