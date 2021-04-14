@@ -48,7 +48,7 @@ h1,h2,h3,h4,h5,h6,label,span {
 } */
 
 .auth-wrapper .form-control:focus {
-  border-color: #167bff;
+  border-color: #3C5999 !important;
   box-shadow: none;
 }
 
@@ -73,5 +73,10 @@ h1,h2,h3,h4,h5,h6,label,span {
 }
 
 .forgot-password a {
-  color: #167bff;
+  color: #3C5999 !important;
+}
+
+#login-btn {
+  background-color: #3C5999;
+  color: white;
 }

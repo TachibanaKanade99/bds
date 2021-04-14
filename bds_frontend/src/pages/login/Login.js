@@ -18,11 +18,14 @@ class Login extends Component {
       password: '',
       rememberMe: false,
       message: null,
+      passType: "password",
+      passIcon: "fa fa-lg fa-eye",
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeCheckbox = this.handleChangeCheckbox.bind(this);
+    this.handleShowPassBtn = this.handleShowPassBtn.bind(this);
   }
 
   componentDidMount() {
@@ -54,6 +57,15 @@ class Login extends Component {
     const name = e.target.name;
     const checked = e.target.checked;
     this.setState({ [name]: checked })
+  }
+
+  handleShowPassBtn = () => {
+    if (this.state.passType === "password") {
+      this.setState({ passType: "text", passIcon: "fa fa-lg fa-eye-slash" })
+    }
+    else {
+      this.setState({ passType: "password", passIcon: "fa fa-lg fa-eye" })
+    }
   }
 
   handleSubmit = (e) => {
@@ -128,13 +140,18 @@ class Login extends Component {
 
             <div className="form-group">
                 <label>Password</label>
-                <input 
-                  type="password"
-                  name="password"
-                  value={this.state.password}
-                  onChange={this.handleChange}
-                  className="form-control" 
-                  placeholder="Enter password" />
+                <div className="d-flex">
+                  <input 
+                    type={this.state.passType}
+                    name="password"
+                    value={this.state.password}
+                    onChange={this.handleChange}
+                    className="form-control" 
+                    placeholder="Enter password" />
+                  <button type="button" className="ml-1 btn btn-link" aria-label="Toggle Visibility" onClick={this.handleShowPassBtn} >
+                      <i aria-hidden="true" className={this.state.passIcon}></i>
+                  </button>
+                </div>
             </div>
 
             <div className="form-group">
@@ -142,7 +159,7 @@ class Login extends Component {
                     <input 
                       type="checkbox" 
                       name="rememberMe"
-                      id="customCheck1" 
+                      id="customCheck1 login-btn" 
                       checked={this.state.rememberMe} 
                       onChange={this.handleChangeCheckbox}
                       className="custom-control-input" />
@@ -150,7 +167,7 @@ class Login extends Component {
                 </div>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block">Submit</button>
+            <button type="submit" className="btn btn-block" id="login-btn" >Submit</button>
             <div className="row justify-content-between">
               <div className="col-6">
                 <span className="forgot-password">
