@@ -138,11 +138,15 @@ class SeleniumDownloaderMiddleware:
         # options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36')
         
         self.driver = webdriver.Chrome('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\chromedriver.exe', options=options)
+
+        # linux chrome webdriver:
+        # self.driver = webdriver.Chrome('/media/tuanminh/DATA/Tuan_Minh/bds/bds_crawler/batdongsancomvn/chromedriver_linux', options=options)
+
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'})
 
         # self.driver = Edge('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\msedgedriver.exe', options=options)
-        self.driver.minimize_window()
+        # self.driver.minimize_window()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -157,7 +161,7 @@ class SeleniumDownloaderMiddleware:
             return request
 
         self.driver.get(request.url)
-        self.driver.implicitly_wait(random.randint(1, 5))
+        self.driver.implicitly_wait(random.uniform(1.0, 3.0))
         # map_locator = self.driver.find_element(By.XPATH, '//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src')
         # WebDriverWait(self.driver, timeout=5).until(expected_conditions.visibility_of_element_located(map_locator))
 
