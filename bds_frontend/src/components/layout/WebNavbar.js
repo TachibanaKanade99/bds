@@ -116,11 +116,11 @@ class WebNavbar extends Component {
         <Collapse isOpen={this.state.isOpen} navbar>
           <Nav className="mr-auto" navbar>
             <NavItem>
-              <NavLink tag={rNavLink} exact to="/dashboard" activeClassName="active" className="text-white">Dashboard</NavLink>
+              <NavLink tag={rNavLink} to={{ pathname: "/dashboard", state: { isAuthenticated: true } }} activeClassName="active" className="text-white">Dashboard</NavLink>
             </NavItem>
             
             <NavItem>
-              <NavLink tag={rNavLink} exact to="/data" activeClassName="active" className="text-white">Data</NavLink>
+              <NavLink tag={rNavLink} to={{ pathname: "/data", state: { isAuthenticated: true } }} activeClassName="active" className="text-white">Data</NavLink>
             </NavItem>
             
             {/* <NavItem>
