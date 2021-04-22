@@ -207,7 +207,6 @@ class HandlingStringDataPipeline:
             'phố': 'street',
             'đường': 'street',
             'phường': 'ward',
-            'phố': 'ward',
             'xã': 'ward',
             'quận': 'district',
             'huyện': 'district',
