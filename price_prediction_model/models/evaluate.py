@@ -14,7 +14,7 @@ def evaluateModel(district, post_type):
     print("Model Evaluation for {} in {}".format(post_type, district))
     print("------------------------------")
 
-    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district = %s AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( district, post_type, 10 ) )
+    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district = %s AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( district, post_type, 15 ) )
     item_lst = cur.fetchall()
 
     for item in item_lst:
@@ -22,10 +22,12 @@ def evaluateModel(district, post_type):
         ward = item[2]
         print("\n")
         data = getData(post_type, street, ward, district, conn)
-        X_train, X_test, Y_train, Y_test = splitData(data)
+        
+        if data is not None:
+            X_train, X_test, Y_train, Y_test = splitData(data)
 
-        score = linearRegressionModel(X_train, Y_train, X_test, Y_test)
-        print("Linear Regression training model score: ", score, "\n")
+            score = linearRegressionModel(X_train, Y_train, X_test, Y_test)
+            print("Linear Regression training model score: ", score, "\n")
 
     # Close connection:
     cur.close()
