@@ -50,11 +50,8 @@ class HomedySpider(scrapy.Spider):
             else:
                 logging.log(logging.ERROR, "Duplicated item in " + item_url)
                 continue
-        # url = 'https://homedy.com/ban-gap-can-nha-2-lau-3-phong-ngu-le-van-khuong-quan-12-gan-metro-es1501413'
-        # if url not in self.new_lst:
-        #     yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
-        # else:
-        #    logging.log(logging.ERROR, "Duplicated item in " + url)
+        # url = 'https://homedy.com/ban-can-82m2-hoang-kim-the-gia-gia-re-235-ty-so-hong-thanh-toan-700tr-o-ngay-es960493'
+        # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
 
         # next_page:
         next_page = response.xpath('//div[@class="page-nav"]/ul/li[@class="active"]/following-sibling::*')
@@ -127,8 +124,8 @@ class HomedySpider(scrapy.Spider):
                         if tmp[0] == 'Dự':
                             item[location_dict[key]] = tmp[1].split(" ", 1)[1]
                         else:
-                            if tmp[0] == 'Đường':
-                                print(tmp)
+                            # if tmp[0] == 'Đường':
+                            #     print(tmp)
                             item[location_dict[key]] = tmp[1]
                 
                 # if tmp[0] == "": # Fuck
@@ -207,9 +204,9 @@ class HomedySpider(scrapy.Spider):
         item['image_urls'] = image_urls
 
         # get project name:
-        project_name_component = response.xpath('//div[@class="product-project"]/div[@class="product-project-bg"]').get()
+        project_name_component = response.xpath('//div[@class="product-project"]/div[@class="product-project-bg"]')
 
-        if project_name_component is not None:
+        if project_name_component.get() is not None:
             project_name = project_name_component.xpath('./div[@class="project"]/div[@class="project-detail"]/div[contains(@class, "item")]/div[@class="info"]/a/text()').get()
             item['project_name'] = " ".join(project_name.split())
 
