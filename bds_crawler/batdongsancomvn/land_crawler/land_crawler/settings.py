@@ -22,30 +22,11 @@ NEWSPIDER_MODULE = 'land_crawler.spiders'
 #     'scrapy_fake_useragent.providers.FixedUserAgentProvider',  # fall back to USER_AGENT value
 # ]
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36 Edg/89.0.774.68'
-# RANDOM_UA_PER_PROXY = True
-
-# scrapy-proxies
-
-# Retry many times since proxies often fail
-# RETRY_TIMES = 10
-# Retry on most error codes since proxies fail for different reasons
-# RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
-
-# PROXY_LIST = 'proxy/list.txt'
-
-# Proxy mode:
-# 0 = Every requests have different proxy
-# 1 = Take only one proxy from the list and assign it to every requests
-# 2 = Put a custom proxy to use in the settings
-# PROXY_MODE = 0
-
-# If proxy mode is 2 uncomment this sentence :
-#CUSTOM_PROXY = "http://host1:port"
 
 # USER_AGENT = 'land_crawler (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 1
@@ -80,23 +61,19 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'land_crawler.middlewares.LandCrawlerSpiderMiddleware': 543,
-#}
+# SPIDER_MIDDLEWARES = {
+    # 'land_crawler.middlewares.LandCrawlerSpiderMiddleware': 543,
+    # 'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
+# }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-#     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
-#     'scrapy_proxies.RandomProxy': 100,
-#     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
-
-#     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-#     'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
-#     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
-#     'scrapy_fake_useragent.middleware.RetryUserAgentMiddleware': 401,
-#     'land_crawler.middlewares.LandCrawlerDownloaderMiddleware': 543,
     'land_crawler.middlewares.SeleniumDownloaderMiddleware': 15,
+    # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+    # 'land_crawler.middlewares.ProxyMiddleware': 150,
+    # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 400,
+    # 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
 # Enable or disable extensions
@@ -115,7 +92,7 @@ ITEM_PIPELINES = {
     'land_crawler.pipelines.PriceValidationPipeline': 4,
     # 'land_crawler.pipelines.ImageProcessingPipeline': 5,
     'land_crawler.pipelines.HandlingStringDataPipeline': 6,
-    'land_crawler.pipelines.PostgreSQLPipeline': 7,
+    # 'land_crawler.pipelines.PostgreSQLPipeline': 7,
     # 'land_crawler.pipelines.UpdateDatabasePipeline': 10,
 }
 
