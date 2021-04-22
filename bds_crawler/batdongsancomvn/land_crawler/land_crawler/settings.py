@@ -92,7 +92,7 @@ ITEM_PIPELINES = {
     'land_crawler.pipelines.PriceValidationPipeline': 4,
     # 'land_crawler.pipelines.ImageProcessingPipeline': 5,
     'land_crawler.pipelines.HandlingStringDataPipeline': 6,
-    # 'land_crawler.pipelines.PostgreSQLPipeline': 7,
+    'land_crawler.pipelines.PostgreSQLPipeline': 7,
     # 'land_crawler.pipelines.UpdateDatabasePipeline': 10,
 }
 
