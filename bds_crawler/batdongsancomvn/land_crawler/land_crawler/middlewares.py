@@ -21,6 +21,13 @@ from scrapy.http.response.html import HtmlResponse
 # from selenium.webdriver.support import expected_conditions
 # from selenium.webdriver.common.by import By
 
+from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
+import socket
+import socks
+import time
+from stem import Signal
+from stem.control import Controller
+
 class LandCrawlerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
@@ -137,6 +144,7 @@ class SeleniumDownloaderMiddleware:
         options.add_experimental_option('useAutomationExtension', False)
         # options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36')
         
+        # window chrome web driver:
         self.driver = webdriver.Chrome('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\chromedriver.exe', options=options)
 
         # linux chrome webdriver:
@@ -171,5 +179,24 @@ class SeleniumDownloaderMiddleware:
     def spider_closed(self):
         # Shutdown driver when spider closed:
         self.driver.quit()
-        
 
+
+def new_tor_identity():
+    with Controller.from_port(port=9151) as controller:
+        controller.authenticate(password='361975Warcraft')
+        controller.signal(Signal.NEWNYM)
+
+class ProxyMiddleware(HttpProxyMiddleware):
+    def process_response(self, request, response, spider):
+        # Get a new identity depending on the response
+        if response.status != 200:
+            new_tor_identity()
+            return request
+        return response
+
+    def process_request(self, request, spider):
+        # Set the Proxy
+        # A new identity for each request
+        # Comment out if you want to get a new Identity only through process_response
+        new_tor_identity()
+        request.meta['proxy'] = 'http://127.0.0.1:8118'
