@@ -41,19 +41,26 @@ class PropzySpider(scrapy.Spider):
             self.new_lst.append(item[0])
 
     def parse(self, response):
-        # for item in response.xpath('//div[@id="view-as-grid"]/div[contains(@class, "col-md-3")]'):
-        #     item_url = "https://propzy.vn" + item.xpath('./div[contains(@class, "item-listing")]/div[@class="bl-img"]/div[contains(@class, "owl-carousel")]/a').attrib["href"]
+        for item in response.xpath('//div[@id="view-as-grid"]/div[contains(@class, "col-md-3")]'):
+            item_url = "https://propzy.vn" + item.xpath('./div[contains(@class, "item-listing")]/div[@class="bl-img"]/div[contains(@class, "owl-carousel")]/a').attrib["href"]
 
-        #     if item_url not in self.new_lst:
-        #         yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
-        #     else:
-        #         logging.log(logging.ERROR, "Duplicated item in " + item_url)
-        #         continue
+            if item_url not in self.new_lst:
+                yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
+            else:
+                logging.log(logging.ERROR, "Duplicated item in " + item_url)
+                continue
 
-        url = 'https://propzy.vn/mua/nha/hcm/quan-phu-nhuan/id228674'
+        # next page:
+        next_page = response.xpath('//div[@class="pages"]/ul/li/a[contains(@class, "current")]/following::*')
 
-        # price = response.xpath('//div[@id="view-as-grid"]/div[contains(@class, "col-md-3")]/div[contains(@class, "item-listing")]/div[@class="bl-info"]/div[@class="bl-info-listing"]/h3/text()').get()
-        yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
+        if next_page.get() is not None:
+            nextpage_url = response.urljoin(next_page.xpath('./a').attrib["href"])
+
+            if nextpage_url != 'https://propzy.vn/mua/bat-dong-san/hcm/p2?property_type=11&selectprice=2&bed-value&loai=11,13,8,14':
+                yield scrapy.Request(nextpage_url, callback=self.parse)
+
+        # url = 'https://propzy.vn/mua/nha/hcm/quan-phu-nhuan/id228674#tab-utilities-area'
+        # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
 
     def parse_item(self, response, item_url):
         item = PropzyItem()
@@ -65,7 +72,19 @@ class PropzySpider(scrapy.Spider):
         item['location'] = response.xpath('//div[@class="t-detail"]/p[@class="p-address"]/text()').get()
         item['item_code'] = response.xpath('//div[@class="t-detail"]/div[@class="label mb-10"]/span[@class="label-3"]/text()').get()
         
-        item['post_type'] = response.xpath('//div[@class="breadcrumbs"]/span[@class="item"]/text()').get()
+        post_type = response.xpath('//div[@class="breadcrumbs"]/span[@class="item"]/text()').get()
+        post_type = " ".join(post_type.split())
+
+        post_type_dict = {
+            'Bán chung cư': 'Bán căn hộ chung cư',
+            'Bán đất nền dự án': 'Bán đất nền dự án (đất trong dự án quy hoạch)',
+            'Bán đất nền': 'Bán đất',
+            'Bán nhà riêng': 'Bán nhà riêng'
+        }
+        post_type_keys_lst = list(post_type_dict.keys())
+
+        if post_type in post_type_keys_lst:
+            item['post_type'] = post_type_dict[post_type]
 
         # handle price:
         price = response.xpath('//div[@class="t-detail"]/p[@class="p-price-n"]/text()').get()

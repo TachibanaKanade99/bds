@@ -15,7 +15,6 @@ class PropzyItem(scrapy.Item):
     price = scrapy.Field()
     area = scrapy.Field()
     location = scrapy.Field()
-    phone = scrapy.Field()
     posted_date = scrapy.Field()
     item_code = scrapy.Field()
     image_urls = scrapy.Field()

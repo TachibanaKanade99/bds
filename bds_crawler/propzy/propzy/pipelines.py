@@ -5,6 +5,7 @@
 
 
 # useful for handling different item types with a single interface
+from re import split
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 # from scrapy.pipelines.images import ImagesPipeline
@@ -149,6 +150,33 @@ class HandlingStringDataPipeline:
             adapter['number_of_bedrooms'] = int(adapter['number_of_bedrooms'])
         if adapter['number_of_toilets'] is not None:
             adapter['number_of_toilets'] = int(adapter['number_of_toilets'])
+
+
+        # handle street, ward, district:
+        adapter['province'] = "Hồ Chí Minh"
+        splitted_location = adapter['location'].split(',')
+
+        # remove space in splitted_location:
+        for i in range(len(splitted_location)):
+            splitted_location[i] = " ".join(splitted_location[i].split())
+
+        location_dict = {
+            'phố': 'street',
+            'đường': 'street',
+            'phường': 'ward',
+            'xã': 'ward',
+            'quận': 'district',
+            'huyện': 'district',
+        }
+        location_keys_lst = list(location_dict.keys())
+
+        for sub in splitted_location:
+            tmp = sub.split(" ", 1)
+            tmp_prefix = tmp[0].lower()
+            tmp_value = tmp[1]
+
+            if tmp_prefix in location_keys_lst:
+                adapter[location_dict[tmp_prefix]] = tmp_value
 
         return item
 
