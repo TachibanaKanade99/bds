@@ -1,5 +1,6 @@
 import scrapy
 from land_crawler.items import LandCrawlerItem
+# from scrapy.http import Request
 import logging
 # from scrapy.utils.log import configure_logging
 from datetime import datetime
@@ -45,8 +46,9 @@ class LandSpider(scrapy.Spider):
     def start_requests(self):
         url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
-        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-duong-truong-quoc-dung-phuong-8-13-prj-newton-residence/ban-gap-novaland-2pn-full-noi-that-cuc-dep-lh-0973034874-pr28541296'
+        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-pho-luong-dinh-cua-phuong-binh-khanh-prj-de-capella/99-phien-ban-gioi-han-cuc-p-thu-thiem-sdt-0911-98-52-52-pr29559147'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
+        # yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
 
     def parse(self, response):
         for item in response.xpath('//div[@id="product-lists-web"]/div[contains(@class, "product-item clearfix")]'):
@@ -63,8 +65,8 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            # if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p2?gcn=100-ty':
-            yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
+            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p250?gcn=100-ty':
+                yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
         # handlers = logging.handlers[:]
@@ -128,7 +130,12 @@ class LandSpider(scrapy.Spider):
             item['item_code'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[4]/span[@class="sp3"]/text()').get()
 
             # Latitude & longitude:
-            item['latitude'] = response.xpath('//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src').get()
+            latitude = response.xpath('//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src').get()
+
+            if latitude is None:
+                latitude = response.xpath('//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@data-src').get()
+
+            item['latitude'] = latitude
 
             # crawl image:
             image_urls = []
