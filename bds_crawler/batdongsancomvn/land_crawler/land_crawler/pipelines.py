@@ -237,7 +237,7 @@ class HandlingStringDataPipeline:
             # if tmp[0] in ("Quận", "Huyện"):
             #     adapter['district'] = tmp[1]
             
-        adapter['province'] = splitted_location[-1]
+        adapter['province'] = "Hồ Chí Minh"
 
         # set null for non-existed value:
         if not adapter.get('project_name'):
