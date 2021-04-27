@@ -7,7 +7,5 @@ test_selenium/
 virenv_linux/
 virenv_win/
 
-
-bds_realestatedata_202103071456.csv
 chromedriver.exe
 propzy/
