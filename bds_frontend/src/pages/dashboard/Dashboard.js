@@ -99,7 +99,7 @@ class Dashboard extends Component {
           new_updates: res.data.new_updates,
           has_furniture: res.data.has_furniture,
           
-          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: 'batdongsan.com.vn', data: [res.data.bds_all, res.data.bds_lands, res.data.bds_houses, res.data.bds_departments, res.data.bds_others]}, { name: 'homedy.com', data: [res.data.homedy_all, res.data.homedy_lands, res.data.homedy_houses, res.data.homedy_departments, res.data.homedy_others]} ]} />,
+          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: 'batdongsan.com.vn', data: [res.data.bds_all, res.data.bds_lands, res.data.bds_houses, res.data.bds_departments, res.data.bds_others] }, { name: 'homedy.com', data: [res.data.homedy_all, res.data.homedy_lands, res.data.homedy_houses, res.data.homedy_departments, res.data.homedy_others] }, { name: 'propzy.vn', data: [res.data.propzy_all, res.data.propzy_lands, res.data.propzy_houses, res.data.propzy_departments, res.data.propzy_others] } ]} />,
 
           lands_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Lands', 'Lands in Project']} series={[res.data.only_land / res.data.lands * 100, res.data.land_in_project / res.data.lands * 100]} />,
 
@@ -143,7 +143,7 @@ class Dashboard extends Component {
           new_updates: res.data.new_updates,
           has_furniture: res.data.has_furniture,
 
-          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"450"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: 'batdongsan.com.vn', data: [res.data.bds_all, res.data.bds_lands, res.data.bds_houses, res.data.bds_departments, res.data.bds_others]}, { name: 'homedy.com', data: [res.data.homedy_all, res.data.homedy_lands, res.data.homedy_houses, res.data.homedy_departments, res.data.homedy_others]} ]} />,
+          chart: <WebChart className="mx-2" type={"bar"} width={"100%"} height={"500"} labels={['All', 'Lands', 'Houses', 'Departments', 'Others']} series={[ { name: 'batdongsan.com.vn', data: [res.data.bds_all, res.data.bds_lands, res.data.bds_houses, res.data.bds_departments, res.data.bds_others] }, { name: 'homedy.com', data: [res.data.homedy_all, res.data.homedy_lands, res.data.homedy_houses, res.data.homedy_departments, res.data.homedy_others] }, { name: 'propzy.vn', data: [res.data.propzy_all, res.data.propzy_lands, res.data.propzy_houses, res.data.propzy_departments, res.data.propzy_others] } ]} />,
 
           lands_chart: <WebChart className="mx-2" type={"pie"} width={"70%"} height={"400"} labels={['Lands', 'Lands in Project']} series={[res.data.only_land / res.data.lands * 100, res.data.land_in_project / res.data.lands * 100]} />,
 

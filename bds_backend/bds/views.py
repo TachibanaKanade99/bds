@@ -204,6 +204,15 @@ class CountView(APIView):
         homedy_warehouses = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='kho, nhà xưởng', posted_date__range=[start_date, end_date]).count()
         homedy_others = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='khác', posted_date__range=[start_date, end_date]).count() + homedy_farms + homedy_warehouses
 
+        # propzy.vn
+        propzy_all = RealEstateData.objects.filter(url__contains='propzy.vn', posted_date__range=[start_date, end_date]).count()
+        propzy_lands = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='đất', posted_date__range=[start_date, end_date]).count()
+        propzy_houses = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='nhà', posted_date__range=[start_date, end_date]).count()
+        propzy_departments = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='căn hộ', posted_date__range=[start_date, end_date]).count()
+        propzy_farms = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='trang trại', posted_date__range=[start_date, end_date]).count()
+        propzy_warehouses = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='kho, nhà xưởng', posted_date__range=[start_date, end_date]).count()
+        propzy_others = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='khác', posted_date__range=[start_date, end_date]).count() + propzy_farms + propzy_warehouses
+
         counts = {
             'all': all,
             'lands': lands,
@@ -231,6 +240,12 @@ class CountView(APIView):
             'homedy_houses': homedy_houses,
             'homedy_departments': homedy_departments,
             'homedy_others': homedy_others,
+            # propzy.vn
+            'propzy_all': propzy_all,
+            'propzy_lands': propzy_lands,
+            'propzy_houses': propzy_houses,
+            'propzy_departments': propzy_departments,
+            'propzy_others': propzy_others,
         }
         return Response(counts, status=status.HTTP_200_OK)
     
@@ -275,6 +290,15 @@ class CountView(APIView):
         homedy_warehouses = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='kho, nhà xưởng').count()
         homedy_others = RealEstateData.objects.filter(url__contains='homedy.com', post_type__contains='khác').count() + homedy_farms + homedy_warehouses
 
+        # propzy.vn
+        propzy_all = RealEstateData.objects.filter(url__contains='propzy.vn').count()
+        propzy_lands = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='đất').count()
+        propzy_houses = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='nhà').count()
+        propzy_departments = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='căn hộ').count()
+        propzy_farms = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='trang trại').count()
+        propzy_warehouses = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='kho, nhà xưởng').count()
+        propzy_others = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='khác').count() + propzy_farms + propzy_warehouses
+
         counts = {
             'all': all,
             'lands': lands,
@@ -302,6 +326,12 @@ class CountView(APIView):
             'homedy_houses': homedy_houses,
             'homedy_departments': homedy_departments,
             'homedy_others': homedy_others,
+            # propzy.vn
+            'propzy_all': propzy_all,
+            'propzy_lands': propzy_lands,
+            'propzy_houses': propzy_houses,
+            'propzy_departments': propzy_departments,
+            'propzy_others': propzy_others,
         }
         return Response(counts, status=status.HTTP_200_OK)
 

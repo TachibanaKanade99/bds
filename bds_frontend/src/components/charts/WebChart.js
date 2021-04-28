@@ -8,7 +8,7 @@ class WebChart extends Component {
       options: {
         // colors: ['#343a40', '#007bff', '#dc3545', '#ffc107', '#17a2b8'],
         theme: {
-          palette: 'palette8' // upto palette10
+          palette: 'palette4' // upto palette10
         },
         chart: {
           animations: {
@@ -31,6 +31,23 @@ class WebChart extends Component {
             show: false,
           },
           fontFamily: 'Helvetica, Arial, sans-serif',
+        },
+        plotOptions: {
+          bar: {
+            dataLabels: {
+              position: 'top',
+            }
+          },
+        },
+        dataLabels: {
+          enabled: true,
+          style: {
+            colors: ['#343a40']
+          },
+          offsetY: 0,
+          dropShadow: {
+            enabled: false,
+          }
         },
         type: 'bar',
         stroke: {
