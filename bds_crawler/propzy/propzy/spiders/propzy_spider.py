@@ -12,7 +12,8 @@ class PropzySpider(scrapy.Spider):
     name = 'propzy_spider'
     allowed_domains = ['propzy.vn']
     start_urls = [
-        'https://propzy.vn/mua/bat-dong-san/hcm?property_type=11&selectprice=2&bed-value&loai=11,13,8,14',
+        # 'https://propzy.vn/mua/bat-dong-san/hcm?property_type=11&selectprice=2&bed-value&loai=11,13,8,14',
+        'https://propzy.vn/mua/bat-dong-san/hcm/p1155?property_type=11&selectprice=2&bed-value&loai=11,13,8,14)'
     ]
 
     # log format:
@@ -56,8 +57,8 @@ class PropzySpider(scrapy.Spider):
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.xpath('./a').attrib["href"])
 
-            if nextpage_url != 'https://propzy.vn/mua/bat-dong-san/hcm/p10?property_type=11&selectprice=2&bed-value&loai=11,13,8,14':
-                yield scrapy.Request(nextpage_url, callback=self.parse)
+            # if nextpage_url != 'https://propzy.vn/mua/bat-dong-san/hcm/p10?property_type=11&selectprice=2&bed-value&loai=11,13,8,14':
+            yield scrapy.Request(nextpage_url, callback=self.parse)
 
         # url = 'https://propzy.vn/mua/nha/hcm/quan-phu-nhuan/id228674#tab-utilities-area'
         # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
@@ -67,7 +68,9 @@ class PropzySpider(scrapy.Spider):
         item['url'] = item_url
 
         item['content'] = response.xpath('//div[@class="t-detail"]/h1/text()').get()
-        item['posted_date'] = datetime.now().strftime("%d/%m/%Y")
+        
+        posted_date = datetime.now().strftime("%d/%m/%Y")
+        item['posted_date'] = datetime.strptime(posted_date, "%d/%m/%Y")
 
         item['location'] = response.xpath('//div[@class="t-detail"]/p[@class="p-address"]/text()').get()
         item['item_code'] = response.xpath('//div[@class="t-detail"]/div[@class="label mb-10"]/span[@class="label-3"]/text()').get()

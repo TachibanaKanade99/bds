@@ -176,9 +176,11 @@ class HandlingStringDataPipeline:
 
         location_dict = {
             'phố': 'street',
+            'rạch': 'street',
             'đường': 'street',
             'phường': 'ward',
             'xã': 'ward',
+            'thị trấn': 'ward',
             'quận': 'district',
             'huyện': 'district',
         }
@@ -191,6 +193,16 @@ class HandlingStringDataPipeline:
 
             if tmp_prefix in location_keys_lst:
                 adapter[location_dict[tmp_prefix]] = tmp_value
+
+        if not adapter.get('street'):
+            logging.log(logging.ERROR, "Missing street in " + item['url'])
+            raise DropItem("Missing street in " + item['url'])
+        if not adapter.get('ward'):
+            logging.log(logging.ERROR, "Missing ward in " + item['url'])
+            raise DropItem("Missing ward in " + item['url'])
+        if not adapter.get('district'):
+            logging.log(logging.ERROR, "Missing district in " + item['url'])
+            raise DropItem("Missing district in " + item['url'])
 
         return item
 
