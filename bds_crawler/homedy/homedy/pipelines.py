@@ -139,6 +139,20 @@ class CheckDuplicateItemsPipeline:
 
         # f.close()
 
+        # get item_code from database:
+        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        cur = conn.cursor()
+        
+        cur.execute("SELECT item_code from bds_realestatedata WHERE url LIKE '%homedy%'")
+        item_code_lst = cur.fetchall()
+
+        # close connection:
+        cur.close()
+        conn.close()
+
+        for item in item_code_lst:
+            self.item_lst.append(item[0])
+
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
 

@@ -127,6 +127,20 @@ class CheckDuplicatedItemsPipeline:
     def __init__(self):
         self.item_lst = []
 
+        # get item_code from database:
+        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        cur = conn.cursor()
+        
+        cur.execute("SELECT item_code from bds_realestatedata WHERE url LIKE '%propzy%'")
+        item_code_lst = cur.fetchall()
+
+        # close connection:
+        cur.close()
+        conn.close()
+
+        for item in item_code_lst:
+            self.item_lst.append(item[0])
+
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
 
@@ -180,3 +194,97 @@ class HandlingStringDataPipeline:
 
         return item
 
+class PostgreSQLPipeline:
+    def __init__(self):
+        self.conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        self.cur = self.conn.cursor()
+
+    # def open_spider(self, spider):
+    #     self.cur.execute("SELECT url FROM bds_realestatedata;")
+    #     self.item_lst = self.cur.fetchall()
+
+    def close_spider(self, spider):
+        # close cursor
+        self.cur.close()
+        # close connection
+        self.conn.close()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+
+        # if len(self.item_lst) > 0:
+        #     for i in self.item_lst:
+        #         if adapter['url'] == i[0]:
+        #             logging.log(logging.ERROR, "Duplicated item in " + item['url'])
+        #             raise DropItem("Duplicated item in " + item['url'])
+        
+        try:
+            self.cur.execute("""
+                INSERT INTO bds_realestatedata (
+                    url, 
+                    content,
+                    price, 
+                    area, 
+                    location, 
+                    posted_date, 
+                    item_code, 
+                    image_urls,  
+                    orientation, 
+                    district, 
+                    province, 
+                    street, 
+                    ward, 
+                    post_type, 
+                    project_name,
+                    number_of_bedrooms,
+                    number_of_toilets,
+                    latitude,
+                    longitude
+                ) 
+                VALUES ( 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s, 
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )""", 
+                (
+                    adapter['url'], 
+                    adapter['content'], 
+                    adapter['price'], 
+                    adapter['area'], 
+                    adapter['location'],  
+                    adapter['posted_date'], 
+                    adapter['item_code'], 
+                    adapter['image_urls'], 
+                    adapter['orientation'], 
+                    adapter['district'], 
+                    adapter['province'], 
+                    adapter['street'], 
+                    adapter['ward'], 
+                    adapter['post_type'], 
+                    adapter['project_name'],
+                    adapter['number_of_bedrooms'],
+                    adapter['number_of_toilets'],
+                    adapter['latitude'],
+                    adapter['longitude']
+                )
+            )
+            self.conn.commit()
+        except:
+            self.conn.rollback()
+        return item

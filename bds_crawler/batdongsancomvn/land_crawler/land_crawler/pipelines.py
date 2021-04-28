@@ -96,13 +96,20 @@ class CheckCrawledDataPipeline:
 class CheckDuplicateItemsPipeline:
     def __init__(self):
         self.item_lst = []
+        
+        # get item_code from database:
+        conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+        cur = conn.cursor()
+        
+        cur.execute("SELECT item_code from bds_realestatedata WHERE url LIKE '%batdongsan%'")
+        item_code_lst = cur.fetchall()
 
-        # f = open('sample_data_hcm.jl', encoding='utf-8')
-        # for line in f:
-        #     data = json.loads(line)
-        #     self.item_lst.append(data['item_code'])
+        # close connection:
+        cur.close()
+        conn.close()
 
-        # f.close()
+        for item in item_code_lst:
+            self.item_lst.append(item[0])
 
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
