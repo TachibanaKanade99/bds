@@ -1,21 +1,14 @@
+from numpy.lib import polynomial
 import psycopg2
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn import linear_model
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import PolynomialFeatures
 
-
-# convert to array:
-# area = np.array(data['area'])
-# price = np.array(data['price'])
-# plt.scatter(area, price, marker='o')
-# plt.show()
-
-def getData():
-    street = 'An Hạ'
-    ward = 'Phạm Văn Hai'
-    district = 'Bình Chánh'
+def getData(post_type, street, ward, district):
     
     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
     # cur = conn.cursor()
@@ -23,28 +16,30 @@ def getData():
         SELECT area, price, street, ward, district
         FROM bds_realestatedata 
         WHERE
-            post_type = 'Bán đất' AND
+            post_type = '{}' AND
             area IS NOT NULL AND
             price IS NOT NULL AND
-            street = '{street}' AND
-            ward = '{ward}' AND
-            district = '{district}';
-    """.format(street=street, ward=ward, district=district)
+            street = '{}' AND
+            ward = '{}' AND
+            district = '{}';
+    """.format(post_type, street, ward, district)
+    
     # cur.execute(query)
     # data = cur.fetchall()
     data = pd.read_sql_query(query, con=conn)
 
-    # data info
-    # print(data.head())
-    # print("Data length: ", len(data))
     return prepareData(data)
+#     return data
 
 def prepareData(data):
-    factor = 3
-    area_upper_bound = data['area'].mean() + data['area'].std() * factor
-    area_lower_bound = data['area'].mean() - data['area'].std() * factor
-    price_upper_bound = data['price'].mean() + data['price'].std() * factor
-    price_lower_bound = data['price'].mean() - data['price'].std() * factor
+
+#     data.drop_duplicates(subset='area', keep='first', inplace=True)
+
+    # use percentiles to remove outliers:
+    area_upper_bound = data['area'].quantile(0.95)
+    area_lower_bound = data['area'].quantile(0.05)
+    price_upper_bound = data['price'].quantile(0.95)
+    price_lower_bound = data['price'].quantile(0.05)
 
     data = data[
         (data['area'] < area_upper_bound) &
@@ -53,81 +48,113 @@ def prepareData(data):
         (data['price'] > price_lower_bound)
     ]
 
-    # print("Data length after removing outliners: ", len(data))
+    # Use log transformation to scale data:
 
-    log_transform_area = (data['area']+1).transform(np.log)
-    log_transform_price = (data['price']+1).transform(np.log)
-    log_transform_data = pd.DataFrame({'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
+#     log_transform_area = (data['area']+1).transform(np.log)
+#     log_transform_price = (data['price']+1).transform(np.log)
+#     log_transform_data = pd.DataFrame({'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
-    # new_data['log(x - min(x) + 1)'] = (data['area'] - data['area'].min() + 1).transform(np.log)
+#     print("--------------------------------------------------------")
+#     print(log_transform_data.head())
+#     print("--------------------------------------------------------")
+#     print("Log Transformation Data length: ", len(log_transform_data))
 
-    return log_transform_data
+#     return log_transform_data
+    return data
 
-def test_split(data):
+def convertData(data):
     # Selection few attributes
-    attributes = list(
-        [
-            'area',
-        ]
-    )
+    attributes = ['area',]
+    predict_val = ['price']
     
     # Vector attributes of lands
     X = data[attributes]
     # Vector price of land
-    Y = data['price']
+    Y = data[predict_val]
     
     # Convert into arr:
     X = np.array(X)
     Y = np.array(Y)
     
-    # plt.plot(Y)
-    # plt.show()
-    
     # Split data to training test and testing test
-    # training data : testing data = 80 : 20
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+#     training data : testing data = 80 : 20
+#     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
     
-    return X_train, X_test, Y_train, Y_test
+#     return X_train, X_test, Y_train, Y_test
+    return X, Y
 
 # Linear Regression Model:
-def linearRegressionModel(X_train, Y_train, X_test, Y_test):
+def linearRegressionModel(X, Y):
     model = linear_model.LinearRegression()
 
     # Training process
-    model.fit(X_train, Y_train)
+    model.fit(X, Y)
     
-    print("\nLinear Regression Model:")
-    # Evaluating the model
-    yfit = model.predict(X_test)
-    plt.scatter(X_train, Y_train, marker='o')
-    plt.plot(X_test, yfit)
-    plt.show()
-    
-    score_trained = model.score(X_test, Y_test)
+    # return model coefficient, intercept:
+    return model
 
-    return score_trained
+# Polynomial Regression:
+def polynomialRegression(X, Y, degree):
+    polynomial_features = PolynomialFeatures(degree=degree)
+    X_poly = polynomial_features.fit_transform(X)
 
-# Lasso Model:
-def lassoRegressionModel(X_train, Y_train, X_test, Y_test):
-    model = linear_model.Lasso(alpha=1.0)
+    # calc linear regression again:
+    poly_model = linearRegressionModel(X_poly, Y)
+    return poly_model, X_poly
 
-    # Training process:
-    model.fit(X_train, Y_train)
-    
-    print("\nLasso Model:")
-    # Evaluating the model
-    yfit = model.predict(X_test)
-    plt.scatter(X_train, Y_train, marker='o')
-    plt.plot(X_test, yfit)
-    plt.show()
+# Data:
+post_type = 'Bán đất'
+street = 'Vĩnh Lộc'
+ward = 'Vĩnh Lộc B'
+district = 'Bình Chánh'
 
-    # Evaluation the model:
-    score_trained = model.score(X_test, Y_test)
-    
-    return score_trained
+data = getData(post_type, street, ward, district)
+X, Y = convertData(data)
 
-data = getData()
-X_train, X_test, Y_train, Y_test = test_split(data)
+model = linearRegressionModel(X, Y)
+model_coef = model.coef_
+model_intercept = model.intercept_
+Y_pred = model.predict(X)
 
-print("Linear Regression training model score: ", linearRegressionModel(X_train, Y_train, X_test, Y_test))
-# print("Lasso Regression training model score: ", lassoRegressionModel(X_train, Y_train, X_test, Y_test))
+""" 
+y = ax1 + b
+[a] is coefficient
+b is intercept
+"""
+
+print("Model coefficient: ", model_coef)
+print("Model intercept ", model_intercept)
+# print("Model: y = {coef}x + {intercept}".format(coef=model_coef[0], intercept=model_intercept))
+
+# Plot model:
+plt.scatter(X, Y)
+# plt.plot(X, model_coef*X + model_intercept, color='y')
+plt.plot(X, Y_pred, color='y')
+plt.show()
+
+# Find root mean square error of model between Y_predict and Y
+rmse = np.sqrt(mean_squared_error(Y, Y_pred))
+print("Root Mean Square Error: ", rmse)
+
+# Call polynomial regression
+degree = 2
+poly_model, X_poly = polynomialRegression(X, Y, degree)
+poly_model_coef = poly_model.coef_
+poly_model_intercept = poly_model.intercept_
+Y_poly_pred = poly_model.predict(X_poly)
+
+print("\n\nAfter using polynomial regression with degree = {}: ".format(degree))
+
+print("Model coefficient: ", poly_model_coef)
+print("Model intercept ", poly_model_intercept)
+# print("Model: y = {} + {}x + {}x^2 + {}".format(model_coef[0], model_coef[1], model_coef[2], model_intercept))
+
+# Plot model:
+plt.scatter(X, Y)
+# plt.plot(X, model_coef[0] + model_coef[1]*X + model_coef[2]*pow(X, 2) + model_intercept, color='g')
+plt.plot(X, Y_poly_pred, color='g')
+plt.show()
+
+# Find root mean square error of model between Y_predict and Y
+rmse = np.sqrt(mean_squared_error(Y, Y_poly_pred))
+print("Root Mean Square Error: ", rmse)
