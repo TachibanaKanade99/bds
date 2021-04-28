@@ -28,23 +28,23 @@ def prepareData(data):
     # find duplicates:
     # print(data)
     # print(data.duplicated(subset='area'))
-    data.drop_duplicates(subset='area', keep='first', inplace=True)
+    # data.drop_duplicates(subset='area', keep='first', inplace=True)
 
     # remove outliner:
 
     # use standard deviation:
-    factor = 3
-    area_upper_bound = data['area'].mean() + data['area'].std() * factor
-    area_lower_bound = data['area'].mean() - data['area'].std() * factor
-    price_upper_bound = data['price'].mean() + data['price'].std() * factor
-    price_lower_bound = data['price'].mean() - data['price'].std() * factor
+    # factor = 3
+    # area_upper_bound = data['area'].mean() + data['area'].std() * factor
+    # area_lower_bound = data['area'].mean() - data['area'].std() * factor
+    # price_upper_bound = data['price'].mean() + data['price'].std() * factor
+    # price_lower_bound = data['price'].mean() - data['price'].std() * factor
 
-    data = data[
-        (data['area'] < area_upper_bound) &
-        (data['area'] > area_lower_bound) &
-        (data['price'] < price_upper_bound) &
-        (data['price'] > price_lower_bound)
-    ]
+    # data = data[
+    #     (data['area'] < area_upper_bound) &
+    #     (data['area'] > area_lower_bound) &
+    #     (data['price'] < price_upper_bound) &
+    #     (data['price'] > price_lower_bound)
+    # ]
     
     # use percentiles:
     area_upper_bound = data['area'].quantile(0.95)
@@ -65,6 +65,11 @@ def prepareData(data):
         log_transform_price = (data['price']+1).transform(np.log)
         log_transform_data = pd.DataFrame({'post_type': data['post_type'], 'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
+        print("--------------------------------------------------------")
+        print(log_transform_data.head())
+        print("--------------------------------------------------------")
+        print("Log Transformation Data length: ", len(log_transform_data))
+
         # new_data['log(x - min(x) + 1)'] = (data['area'] - data['area'].min() + 1).transform(np.log)
         # print("Data after using log transformation: ")
         # print(log_transform_data.head())
@@ -78,10 +83,6 @@ def prepareData(data):
         # print(normalize_data.head())
 
         # print("Data for street {}, ward {}, district {}".format(normalize_data['street'][0], normalize_data['ward'][0], normalize_data['district'][0]))
-        print("--------------------------------------------------------")
-        print(log_transform_data.head())
-        print("--------------------------------------------------------")
-        print("Data length: ", len(log_transform_data))
 
         return log_transform_data
     else:
