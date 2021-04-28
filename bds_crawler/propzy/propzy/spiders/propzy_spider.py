@@ -56,7 +56,7 @@ class PropzySpider(scrapy.Spider):
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.xpath('./a').attrib["href"])
 
-            if nextpage_url != 'https://propzy.vn/mua/bat-dong-san/hcm/p2?property_type=11&selectprice=2&bed-value&loai=11,13,8,14':
+            if nextpage_url != 'https://propzy.vn/mua/bat-dong-san/hcm/p10?property_type=11&selectprice=2&bed-value&loai=11,13,8,14':
                 yield scrapy.Request(nextpage_url, callback=self.parse)
 
         # url = 'https://propzy.vn/mua/nha/hcm/quan-phu-nhuan/id228674#tab-utilities-area'
