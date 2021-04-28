@@ -20,7 +20,6 @@ class PropzyItem(scrapy.Item):
     image_urls = scrapy.Field()
     post_type = scrapy.Field()
 
-
     # Optional fields:
     project_name = scrapy.Field()
     street = scrapy.Field()
