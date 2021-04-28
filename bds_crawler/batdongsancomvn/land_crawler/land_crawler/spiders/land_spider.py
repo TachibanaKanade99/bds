@@ -46,7 +46,7 @@ class LandSpider(scrapy.Spider):
     def start_requests(self):
         url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
-        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-pho-luong-dinh-cua-phuong-binh-khanh-prj-de-capella/99-phien-ban-gioi-han-cuc-p-thu-thiem-sdt-0911-98-52-52-pr29559147'
+        # item_url = 'https://batdongsan.com.vn/ban-nha-rieng-duong-le-hong-phong-phuong-2-15/can-tien-ban-gap-mt-thut-p-p-2-quan-5-kinh-doanh-ngay-pr29647157'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
         # yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
 
@@ -140,7 +140,7 @@ class LandSpider(scrapy.Spider):
             # crawl image:
             image_urls = []
             for url in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@class="slide-product"]/div[contains(@class, "swiper-container gallery-top")]/ul/li'):
-                image_url = url.xpath('./div[@class="ioverlay"]/img/@src-lazy').get()
+                image_url = url.xpath('./div[@class="ioverlay"]/img/@src').get()
                 image_urls.append(image_url)
 
             item['image_urls'] = image_urls
