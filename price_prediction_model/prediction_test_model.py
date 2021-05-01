@@ -29,11 +29,15 @@ def getData(post_type, street, ward, district):
     data = pd.read_sql_query(query, con=conn)
 
     return prepareData(data)
-#     return data
+    # return data
 
 def prepareData(data):
-
-#     data.drop_duplicates(subset='area', keep='first', inplace=True)
+    
+    # Drop duplicates:    
+    data.drop_duplicates(subset='area', keep='first', inplace=True)
+    
+    # Sort data by area column:
+    data = data.sort_values(by=['area'])
 
     # use percentiles to remove outliers:
     area_upper_bound = data['area'].quantile(0.95)
@@ -48,21 +52,20 @@ def prepareData(data):
         (data['price'] > price_lower_bound)
     ]
 
-    # Use log transformation to scale data:
+#     Use log transformation to scale data:
 
-#     log_transform_area = (data['area']+1).transform(np.log)
-#     log_transform_price = (data['price']+1).transform(np.log)
-#     log_transform_data = pd.DataFrame({'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
+    log_transform_area = (data['area']+1).transform(np.log)
+    log_transform_price = (data['price']+1).transform(np.log)
+    log_transform_data = pd.DataFrame({'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
-#     print("--------------------------------------------------------")
-#     print(log_transform_data.head())
-#     print("--------------------------------------------------------")
-#     print("Log Transformation Data length: ", len(log_transform_data))
+    print("--------------------------------------------------------")
+    print(log_transform_data.head())
+    print("--------------------------------------------------------")
+    print("Log Transformation Data length: ", len(log_transform_data))
 
-#     return log_transform_data
-    return data
+    return log_transform_data
 
-def convertData(data):
+def splitData(data):
     # Selection few attributes
     attributes = ['area',]
     predict_val = ['price']
@@ -77,10 +80,10 @@ def convertData(data):
     Y = np.array(Y)
     
     # Split data to training test and testing test
-#     training data : testing data = 80 : 20
-#     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+    # training data : testing data = 80 : 20
+    # X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1)
+    # return X_train, X_test, Y_train, Y_test
     
-#     return X_train, X_test, Y_train, Y_test
     return X, Y
 
 # Linear Regression Model:
@@ -94,7 +97,7 @@ def linearRegressionModel(X, Y):
     return model
 
 # Polynomial Regression:
-def polynomialRegression(X, Y, degree):
+def polynomialRegression(degree):
     polynomial_features = PolynomialFeatures(degree=degree)
     X_poly = polynomial_features.fit_transform(X)
 
@@ -102,14 +105,41 @@ def polynomialRegression(X, Y, degree):
     poly_model = linearRegressionModel(X_poly, Y)
     return poly_model, X_poly
 
+def degree_test(degree):
+    print("\n\nUse polynomial regression with degree = {}: \n\n".format(degree))
+    
+    # Call polynomial regression
+    poly_model, X_poly = polynomialRegression(degree)
+    
+    poly_model_coef = poly_model.coef_
+    poly_model_intercept = poly_model.intercept_
+    Y_poly_pred = poly_model.predict(X_poly)
+    
+    print("Model coefficient: ", poly_model_coef)
+    print("Model intercept: ", poly_model_intercept)
+    
+    # print("Model: y = {} + {}x + {}x^2 + {}".format(model_coef[0], model_coef[1], model_coef[2], model_intercept))
+
+    # Plot model:
+    plt.scatter(X, Y)
+    # plt.plot(X, poly_model_coef[0] + poly_model_coef[1]*X + poly_model_coef[2]*pow(X, 2) + poly_model_intercept, color='red')
+    plt.plot(X, Y_poly_pred, color='green')
+    plt.show()
+
+    # Find root mean square error of model between Y_predict and Y
+    rmse = np.sqrt(mean_squared_error(Y, Y_poly_pred))
+    print("Root Mean Square Error: ", rmse)
+
+    return poly_model, rmse
+
 # Data:
 post_type = 'Bán đất'
-street = 'Vĩnh Lộc'
-ward = 'Vĩnh Lộc B'
+street = 'Đoàn Nguyễn Tuấn'
+ward = 'Quy Đức'
 district = 'Bình Chánh'
 
 data = getData(post_type, street, ward, district)
-X, Y = convertData(data)
+X, Y = splitData(data)
 
 model = linearRegressionModel(X, Y)
 model_coef = model.coef_
@@ -124,37 +154,24 @@ b is intercept
 
 print("Model coefficient: ", model_coef)
 print("Model intercept ", model_intercept)
-# print("Model: y = {coef}x + {intercept}".format(coef=model_coef[0], intercept=model_intercept))
 
 # Plot model:
 plt.scatter(X, Y)
 # plt.plot(X, model_coef*X + model_intercept, color='y')
-plt.plot(X, Y_pred, color='y')
+plt.plot(X, Y_pred, color='yellow')
 plt.show()
 
 # Find root mean square error of model between Y_predict and Y
-rmse = np.sqrt(mean_squared_error(Y, Y_pred))
-print("Root Mean Square Error: ", rmse)
+linear_rmse = np.sqrt(mean_squared_error(Y, Y_pred))
+print("Root Mean Square Error: ", linear_rmse)
 
-# Call polynomial regression
-degree = 2
-poly_model, X_poly = polynomialRegression(X, Y, degree)
-poly_model_coef = poly_model.coef_
-poly_model_intercept = poly_model.intercept_
-Y_poly_pred = poly_model.predict(X_poly)
-
-print("\n\nAfter using polynomial regression with degree = {}: ".format(degree))
-
-print("Model coefficient: ", poly_model_coef)
-print("Model intercept ", poly_model_intercept)
-# print("Model: y = {} + {}x + {}x^2 + {}".format(model_coef[0], model_coef[1], model_coef[2], model_intercept))
-
-# Plot model:
-plt.scatter(X, Y)
-# plt.plot(X, model_coef[0] + model_coef[1]*X + model_coef[2]*pow(X, 2) + model_intercept, color='g')
-plt.plot(X, Y_poly_pred, color='g')
-plt.show()
-
-# Find root mean square error of model between Y_predict and Y
-rmse = np.sqrt(mean_squared_error(Y, Y_poly_pred))
-print("Root Mean Square Error: ", rmse)
+min_rmse = linear_rmse
+selected_model = linear_model
+degree = 1
+for i in range(2, 11):
+    poly_model, rmse = degree_test(i)
+    if rmse < min_rmse:
+        min_rmse = rmse
+        selected_model = poly_model
+        degree = i
+print("\n\nMin rmse: {} with model with degree: {}".format(min_rmse, degree))
