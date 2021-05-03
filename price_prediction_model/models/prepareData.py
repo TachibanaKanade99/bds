@@ -21,14 +21,12 @@ def getData(post_type, street, ward, district, conn):
     # data = cur.fetchall()
     data = pd.read_sql_query(query, con=conn)
 
-    return prepareData(data)
+    return data
 
-def prepareData(data):
+def preprocessData(data):
 
-    # find duplicates:
-    # print(data)
-    # print(data.duplicated(subset='area'))
-    # data.drop_duplicates(subset='area', keep='first', inplace=True)
+    # Drop duplicates:    
+    data = data.drop_duplicates(subset='area', keep='first', inplace=False)
 
     # remove outliner:
 
@@ -59,24 +57,33 @@ def prepareData(data):
         (data['price'] > price_lower_bound)
     ]
 
-    if len(data) > 10:
-        # log transform:
+    if len(data) > 15:
+        return data
+    else:
+        return None
+
+def scaleData(data):
+
+    if data is not None:
+
+        # scale data with log transform:
+
         log_transform_area = (data['area']+1).transform(np.log)
         log_transform_price = (data['price']+1).transform(np.log)
         log_transform_data = pd.DataFrame({'post_type': data['post_type'], 'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
-        print("--------------------------------------------------------")
-        print(log_transform_data.head())
-        print("--------------------------------------------------------")
-        print("Log Transformation Data length: ", len(log_transform_data))
+        # print("--------------------------------------------------------")
+        # print(log_transform_data.head())
+        # print("--------------------------------------------------------")
+        # print("Log Transformation Data length: ", len(log_transform_data))
 
         # new_data['log(x - min(x) + 1)'] = (data['area'] - data['area'].min() + 1).transform(np.log)
         # print("Data after using log transformation: ")
         # print(log_transform_data.head())
 
         # normalize data:
-        # normalize_area = (log_transform_data['area'] - log_transform_data['area'].min()) / (log_transform_data['area'].max() - log_transform_data['area'].min())
-        # normalize_price = (log_transform_data['price'] - log_transform_data['price'].min()) / (log_transform_data['price'].max() - log_transform_data['price'].min())
+        # normalize_area = (data['area'] - data['area'].min()) / (data['area'].max() - data['area'].min())
+        # normalize_price = (data['price'] - data['price'].min()) / (data['price'].max() - data['price'].min())
         # normalize_data = pd.DataFrame({'post_type': data['post_type'], 'area': normalize_area, 'price': normalize_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
         # print("Data after using normalization: ")
@@ -85,31 +92,37 @@ def prepareData(data):
         # print("Data for street {}, ward {}, district {}".format(normalize_data['street'][0], normalize_data['ward'][0], normalize_data['district'][0]))
 
         return log_transform_data
+        # return normalize_data
+
     else:
         return None
 
-def splitData(data):
+def convertData(data):
     # Selection few attributes
-    attributes = list(
-        [
-            'area',
-        ]
-    )
+    attributes = ['area',]
+    predict_val = ['price']
     
     # Vector attributes of lands
     X = data[attributes]
     # Vector price of land
-    Y = data['price']
-    
-    # Convert into arr:
+    Y = data[predict_val]
+
+    # convert into array
     X = np.array(X)
     Y = np.array(Y)
     
-    # plt.plot(Y)
-    # plt.show()
-    
-    # Split data to training test and testing test
-    # training data : testing data = 80 : 20
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
-    
-    return X_train, X_test, Y_train, Y_test
+    return X, Y
+
+def divideData(data):
+    if data is not None:
+        # Split data to training test and testing test
+        # training data : testing data = 80 : 20
+
+        # print(data['price'])
+        # print("Number of price instances by class: {}".format(np.bincount(data['price'])))
+        # train, test = train_test_split(data, test_size=0.2, random_state=42, stratify=data['price'].astype(int))
+        train, test = train_test_split(data, test_size=0.2)
+        
+        return train, test
+    else:
+        return None, None
