@@ -66,37 +66,20 @@ class CheckCrawledDataPipeline:
         adapter['post_type'] = " ".join(adapter['post_type'].split())
 
         # Handle comma in area:
-        area = adapter['area']
-        area_comma_idx = area.find(",")
+        area_comma_idx = adapter['area'].find(",")
+        area_dot_idx = adapter['area'].find(".")
+        
+        if area_dot_idx != -1:
+            adapter['area'] = adapter['area'].replace('.', '')
+        
         if area_comma_idx != -1:
-            new_area = ''
-
-            for i in range(len(area)):
-                if i == area_comma_idx:
-                    new_area = new_area + "."
-                else:
-                    new_area = new_area + area[i]
-
-            adapter['area'] = new_area
+            adapter['area'] = adapter['area'].replace(',', '.')    
 
         # Handle comma in price:
-        price = adapter['price']
-        price_comma_idx = price.find(",")
+        price_comma_idx = adapter['price'].find(",")
+    
         if price_comma_idx != -1:
-            new_price = ''
-
-            for i in range(len(price)):
-                if i == price_comma_idx:
-                    new_price = new_price + "."
-                else:
-                    new_price = new_price + price[i]
-            
-            adapter['price'] = new_price
-
-        # Handle "Đã bán" in price:
-        # if price == 'Đã bán':
-        #     logging.log(logging.ERROR, "Missing price in " + item['url'])
-        #     raise DropItem("Missing price in ", item['url'])
+            adapter['price'] = adapter['price'].replace(',', '.')
 
         return item
 
@@ -188,8 +171,18 @@ class HandlingStringDataPipeline:
 
         for sub in splitted_location:
             tmp = sub.split(" ", 1)
-            tmp_prefix = tmp[0].lower()
-            tmp_value = tmp[1]
+
+            if len(tmp) > 1:
+                tmp_prefix = tmp[0].lower()
+
+                if tmp_prefix == 'thị':
+                    splitted_tmp = tmp[1].split(" ", 1)
+                    tmp_prefix = 'thị trấn'
+                    tmp_value = splitted_tmp[1]
+                else:    
+                    tmp_value = tmp[1]
+            else:
+                continue
 
             if tmp_prefix in location_keys_lst:
                 adapter[location_dict[tmp_prefix]] = tmp_value
