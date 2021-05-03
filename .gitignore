@@ -8,3 +8,4 @@ virenv_linux/
 virenv_win/
 
 chromedriver.exe
+price_prediction_model/data_thesis/data_thesis.csv
