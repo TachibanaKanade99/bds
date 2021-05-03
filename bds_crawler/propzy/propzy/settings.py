@@ -88,7 +88,7 @@ ITEM_PIPELINES = {
     'propzy.pipelines.CheckDuplicatedItemsPipeline': 2,
     'propzy.pipelines.PriceValidationPipeline': 3,
     'propzy.pipelines.HandlingStringDataPipeline': 4,
-    # 'propzy.pipelines.PostgreSQLPipeline': 5,
+    'propzy.pipelines.PostgreSQLPipeline': 5,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
