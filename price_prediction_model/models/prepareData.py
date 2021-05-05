@@ -4,8 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
-def getData(post_type, street, ward, district, conn):
-    # cur = conn.cursor()
+def getData(post_type, street, ward, district):
+    # db connection:
+    conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+
     query = """
         SELECT post_type, area, price, street, ward, district
         FROM bds_realestatedata 
@@ -17,9 +19,11 @@ def getData(post_type, street, ward, district, conn):
             ward = '{ward}' AND
             district = '{district}';
     """.format(post_type=post_type, street=street, ward=ward, district=district)
-    # cur.execute(query)
-    # data = cur.fetchall()
+    
     data = pd.read_sql_query(query, con=conn)
+
+    # close db connection:
+    conn.close()
 
     return data
 
@@ -57,7 +61,7 @@ def preprocessData(data):
         (data['price'] > price_lower_bound)
     ]
 
-    if len(data) > 15:
+    if len(data) > 10:
         return data
     else:
         return None
@@ -72,11 +76,6 @@ def scaleData(data):
         log_transform_price = (data['price']+1).transform(np.log)
         log_transform_data = pd.DataFrame({'post_type': data['post_type'], 'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
-        # print("--------------------------------------------------------")
-        # print(log_transform_data.head())
-        # print("--------------------------------------------------------")
-        # print("Log Transformation Data length: ", len(log_transform_data))
-
         # new_data['log(x - min(x) + 1)'] = (data['area'] - data['area'].min() + 1).transform(np.log)
         # print("Data after using log transformation: ")
         # print(log_transform_data.head())
@@ -86,11 +85,6 @@ def scaleData(data):
         # normalize_price = (data['price'] - data['price'].min()) / (data['price'].max() - data['price'].min())
         # normalize_data = pd.DataFrame({'post_type': data['post_type'], 'area': normalize_area, 'price': normalize_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
 
-        # print("Data after using normalization: ")
-        # print(normalize_data.head())
-
-        # print("Data for street {}, ward {}, district {}".format(normalize_data['street'][0], normalize_data['ward'][0], normalize_data['district'][0]))
-
         return log_transform_data
         # return normalize_data
 
@@ -99,7 +93,7 @@ def scaleData(data):
 
 def convertData(data):
     # Selection few attributes
-    attributes = ['area',]
+    attributes = ['area']
     predict_val = ['price']
     
     # Vector attributes of lands
@@ -118,9 +112,6 @@ def divideData(data):
         # Split data to training test and testing test
         # training data : testing data = 80 : 20
 
-        # print(data['price'])
-        # print("Number of price instances by class: {}".format(np.bincount(data['price'])))
-        # train, test = train_test_split(data, test_size=0.2, random_state=42, stratify=data['price'].astype(int))
         train, test = train_test_split(data, test_size=0.2)
         
         return train, test
