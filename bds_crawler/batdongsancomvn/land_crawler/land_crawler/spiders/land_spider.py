@@ -44,8 +44,7 @@ class LandSpider(scrapy.Spider):
             self.new_lst.append(item[0])
 
     def start_requests(self):
-        # url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
-        url = 'https://batdongsan.com.vn/nha-dat-ban-quan-4?gcn=100-ty'
+        url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
         # item_url = 'https://batdongsan.com.vn/ban-nha-rieng-duong-le-hong-phong-phuong-2-15/can-tien-ban-gap-mt-thut-p-p-2-quan-5-kinh-doanh-ngay-pr29647157'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
@@ -66,7 +65,7 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p190?gcn=100-ty':
+            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p300?gcn=100-ty':
                 yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
