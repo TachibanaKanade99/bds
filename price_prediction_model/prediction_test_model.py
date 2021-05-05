@@ -1,177 +1,131 @@
-from numpy.lib import polynomial
-import psycopg2
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn import linear_model
-from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.model_selection import cross_val_score, LeaveOneOut
+from matplotlib import pyplot as plt
 
-def getData(post_type, street, ward, district):
-    
-    conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
-    # cur = conn.cursor()
-    query = """
-        SELECT area, price, street, ward, district
-        FROM bds_realestatedata 
-        WHERE
-            post_type = '{}' AND
-            area IS NOT NULL AND
-            price IS NOT NULL AND
-            street = '{}' AND
-            ward = '{}' AND
-            district = '{}';
-    """.format(post_type, street, ward, district)
-    
-    # cur.execute(query)
-    # data = cur.fetchall()
-    data = pd.read_sql_query(query, con=conn)
+from models.prepareData import getData, preprocessData, convertData, divideData, scaleData
+from models.models import linearRegressionModel, PolynomialFeatures, polynomialRegression
 
-    return prepareData(data)
-    # return data
+data = getData('Bán đất', 'Nguyễn Thị Rành', 'Nhuận Đức', 'Củ Chi')
 
-def prepareData(data):
-    
-    # Drop duplicates:    
-    data.drop_duplicates(subset='area', keep='first', inplace=True)
-    
-    # Sort data by area column:
-    data = data.sort_values(by=['area'])
+print("Sample data")
+print("--------------------------------------------------------")
+print(data.head())
+print("--------------------------------------------------------")
+print("Data length: ", len(data))
 
-    # use percentiles to remove outliers:
-    area_upper_bound = data['area'].quantile(0.95)
-    area_lower_bound = data['area'].quantile(0.05)
-    price_upper_bound = data['price'].quantile(0.95)
-    price_lower_bound = data['price'].quantile(0.05)
+# preprocess data using StandardScaler:
+# data = preprocessData(data)
+# scaler = StandardScaler()
+# attribute = ['area']
+# predict_value = ['price']
 
-    data = data[
-        (data['area'] < area_upper_bound) &
-        (data['area'] > area_lower_bound) &
-        (data['price'] < price_upper_bound) &
-        (data['price'] > price_lower_bound)
-    ]
+# data['area'] = scaler.fit_transform(data[attribute])
+# data['price'] = scaler.fit_transform(data[predict_value])
 
-#     Use log transformation to scale data:
+# custom preporcess data:
+data = preprocessData(data)
+data = scaleData(data)
 
-    log_transform_area = (data['area']+1).transform(np.log)
-    log_transform_price = (data['price']+1).transform(np.log)
-    log_transform_data = pd.DataFrame({'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
+print("\n")
+print("Data after after Preprocessing: ")
+print("--------------------------------------------------------")
+print(data.head())
+print("--------------------------------------------------------")
+print("Data Length: ", len(data))
 
-    print("--------------------------------------------------------")
-    print(log_transform_data.head())
-    print("--------------------------------------------------------")
-    print("Log Transformation Data length: ", len(log_transform_data))
+# divide data into train and test:
+train_data, test_data = divideData(data)
 
-    return log_transform_data
+# Sort data by area column:
+train_data = train_data.sort_values(by=['area'])
+test_data = test_data.sort_values(by=['area'])
 
-def splitData(data):
-    # Selection few attributes
-    attributes = ['area',]
-    predict_val = ['price']
-    
-    # Vector attributes of lands
-    X = data[attributes]
-    # Vector price of land
-    Y = data[predict_val]
-    
-    # Convert into arr:
-    X = np.array(X)
-    Y = np.array(Y)
-    
-    # Split data to training test and testing test
-    # training data : testing data = 80 : 20
-    # X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1)
-    # return X_train, X_test, Y_train, Y_test
-    
-    return X, Y
+print("\nTrain data length: ", len(train_data))
+print("Test data length: ", len(test_data))
 
-# Linear Regression Model:
-def linearRegressionModel(X, Y):
-    model = linear_model.LinearRegression()
+# convert data into numpy
+X, Y = convertData(data)
+X_train, Y_train = convertData(train_data)
+X_test, Y_test = convertData(test_data)
 
-    # Training process
-    model.fit(X, Y)
-    
-    # return model coefficient, intercept:
-    return model
+print("\nLinear Regression Model: ")
 
-# Polynomial Regression:
-def polynomialRegression(degree):
-    polynomial_features = PolynomialFeatures(degree=degree)
-    X_poly = polynomial_features.fit_transform(X)
+# find model by using linear regression:
+model, linear_rmse = linearRegressionModel(X_train, Y_train)
 
-    # calc linear regression again:
-    poly_model = linearRegressionModel(X_poly, Y)
-    return poly_model, X_poly
+# find Y by using linear model predict:
+Y_train_pred = model.predict(X_train)
+# Y_test_pred = model.predict(X_test)
 
-def degree_test(degree):
-    print("\n\nUse polynomial regression with degree = {}: \n\n".format(degree))
-    
-    # Call polynomial regression
-    poly_model, X_poly = polynomialRegression(degree)
-    
-    poly_model_coef = poly_model.coef_
-    poly_model_intercept = poly_model.intercept_
-    Y_poly_pred = poly_model.predict(X_poly)
-    
-    print("Model coefficient: ", poly_model_coef)
-    print("Model intercept: ", poly_model_intercept)
-    
-    # print("Model: y = {} + {}x + {}x^2 + {}".format(model_coef[0], model_coef[1], model_coef[2], model_intercept))
-
-    # Plot model:
-    plt.scatter(X, Y)
-    # plt.plot(X, poly_model_coef[0] + poly_model_coef[1]*X + poly_model_coef[2]*pow(X, 2) + poly_model_intercept, color='red')
-    plt.plot(X, Y_poly_pred, color='green')
-    plt.show()
-
-    # Find root mean square error of model between Y_predict and Y
-    rmse = np.sqrt(mean_squared_error(Y, Y_poly_pred))
-    print("Root Mean Square Error: ", rmse)
-
-    return poly_model, rmse
-
-# Data:
-post_type = 'Bán đất'
-street = 'Đoàn Nguyễn Tuấn'
-ward = 'Quy Đức'
-district = 'Bình Chánh'
-
-data = getData(post_type, street, ward, district)
-X, Y = splitData(data)
-
-model = linearRegressionModel(X, Y)
-model_coef = model.coef_
-model_intercept = model.intercept_
-Y_pred = model.predict(X)
-
-""" 
-y = ax1 + b
-[a] is coefficient
-b is intercept
-"""
-
-print("Model coefficient: ", model_coef)
-print("Model intercept ", model_intercept)
-
-# Plot model:
-plt.scatter(X, Y)
-# plt.plot(X, model_coef*X + model_intercept, color='y')
-plt.plot(X, Y_pred, color='yellow')
+# Plot linear model:
+plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
+plt.scatter(X_test, Y_test, marker='o', color='red', label='test_data')
+plt.plot(X_train, Y_train_pred, color='black', label='train_model')
+plt.legend()
+plt.tight_layout()
+plt.xlabel('area')
+plt.ylabel('price')
 plt.show()
 
-# Find root mean square error of model between Y_predict and Y
-linear_rmse = np.sqrt(mean_squared_error(Y, Y_pred))
-print("Root Mean Square Error: ", linear_rmse)
+# Linear Model coefficient and intercept:
+print("Linear model coefficient: {}".format(model.coef_))
+print("Linear model intercept: {}".format(model.intercept_))
 
-min_rmse = linear_rmse
-selected_model = linear_model
-degree = 1
-for i in range(2, 11):
-    poly_model, rmse = degree_test(i)
-    if rmse < min_rmse:
-        min_rmse = rmse
-        selected_model = poly_model
-        degree = i
-print("\n\nMin rmse: {} with model with degree: {}".format(min_rmse, degree))
+# linear_model rmse:
+print("Linear model rmse: {}".format(linear_rmse))
+print("\n\n")
+
+# find model by using polynomial regression:
+poly_model, poly_rmse, degree = polynomialRegression(X_train, Y_train)
+
+print("Polynomial Regression with degree = {}".format(degree))
+
+# transform X and X_test:
+polynomial_features = PolynomialFeatures(degree=degree)
+X_poly = polynomial_features.fit_transform(X)
+X_train_poly = polynomial_features.fit_transform(X_train)
+X_test_poly = polynomial_features.fit_transform(X_test)
+
+# Try predicting Y
+Y_train_poly_pred = poly_model.predict(X_train_poly)
+Y_test_poly_pred = poly_model.predict(X_test_poly)
+
+# Plot model:
+plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
+plt.scatter(X_test, Y_test, marker='o', color='red', label='test_data')
+plt.plot(X_train, Y_train_poly_pred, color='green', label='train_model')
+plt.plot(X_test, Y_test_poly_pred, color='purple', label='test_model')
+plt.legend()
+plt.tight_layout()
+plt.xlabel('area')
+plt.ylabel('price')
+plt.show()
+
+# Polynomial Model coefficient and intercept:
+print("Polynomial model coefficient:")
+print(poly_model.coef_)
+print("Polynomial model intercept: {}".format(poly_model.intercept_))
+
+# poly_model rmse:
+print("Polynomial Model RMSE: {}".format(poly_rmse))
+
+# score the model with test data:
+
+# Linear score:
+print("\n")
+print("Linear Model score on train dataset: ", model.score(X_train, Y_train))
+print("Linear Model score on test dataset: ", model.score(X_test, Y_test))
+
+# Poly score:
+print("\n")
+print("Poly Model score on train dataset: ", poly_model.score(X_train_poly, Y_train))
+print("Poly Model score on test dataset: ", poly_model.score(X_test_poly, Y_test))
+
+# Cross Validation Score:
+linear_cross_val_score = cross_val_score(model, X, Y, cv=5)
+print("\nCross Validation Score on Linear Regression: ", linear_cross_val_score)
+print("Average score on Linear Regression: ", linear_cross_val_score.mean())
+
+poly_cross_val_score = cross_val_score(poly_model, X_poly, Y, cv=5)
+print("\nCross Validation Score on Polynomial Regression: ", poly_cross_val_score)
+print("Average score on Polynomial Regression: ", poly_cross_val_score.mean())
