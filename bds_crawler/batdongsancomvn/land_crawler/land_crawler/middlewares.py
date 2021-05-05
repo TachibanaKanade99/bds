@@ -145,7 +145,7 @@ class SeleniumDownloaderMiddleware:
         # options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36')
         
         # window chrome web driver:
-        self.driver = webdriver.Chrome('D:\\Tuan_Minh\\bds\\bds_crawler\\batdongsancomvn\\chromedriver.exe', options=options)
+        self.driver = webdriver.Chrome('..\\chromedriver.exe', options=options)
 
         # linux chrome webdriver:
         # self.driver = webdriver.Chrome('/media/tuanminh/DATA/Tuan_Minh/bds/bds_crawler/batdongsancomvn/chromedriver_linux', options=options)
