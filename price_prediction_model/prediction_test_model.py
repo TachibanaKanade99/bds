@@ -1,11 +1,13 @@
-from sklearn.preprocessing import StandardScaler, RobustScaler
-from sklearn.model_selection import cross_val_score, LeaveOneOut
+from sklearn.model_selection import cross_val_score, KFold
 from matplotlib import pyplot as plt
 
 from models.prepareData import getData, preprocessData, convertData, divideData, scaleData
 from models.models import linearRegressionModel, PolynomialFeatures, polynomialRegression
 
-data = getData('Bán đất', 'Nguyễn Thị Rành', 'Nhuận Đức', 'Củ Chi')
+# data = getData('Bán đất', 'Vườn Lài', 'An Phú Đông', '12')
+# data = getData('Bán đất', 'Ngô Chí Quốc', 'Bình Chiểu', 'Thủ Đức')
+# data = getData('Bán đất', 'Nguyễn Văn Tạo', 'Long Thới', 'Nhà Bè')
+data = getData('Bán đất', 'Lê Văn Lương', 'Nhơn Đức', 'Nhà Bè')
 
 print("Sample data")
 print("--------------------------------------------------------")
@@ -121,11 +123,12 @@ print("\n")
 print("Poly Model score on train dataset: ", poly_model.score(X_train_poly, Y_train))
 print("Poly Model score on test dataset: ", poly_model.score(X_test_poly, Y_test))
 
-# Cross Validation Score:
-linear_cross_val_score = cross_val_score(model, X, Y, cv=5)
+# K-fold Cross Validation Score:
+kf = KFold(n_splits=5, shuffle=False, random_state=None)
+linear_cross_val_score = cross_val_score(model, X_train, Y_train, cv=kf)
 print("\nCross Validation Score on Linear Regression: ", linear_cross_val_score)
 print("Average score on Linear Regression: ", linear_cross_val_score.mean())
 
-poly_cross_val_score = cross_val_score(poly_model, X_poly, Y, cv=5)
+poly_cross_val_score = cross_val_score(poly_model, X_train_poly, Y_train, cv=kf)
 print("\nCross Validation Score on Polynomial Regression: ", poly_cross_val_score)
 print("Average score on Polynomial Regression: ", poly_cross_val_score.mean())

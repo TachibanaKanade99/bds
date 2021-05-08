@@ -9,12 +9,13 @@ def getData(post_type, street, ward, district):
     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
 
     query = """
-        SELECT post_type, area, price, street, ward, district
+        SELECT post_type, area, price, street, ward, district, posted_date
         FROM bds_realestatedata 
         WHERE
             post_type = '{post_type}' AND
             area IS NOT NULL AND
             price IS NOT NULL AND
+            posted_date IS NOT NULL AND
             street = '{street}' AND
             ward = '{ward}' AND
             district = '{district}';
@@ -29,8 +30,11 @@ def getData(post_type, street, ward, district):
 
 def preprocessData(data):
 
+    # sort data in post_date order:
+    data = data.sort_values(by=['posted_date'])
+
     # Drop duplicates:    
-    data = data.drop_duplicates(subset='area', keep='first', inplace=False)
+    data = data.drop_duplicates(subset='area', keep='last', inplace=False)
 
     # remove outliner:
 
@@ -74,7 +78,7 @@ def scaleData(data):
 
         log_transform_area = (data['area']+1).transform(np.log)
         log_transform_price = (data['price']+1).transform(np.log)
-        log_transform_data = pd.DataFrame({'post_type': data['post_type'], 'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
+        log_transform_data = pd.DataFrame({'post_type': data['post_type'], 'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district'], 'posted_date': data['posted_date']})
 
         # new_data['log(x - min(x) + 1)'] = (data['area'] - data['area'].min() + 1).transform(np.log)
         # print("Data after using log transformation: ")
@@ -113,7 +117,6 @@ def divideData(data):
         # training data : testing data = 80 : 20
 
         train, test = train_test_split(data, test_size=0.2)
-        
         return train, test
     else:
         return None, None
