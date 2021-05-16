@@ -46,7 +46,7 @@ class LandSpider(scrapy.Spider):
     def start_requests(self):
         url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
-        # item_url = 'https://batdongsan.com.vn/ban-nha-rieng-duong-le-hong-phong-phuong-2-15/can-tien-ban-gap-mt-thut-p-p-2-quan-5-kinh-doanh-ngay-pr29647157'
+        # item_url = 'https://batdongsan.com.vn/ban-dat-duong-tran-van-giau-xa-le-minh-xuan/ngan-hang-phat-mai-39-lo-tho-cu-100-ngay-ben-xe-mien-tay-so-hong-rieng-gia-chi-tu-15tr-m2-pr29891214'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
         # yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
 
@@ -65,7 +65,7 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p300?gcn=100-ty':
+            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p350?gcn=100-ty':
                 yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
@@ -79,17 +79,17 @@ class LandSpider(scrapy.Spider):
 
         for land_item in response.xpath('//div[@class="form-content"]/div[contains(@class, "main-container clearfix")]'):
             item['url'] = item_url
-            item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="containerTitle"]/h1[@class="tile-product"]/text()').get()
+            item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="containerTitle"]/h1[contains(@class, "tile-product")]/text()').get()
             
-            item['price'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[1]/span[@class="sp2"]/text()').get()
-            item['area'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[2]/span[@class="sp2"]/text()').get()
+            item['price'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[1]/span[@class="sp2"]/text()').get()
+            item['area'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[2]/span[@class="sp2"]/text()').get()
 
             # Optional information:
 
             # item['post_type'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="detail-2 pad-16"]/div[@class="box-round-grey3"]/div[1]/span[2]/text()').get()
             # item['location'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="detail-2 pad-16"]/div[@class="box-round-grey3"]/div[2]/span[2]/text()').get()
 
-            for post_info in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="detail-2 pad-16"]/div[@class="box-round-grey3"]/div'):
+            for post_info in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="detail-2 pad-16"]/div[@class="box-round-grey3"]/div'):
                 post_name = post_info.xpath('./span[1]/text()').get()
                 post_content = post_info.xpath('./span[2]/text()').get()
 
@@ -125,9 +125,9 @@ class LandSpider(scrapy.Spider):
             if email_item.get() is not None:
                 item['email'] = email_item.attrib["data-email"]
         
-            item['posted_date'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[1]/span[@class="sp3"]/text()').get()
-            item['expired_date'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[2]/span[@class="sp3"]/text()').get()
-            item['item_code'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[4]/span[@class="sp3"]/text()').get()
+            item['posted_date'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[1]/span[@class="sp3"]/text()').get()
+            item['expired_date'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[2]/span[@class="sp3"]/text()').get()
+            item['item_code'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="detail-product"]/div[@class="product-config pad-16"]/ul[@class="short-detail-2 list2 clearfix"]/li[4]/span[@class="sp3"]/text()').get()
 
             # Latitude & longitude:
             latitude = response.xpath('//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src').get()
@@ -139,7 +139,7 @@ class LandSpider(scrapy.Spider):
 
             # crawl image:
             image_urls = []
-            for url in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[@class="slide-product"]/div[contains(@class, "swiper-container gallery-top")]/ul/li'):
+            for url in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@class="slide-product"]/div[contains(@class, "swiper-container gallery-top")]/ul/li'):
                 image_url = url.xpath('./div[@class="ioverlay"]/img/@src').get()
                 image_urls.append(image_url)
 
