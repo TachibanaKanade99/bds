@@ -14,7 +14,7 @@ import random
 
 # Selenium:
 from selenium import webdriver
-from msedge.selenium_tools import Edge, EdgeOptions
+# from msedge.selenium_tools import Edge, EdgeOptions
 
 from scrapy.http.response.html import HtmlResponse
 # from selenium.webdriver.support.wait import WebDriverWait
@@ -169,7 +169,7 @@ class SeleniumDownloaderMiddleware:
             return request
 
         self.driver.get(request.url)
-        self.driver.implicitly_wait(random.uniform(1.0, 3.0))
+        self.driver.implicitly_wait(random.uniform(0.0, 2.0))
         # map_locator = self.driver.find_element(By.XPATH, '//*[@id="product-detail-web"]/div[@class="detail-product"]//div[@class="map"]/iframe/@src')
         # WebDriverWait(self.driver, timeout=5).until(expected_conditions.visibility_of_element_located(map_locator))
 

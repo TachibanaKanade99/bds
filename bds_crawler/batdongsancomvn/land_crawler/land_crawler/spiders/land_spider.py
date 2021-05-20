@@ -65,7 +65,7 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p350?gcn=100-ty':
+            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p250?gcn=100-ty':
                 yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
