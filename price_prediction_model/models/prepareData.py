@@ -81,16 +81,11 @@ def scaleData(data):
         log_transform_data = pd.DataFrame({'post_type': data['post_type'], 'area': log_transform_area, 'price': log_transform_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district'], 'posted_date': data['posted_date']})
 
         # new_data['log(x - min(x) + 1)'] = (data['area'] - data['area'].min() + 1).transform(np.log)
-        # print("Data after using log transformation: ")
-        # print(log_transform_data.head())
-
-        # normalize data:
-        # normalize_area = (data['area'] - data['area'].min()) / (data['area'].max() - data['area'].min())
-        # normalize_price = (data['price'] - data['price'].min()) / (data['price'].max() - data['price'].min())
-        # normalize_data = pd.DataFrame({'post_type': data['post_type'], 'area': normalize_area, 'price': normalize_price, 'street': data['street'], 'ward': data['ward'], 'district': data['district']})
+        
+        print("Data after using log transformation: ")
+        print(log_transform_data.head())
 
         return log_transform_data
-        # return normalize_data
 
     else:
         return None
