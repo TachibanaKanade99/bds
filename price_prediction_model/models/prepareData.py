@@ -36,6 +36,16 @@ def preprocessData(data):
     # Drop duplicates:    
     data = data.drop_duplicates(subset='area', keep='last', inplace=False)
 
+    # sort data by area to perform smoothing data:
+    data = data.sort_values(by=['area'])
+
+    # smooth data:
+    kernel_size = 10
+    kernel = np.ones(kernel_size) / kernel_size
+
+    data['area'] = np.convolve(np.array(data['area']), kernel, mode='same')
+    data['price'] = np.convolve(np.array(data['price']), kernel, mode='same')
+
     # remove outliner:
 
     # use standard deviation:
@@ -53,10 +63,10 @@ def preprocessData(data):
     # ]
     
     # use percentiles:
-    area_upper_bound = data['area'].quantile(0.95)
-    area_lower_bound = data['area'].quantile(0.05)
-    price_upper_bound = data['price'].quantile(0.95)
-    price_lower_bound = data['price'].quantile(0.05)
+    area_upper_bound = data['area'].quantile(0.8)
+    area_lower_bound = data['area'].quantile(0.1)
+    price_upper_bound = data['price'].quantile(0.8)
+    price_lower_bound = data['price'].quantile(0.1)
 
     data = data[
         (data['area'] < area_upper_bound) &
@@ -65,10 +75,12 @@ def preprocessData(data):
         (data['price'] > price_lower_bound)
     ]
 
-    if len(data) > 10:
+    if len(data) > 35:
         return data
     else:
         return None
+
+    
 
 def scaleData(data):
 
