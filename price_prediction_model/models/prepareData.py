@@ -28,6 +28,16 @@ def getData(post_type, street, ward, district):
 
     return data
 
+def calcMinimumMaximum(vals):
+    q1 = vals.quantile(0.25)
+    q3 = vals.quantile(0.75)
+    iqr = q3 - q1
+
+    minimum = q1 - 1.5 * iqr
+    maximum = q3 + 1.5 * iqr
+
+    return minimum, maximum
+
 def preprocessData(data):
 
     # sort data in post_date order:
@@ -38,13 +48,6 @@ def preprocessData(data):
 
     # sort data by area to perform smoothing data:
     data = data.sort_values(by=['area'])
-
-    # smooth data:
-    kernel_size = 10
-    kernel = np.ones(kernel_size) / kernel_size
-
-    data['area'] = np.convolve(np.array(data['area']), kernel, mode='same')
-    data['price'] = np.convolve(np.array(data['price']), kernel, mode='same')
 
     # remove outliner:
 
@@ -63,17 +66,46 @@ def preprocessData(data):
     # ]
     
     # use percentiles:
-    area_upper_bound = data['area'].quantile(0.8)
-    area_lower_bound = data['area'].quantile(0.1)
-    price_upper_bound = data['price'].quantile(0.8)
-    price_lower_bound = data['price'].quantile(0.1)
+    # area_upper_bound = data['area'].quantile(0.8)
+    # area_lower_bound = data['area'].quantile(0.1)
+    # price_upper_bound = data['price'].quantile(0.8)
+    # price_lower_bound = data['price'].quantile(0.1)
 
-    data = data[
-        (data['area'] < area_upper_bound) &
-        (data['area'] > area_lower_bound) &
-        (data['price'] < price_upper_bound) &
-        (data['price'] > price_lower_bound)
-    ]
+    # data = data[
+    #     (data['area'] < area_upper_bound) &
+    #     (data['area'] > area_lower_bound) &
+    #     (data['price'] < price_upper_bound) &
+    #     (data['price'] > price_lower_bound)
+    # ]
+
+    # USE IQR instead to detect outlier
+    while True:
+        area_minimum, area_maximum = calcMinimumMaximum(data['area'])
+        if (data['area'] > area_minimum).all() and (data['area'] < area_maximum).all():
+            break
+        else:
+            data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
+
+    while True:
+        price_minimum, price_maximum = calcMinimumMaximum(data['price'])
+        if (data['price'] > price_minimum).all() and (data['price'] < price_maximum).all():
+            break
+        else:
+            data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
+
+    # smooth data:
+
+    # convolve:
+    # kernel_size = 10
+    # kernel = np.ones(kernel_size) / kernel_size
+
+    # data['area'] = np.convolve(np.array(data['area']), kernel, mode='same')
+    # data['price'] = np.convolve(np.array(data['price']), kernel, mode='same')
+
+    # moving average:
+    # data['area'] = data['area'].rolling(window=5).mean()
+    # data['price'] = data['price'].rolling(window=5).mean()
+    # data = data.dropna()
 
     if len(data) > 35:
         return data
