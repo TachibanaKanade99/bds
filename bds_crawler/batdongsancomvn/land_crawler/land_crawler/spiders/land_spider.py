@@ -44,9 +44,10 @@ class LandSpider(scrapy.Spider):
             self.new_lst.append(item[0])
 
     def start_requests(self):
-        url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
+        # url = 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm?gcn=100-ty'
+        url = 'https://batdongsan.com.vn/nha-dat-ban-thu-duc?gcn=100-ty'
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
-        # item_url = 'https://batdongsan.com.vn/ban-dat-duong-tran-van-giau-xa-le-minh-xuan/ngan-hang-phat-mai-39-lo-tho-cu-100-ngay-ben-xe-mien-tay-so-hong-rieng-gia-chi-tu-15tr-m2-pr29891214'
+        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-duong-nguyen-huu-canh-phuong-22-prj-vinhomes-central-park/-ban-landmark-plus-binh-thanh-4-ty-1pn-pr28993381'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
         # yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
 
@@ -65,8 +66,8 @@ class LandSpider(scrapy.Spider):
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p250?gcn=100-ty':
-                yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
+            # if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p250?gcn=100-ty':
+            yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
         # handlers = logging.handlers[:]
@@ -81,8 +82,14 @@ class LandSpider(scrapy.Spider):
             item['url'] = item_url
             item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="containerTitle"]/h1[contains(@class, "tile-product")]/text()').get()
             
-            item['price'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[1]/span[@class="sp2"]/text()').get()
-            item['area'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li[2]/span[@class="sp2"]/text()').get()
+            for item_info in land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="short-detail-wrap"]/ul/li'):
+                title = item_info.xpath('./span[@class="sp1"]/text()').get()
+                info = item_info.xpath('./span[@class="sp2"]/text()').get()
+
+                if title == 'Mức giá:':
+                    item['price'] = info
+                elif title == 'Diện tích:':
+                    item['area'] = info
 
             # Optional information:
 
