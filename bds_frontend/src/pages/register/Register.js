@@ -1,29 +1,28 @@
 import { Component, Fragment } from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
-// import Cookies from 'js-cookie';
+import Cookies from 'js-cookie';
 
 // Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
-import Login from './../../pages/login/Login';
 
 // CSS:
 import './styles.css';
 
-class Register extends Component {
+export default class Register extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      // first_name: '',
-      // last_name: '',
-      // email: '',
       username: '',
       password: '',
-      message: '',
+      message: null,
+      passType: "password",
+      passIcon: "fa fa-lg fa-eye"
     }
     
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleShowPassBtn = this.handleShowPassBtn.bind(this);
   }
 
   handleChange = (e) => {
@@ -37,23 +36,28 @@ class Register extends Component {
     )
   }
 
+  handleShowPassBtn = () => {
+    if (this.state.passType === "password") {
+      this.setState({ passType: "text", passIcon: "fa fa-lg fa-eye-slash" })
+    }
+    else {
+      this.setState({ passType: "password", passIcon: "fa fa-lg fa-eye" }) 
+    }
+  }
+
   handleSubmit = (e) => {
-    // alert("Form submitted with " + this.state.firstName + " " + this.state.lastName);
     e.preventDefault();
     let self = this
     axios
       .post('/bds/register/', {
-        // first_name: this.state.first_name,
-        // last_name: this.state.last_name,
-        // email: this.state.email,
         username: this.state.username,
         password: this.state.password
       }, 
-      // {
-      //   headers: {
-      //     'X-CSRFToken': Cookies.get('csrftoken')
-      //   }
-      // }
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
       )
       .then(function (response) {
         console.log(response);
@@ -76,45 +80,22 @@ class Register extends Component {
   render() {
 
     if (this.state.message === "Register Successful!") {
-      return <Redirect exact to='/login' component={<Login />} />
+      return <Redirect to={{ pathname: "/login" }} />
     }
 
     return(
       <Fragment>
         <WebNavbar name="Register" />
+
         <div className="text-center register-contents">
-          {/* <p className="h4 font-weight-bold">This is register page!</p> */}
           <p>{this.state.message}</p>
         </div>
 
-        <div className="row mt-5">
-          <div className="col-3 col-md-4"></div>
-          <form className="col-6 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
+        <div className="row mt-1 px-0">
+
+          <div className="col-2 col-md-4 px-0"></div>
+          <form className="col-8 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
             <h3>Register</h3>
-
-            {/* <div className="form-group">
-              <label>First name</label>
-              <input
-                type="text"
-                name="first_name"  
-                value={this.state.first_name}
-                onChange={this.handleChange}
-                className="form-control" 
-                placeholder="First name" 
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Last name</label>
-              <input 
-                type="text" 
-                name="last_name" 
-                value={this.state.last_name}
-                onChange={this.handleChange}
-                className="form-control" 
-                placeholder="Last name" 
-              />
-            </div> */}
 
             <div className="form-group">
               <label>Username</label>
@@ -129,38 +110,35 @@ class Register extends Component {
               />
             </div>
 
-            {/* <div className="form-group">
-              <label>Email address</label>
-              <input 
-                type="email" 
-                name="email"
-                value={this.state.email}
-                onChange={this.handleChange}
-                className="form-control" 
-                placeholder="Enter email" 
-              />
-            </div> */}
-
             <div className="form-group">
               <label>Password</label>
-              <input 
-                type="password" 
-                name="password"
-                value={this.state.password}
-                onChange={this.handleChange}
-                autocomplete="new-password"
-                className="form-control" 
-                placeholder="Enter password" 
-              />
+              <div className="d-flex">
+                <input 
+                  type={this.state.passType}
+                  name="password"
+                  value={this.state.password}
+                  onChange={this.handleChange}
+                  className="form-control" 
+                  placeholder="Enter password" 
+                />
+                <button type="button" className="ml-1 btn btn-link" aria-label="Toggle Visibility" onClick={this.handleShowPassBtn} >
+                      <i aria-hidden="true" className={this.state.passIcon}></i>
+                  </button>
+              </div>
             </div>
 
             <div className="form-group">
               <label>Reenter Password</label>
-              <input 
-                type="password" 
-                className="form-control" 
-                placeholder="Reenter password" 
-              />
+              <div className="d-flex">
+                <input 
+                  type={this.state.passType}
+                  className="form-control" 
+                  placeholder="Reenter password" 
+                />
+                <button type="button" className="ml-1 btn btn-link" aria-label="Toggle Visibility" onClick={this.handleShowPassBtn} >
+                  <i aria-hidden="true" className={this.state.passIcon}></i>
+                </button>
+              </div>
             </div>
 
             <button 
@@ -171,8 +149,8 @@ class Register extends Component {
               Sign Up
             </button>
             <p className="forgot-password text-right">
-              Already registered 
-              <Link exact to="/login"> sign in?</Link>
+              Already registered? 
+              <Link exact to="/login"> Sign in</Link>
             </p>
           </form>
           <div className="col-3 col-md-4"></div>
@@ -181,5 +159,3 @@ class Register extends Component {
     )
   }
 }
-
-export default Register;
