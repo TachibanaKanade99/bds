@@ -5,12 +5,11 @@ import Cookies from 'js-cookie';
 
 // Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
-// import Dashboard from './../dashboard/Dashboard';
 
 // CSS:
 import './styles.css';
 
-class Login extends Component {
+export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -115,16 +114,16 @@ class Login extends Component {
 
     return(
       <Fragment>
-        <WebNavbar name="Login" current_user="" />
+        <WebNavbar name="Login" />
+
         <div className="text-center login-contents">
-          {/* <p className="h4 font-weight-bold">This is login page!</p> */}
-          <p className="font-weight-bold">{this.state.message}</p>
+          <p className="font-weight-bold text-danger">{this.state.message}</p>
         </div>
 
-        <div className="row mt-5 px-0">
+        <div className="row mt-1 px-0">
 
-          <div className="col-3 col-md-4 px-0"></div>
-          <form className="col-6 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
+          <div className="col-2 col-md-4 px-0"></div>
+          <form className="col-8 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
             <h3>Login</h3>
 
             <div className="form-group">
@@ -147,7 +146,8 @@ class Login extends Component {
                     value={this.state.password}
                     onChange={this.handleChange}
                     className="form-control" 
-                    placeholder="Enter password" />
+                    placeholder="Enter password" 
+                  />
                   <button type="button" className="ml-1 btn btn-link" aria-label="Toggle Visibility" onClick={this.handleShowPassBtn} >
                       <i aria-hidden="true" className={this.state.passIcon}></i>
                   </button>
@@ -167,26 +167,27 @@ class Login extends Component {
                 </div>
             </div>
 
-            <button type="submit" className="btn btn-block" id="login-btn" >Submit</button>
+            <div className="text-center">
+              <button type="submit" className="btn col-6 col-md-2" id="login-btn">Login</button>
+            </div>
+
             <div className="row justify-content-between">
-              <div className="col-6">
+              <div className="col-6 col-md-6">
                 <span className="forgot-password">
                     Don't have account? Register 
                     <Link to="/register"> here</Link>
                 </span>
               </div>
-              <div className="col-4">
+              <div className="col-4 col-md-3">
                 <span className="forgot-password">
                     Forgot <a href="/">password?</a>
                 </span>
               </div>
             </div>
           </form>
-          <div className="col-3 col-md-4"></div>
+          <div className="col-2 col-md-4"></div>
         </div>
       </Fragment>
     )
   }
 }
-
-export default Login;
