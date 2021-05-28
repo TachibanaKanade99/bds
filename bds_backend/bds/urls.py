@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf.urls import include
 from rest_framework import routers
-from .views import current_user, check_authentication, BdsView, RegisterView, LoginView, LogoutView, RealEstateDataView, CountView
+from .views import current_user, check_authentication, BdsView, RegisterView, LoginView, LogoutView, RealEstateDataView, CountView, ChartCount, PieChart
 
 # router = routers.DefaultRouter()
 # router.register(r'realestatedata', RealEstateDataView, 'realestatedata')
@@ -17,6 +17,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view()),
 
     path('api/realestatedata/count/', CountView.as_view()),
+    path('api/realestatedata/chart_count/', ChartCount.as_view()),
+    path('api/realestatedata/piechart_count/', PieChart.as_view()),
     path('api/realestatedata/', RealEstateDataView.as_view())
     # path('register/', register_user),
     # path('login/', login_user),

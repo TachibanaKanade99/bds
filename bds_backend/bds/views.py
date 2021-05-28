@@ -11,10 +11,8 @@ from rest_framework import generics, pagination, status, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.renderers import JSONRenderer
+from rest_framework.authentication import SessionAuthentication
 
 
 from .serializers import UserSerializer, RealEstateDataSerializer, BdsSerializer, GetImageSerializer
@@ -119,7 +117,7 @@ class RealEstateDataView(generics.ListAPIView):
 
         start_date = datetime.strptime(start_date, "%m/%d/%Y")
         end_date = datetime.strptime(end_date, "%m/%d/%Y")
-        now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        # now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         min_price = price[0:price.find("-")]
         max_price = price[price.find("-")+1:]
@@ -130,26 +128,12 @@ class RealEstateDataView(generics.ListAPIView):
         min_price = float(min_price)
         max_price = float(max_price)
 
-        # Overwrite queryset with filter options:
-        # if start_date == end_date and start_date == now:
-        #     if post_type == "Bán đất":
-        #         queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type).order_by('id')
-        #     else:
-        #         queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type).order_by('id')
-        # else:
         if post_type == "Bán đất":
             queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type, posted_date__range=[start_date, end_date]).order_by('id')
         else:
             queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type, posted_date__range=[start_date, end_date]).order_by('id')
         
         return queryset
-
-# class RealEstateDataView(viewsets.ModelViewSet):
-#     # permission_classes = [IsAuthenticated]
-#     serializer_class = RealEstateDataSerializer
-#     # queryset = RealEstateData.objects.filter(expired_date__gt=datetime.today()).order_by('id')
-#     queryset = RealEstateData.objects.all().order_by('id')
-#     pagination_class = CustomPageNumber
 
 class CountView(APIView):
     # permission_classes = [IsAuthenticated]
@@ -169,13 +153,9 @@ class CountView(APIView):
 
         # land props:
         lands = RealEstateData.objects.filter(post_type__contains='đất', posted_date__range=[start_date, end_date]).count()
-        only_land = RealEstateData.objects.filter(post_type='Bán đất', posted_date__range=[start_date, end_date]).count()
-        land_in_project = RealEstateData.objects.filter(post_type='Bán đất nền dự án (đất trong dự án quy hoạch)', posted_date__range=[start_date, end_date]).count()
 
+        # house props:
         houses = RealEstateData.objects.filter(post_type__contains='nhà', posted_date__range=[start_date, end_date]).count()
-        villa = RealEstateData.objects.filter(post_type__contains='Bán nhà biệt thự, liền kề', posted_date__range=[start_date, end_date]).count()
-        town_house = RealEstateData.objects.filter(post_type__contains='Bán nhà mặt phố', posted_date__range=[start_date, end_date]).count()
-        individual_house = RealEstateData.objects.filter(post_type__contains='Bán nhà riêng', posted_date__range=[start_date, end_date]).count()
         departments = RealEstateData.objects.filter(post_type__contains='căn hộ', posted_date__range=[start_date, end_date]).count()
 
         farms = RealEstateData.objects.filter(post_type__contains='trang trại', posted_date__range=[start_date, end_date]).count()
@@ -185,6 +165,63 @@ class CountView(APIView):
         has_policy = RealEstateData.objects.filter(policy__isnull=False, posted_date__range=[start_date, end_date]).count()
         new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today(), posted_date__range=[start_date, end_date]).count()
         has_furniture = RealEstateData.objects.filter(furniture__isnull=False, posted_date__range=[start_date, end_date]).count()
+
+        counts = {
+            'all': all,
+            'lands': lands,
+            'houses': houses,
+            'departments': departments,
+            'others': others,
+            'belong_to_projects': belong_to_projects,
+            'has_policy': has_policy,
+            'new_updates': new_updates,
+            'has_furniture': has_furniture,
+        }
+        return Response(counts, status=status.HTTP_200_OK)
+    
+    def get(self, request):
+        all = RealEstateData.objects.all().count()
+
+        # land props:
+        lands = RealEstateData.objects.filter(post_type__contains='đất').count()
+
+        houses = RealEstateData.objects.filter(post_type__contains='nhà').count()
+        departments = RealEstateData.objects.filter(post_type__contains='căn hộ').count()
+
+        farms = RealEstateData.objects.filter(post_type__contains='trang trại').count()
+        warehouses = RealEstateData.objects.filter(post_type__contains='kho, nhà xưởng').count()
+        others = RealEstateData.objects.filter(post_type__contains='khác').count() + farms + warehouses
+
+        belong_to_projects = RealEstateData.objects.filter(project_name__isnull=False).count()
+        has_policy = RealEstateData.objects.filter(policy__isnull=False).count()
+        new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today()).count()
+        has_furniture = RealEstateData.objects.filter(furniture__isnull=False).count()
+
+        counts = {
+            'all': all,
+            'lands': lands,
+            'houses': houses,
+            'departments': departments,
+            'others': others,
+            'belong_to_projects': belong_to_projects,
+            'has_policy': has_policy,
+            'new_updates': new_updates,
+            'has_furniture': has_furniture,
+        }
+        return Response(counts, status=status.HTTP_200_OK)
+
+class ChartCount(APIView):
+
+    def post(self, request):
+        start_date = request.data['start_date']
+        end_date = request.data['end_date']
+
+        if start_date is None and end_date is None:
+            return Response("Null values!", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # format date:
+        start_date = datetime.strptime(start_date, "%m/%d/%Y")
+        end_date = datetime.strptime(end_date, "%m/%d/%Y")
 
         # batdongsan.com.vn
         bds_all = RealEstateData.objects.filter(url__contains='batdongsan.com.vn', posted_date__range=[start_date, end_date]).count()
@@ -214,20 +251,6 @@ class CountView(APIView):
         propzy_others = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='khác', posted_date__range=[start_date, end_date]).count() + propzy_farms + propzy_warehouses
 
         counts = {
-            'all': all,
-            'lands': lands,
-            'only_land': only_land,
-            'land_in_project': land_in_project,
-            'houses': houses,
-            'villa': villa,
-            'town_house': town_house,
-            'individual_house': individual_house,
-            'departments': departments,
-            'others': others,
-            'belong_to_projects': belong_to_projects,
-            'has_policy': has_policy,
-            'new_updates': new_updates,
-            'has_furniture': has_furniture,
             # batdongsan.com.vn
             'bds_all': bds_all,
             'bds_lands': bds_lands,
@@ -247,30 +270,10 @@ class CountView(APIView):
             'propzy_departments': propzy_departments,
             'propzy_others': propzy_others,
         }
+
         return Response(counts, status=status.HTTP_200_OK)
-    
+
     def get(self, request):
-        all = RealEstateData.objects.all().count()
-
-        # land props:
-        lands = RealEstateData.objects.filter(post_type__contains='đất').count()
-        only_land = RealEstateData.objects.filter(post_type='Bán đất').count()
-        land_in_project = RealEstateData.objects.filter(post_type='Bán đất nền dự án (đất trong dự án quy hoạch)').count()
-
-        houses = RealEstateData.objects.filter(post_type__contains='nhà').count()
-        villa = RealEstateData.objects.filter(post_type__contains='Bán nhà biệt thự, liền kề').count()
-        town_house = RealEstateData.objects.filter(post_type__contains='Bán nhà mặt phố').count()
-        individual_house = RealEstateData.objects.filter(post_type__contains='Bán nhà riêng').count()
-        departments = RealEstateData.objects.filter(post_type__contains='căn hộ').count()
-
-        farms = RealEstateData.objects.filter(post_type__contains='trang trại').count()
-        warehouses = RealEstateData.objects.filter(post_type__contains='kho, nhà xưởng').count()
-        others = RealEstateData.objects.filter(post_type__contains='khác').count() + farms + warehouses
-
-        belong_to_projects = RealEstateData.objects.filter(project_name__isnull=False).count()
-        has_policy = RealEstateData.objects.filter(policy__isnull=False).count()
-        new_updates = RealEstateData.objects.filter(expired_date__gt=datetime.today()).count()
-        has_furniture = RealEstateData.objects.filter(furniture__isnull=False).count()
 
         # batdongsan.com.vn
         bds_all = RealEstateData.objects.filter(url__contains='batdongsan.com.vn').count()
@@ -300,20 +303,6 @@ class CountView(APIView):
         propzy_others = RealEstateData.objects.filter(url__contains='propzy.vn', post_type__contains='khác').count() + propzy_farms + propzy_warehouses
 
         counts = {
-            'all': all,
-            'lands': lands,
-            'only_land': only_land,
-            'land_in_project': land_in_project,
-            'houses': houses,
-            'villa': villa,
-            'town_house': town_house,
-            'individual_house': individual_house,
-            'departments': departments,
-            'others': others,
-            'belong_to_projects': belong_to_projects,
-            'has_policy': has_policy,
-            'new_updates': new_updates,
-            'has_furniture': has_furniture,
             # batdongsan.com.vn
             'bds_all': bds_all,
             'bds_lands': bds_lands,
@@ -333,7 +322,67 @@ class CountView(APIView):
             'propzy_departments': propzy_departments,
             'propzy_others': propzy_others,
         }
+
         return Response(counts, status=status.HTTP_200_OK)
+
+class PieChart(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        start_date = self.request.data['start_date']
+        end_date = self.request.data['end_date']
+
+        if start_date is None and end_date is None:
+            return Response("Null values!", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # format date:
+        start_date = datetime.strptime(start_date, "%m/%d/%Y")
+        end_date = datetime.strptime(end_date, "%m/%d/%Y")
+
+        # land props:
+        only_lands = RealEstateData.objects.filter(post_type='Bán đất', posted_date__range=[start_date, end_date]).count()
+        land_in_projects = RealEstateData.objects.filter(post_type='Bán đất nền dự án (đất trong dự án quy hoạch)', posted_date__range=[start_date, end_date]).count()
+
+        # house props:
+        villas = RealEstateData.objects.filter(post_type__contains='Bán nhà biệt thự, liền kề', posted_date__range=[start_date, end_date]).count()
+        town_houses = RealEstateData.objects.filter(post_type__contains='Bán nhà mặt phố', posted_date__range=[start_date, end_date]).count()
+        individual_houses = RealEstateData.objects.filter(post_type__contains='Bán nhà riêng', posted_date__range=[start_date, end_date]).count()
+
+        result = {
+            # land props:
+            'only_lands': only_lands,
+            'land_in_projects': land_in_projects,
+            # house props:
+            'villas': villas,
+            'town_houses': town_houses,
+            'individual_houses': individual_houses
+        }
+
+        return Response(result, status=status.HTTP_200_OK)
+
+    def get(self, request):
+
+        # land props:
+        only_lands = RealEstateData.objects.filter(post_type='Bán đất').count()
+        land_in_projects = RealEstateData.objects.filter(post_type='Bán đất nền dự án (đất trong dự án quy hoạch)').count()
+
+        # house props:
+        villas = RealEstateData.objects.filter(post_type__contains='Bán nhà biệt thự, liền kề').count()
+        town_houses = RealEstateData.objects.filter(post_type__contains='Bán nhà mặt phố').count()
+        individual_houses = RealEstateData.objects.filter(post_type__contains='Bán nhà riêng').count()
+
+        result = {
+            # land_props:
+            'only_lands': only_lands,
+            'land_in_projects': land_in_projects,
+            # house props:
+            'villas': villas,
+            'town_houses': town_houses,
+            'individual_houses': individual_houses
+        }
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
 class BdsView(viewsets.ModelViewSet):
     # authentication_classes = [ CsrfExemptSessionAuthentication, BasicAuthentication ]
