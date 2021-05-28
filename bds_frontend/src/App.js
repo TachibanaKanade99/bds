@@ -13,6 +13,7 @@ import Register from './pages/register/Register';
 
 import Dashboard from './pages/dashboard/Dashboard';
 import Data from './pages/data/Data';
+import PricePrediction from './pages/price_prediction/PricePrediction';
 
 // CSS:
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
@@ -94,6 +95,16 @@ class App extends Component {
             }
             return auth === true ? <Data {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
           }}>
+          </Route>
+
+          <Route path="/price_prediction" render={(props) => {
+            let auth = this.state.isAuthenticated;
+            if (props.location.state !== null && props.location.state !== undefined) {
+              auth = props.location.state.isAuthenticated;
+            }
+            return auth === true ? <PricePrediction {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
+          }}>
+
           </Route>
 
           <Route path="/register">
