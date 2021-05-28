@@ -22,3 +22,11 @@ a.dashboard-text {
 	color: #3C5999 !important;
 	font-weight: 600 !important;
 }
+
+.bg-violet {
+    background-color: #6f42c1 !important;
+}
+
+.pie-chart {
+    max-width: 500px;
+}
