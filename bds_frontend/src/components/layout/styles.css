@@ -3,5 +3,27 @@
 }
 
 #customNavbar {
-    background-color: #3C5999;
+    /* background-color: #3C5999; */
+    box-shadow: 0 1px 10px rgb(140 152 164 / 13%);
+
+    /* fixed top */
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+}
+
+a.nav-link {
+    color: gray;
+    font-weight: 500;
+    padding-left: 0px;
+}
+
+a.nav-link:hover {
+    color: #3C5999;
+}
+
+.text-blue {
+    color: #3C5999;
 }

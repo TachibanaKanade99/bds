@@ -101,61 +101,111 @@ class WebNavbar extends Component {
       return <Redirect exact="true" to="/login" component={<Login message="Logout successfully!" />} />
     }
     
-    if (this.props.name === "Login" || this.props.name === "Register") {
+    if (this.props.name === "Login") {
       return (
-        <Navbar expand="md" id="customNavbar" fixed="top">
-          <NavbarBrand href="/" className="text-white">{this.props.name}</NavbarBrand>
-        </Navbar>
+        <div className="bg-white" id="customNavbar">
+          <Navbar expand="md">
+            <NavbarBrand href="/" className="text-blue">{this.props.name}</NavbarBrand>
+            <NavbarToggler onClick={this.toggleOpen} />
+            <Collapse isOpen={this.state.isOpen} navbar>
+              <Nav className="mr-auto" navbar></Nav>
+              <NavLink 
+                tag={rNavLink} 
+                to={{ pathname: "/register"}}
+                activeStyle={{ color: "#3C5999" }}
+              >Register</NavLink>
+            </Collapse>
+          </Navbar>
+        </div>
       )
     }
 
-    return(
-      <Navbar expand="md" id="customNavbar" fixed="top">
-        <NavbarBrand href="/" className="text-white">{this.props.name}</NavbarBrand>
-        <NavbarToggler onClick={this.toggleOpen} />
-        <Collapse isOpen={this.state.isOpen} navbar>
-          <Nav className="mr-auto" navbar>
-            <NavItem>
-              <NavLink tag={rNavLink} to={{ pathname: "/dashboard", state: { isAuthenticated: true } }} activeClassName="active" className="text-white">Dashboard</NavLink>
-            </NavItem>
-            
-            <NavItem>
-              <NavLink tag={rNavLink} to={{ pathname: "/data", state: { isAuthenticated: true } }} activeClassName="active" className="text-white">Data</NavLink>
-            </NavItem>
-            
-            {/* <NavItem>
-              <NavLink tag={rNavLink} exact to="/register" activeClassName="active" onClick={() => this.handleClick("register")}>Register</NavLink>
-            </NavItem>
+    else if (this.props.name === "Register") {
+      return (
+        <div className="bg-white" id="customNavbar">
+          <Navbar expand="md">
+            <NavbarBrand href="/" className="text-blue">{this.props.name}</NavbarBrand>
+            <NavbarToggler onClick={this.toggleOpen} />
+            <Collapse isOpen={this.state.isOpen} navbar>
+              <Nav className="mr-auto" navbar></Nav>
+              <NavLink 
+                tag={rNavLink} 
+                to={{ pathname: "/login"}} 
+                activeStyle={{ color: "#3C5999" }}
+              >Login</NavLink>
+            </Collapse>
+          </Navbar>
+        </div>
+      )
+    }
 
-            <NavItem>
-              <NavLink tag={rNavLink} exact to="/login" activeClassName="active" onClick={() => this.handleClick("login")}>Login</NavLink>
-            </NavItem> */}
+    else {
+      return(
+        <div className="bg-white" id="customNavbar">
+          <Navbar expand="md">
+            <NavbarBrand href="/" className="text-blue">{this.props.name}</NavbarBrand>
+            <NavbarToggler onClick={this.toggleOpen} />
+            <Collapse isOpen={this.state.isOpen} navbar>
+              <Nav className="mr-auto" navbar>
+                <NavItem>
+                  <NavLink 
+                    tag={rNavLink} 
+                    to={{ pathname: "/dashboard", state: { isAuthenticated: true } }}
+                    activeStyle={{ color: "#3C5999" }}
+                  >Dashboard</NavLink>
+                </NavItem>
+                
+                <NavItem>
+                  <NavLink 
+                    tag={rNavLink} 
+                    to={{ pathname: "/data", state: { isAuthenticated: true } }}
+                    activeStyle={{ color: "#3C5999" }}
+                  >Data</NavLink>
+                </NavItem>
 
-            {/* <NavItem>
-              <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink>
-              <NavLink onClick={() => this.handleClick("logout")}>Logout</NavLink>
-            </NavItem> */}
-          </Nav>
+                <NavItem>
+                  <NavLink 
+                    tag={rNavLink} 
+                    to={{ pathname: "/price_prediction", state: { isAuthenticated: true } }}
+                    activeStyle={{ color: "#3C5999" }}
+                  >Price Prediction</NavLink>
+                </NavItem>
+                
+                {/* <NavItem>
+                  <NavLink tag={rNavLink} exact to="/register" activeClassName="active" onClick={() => this.handleClick("register")}>Register</NavLink>
+                </NavItem>
 
-          {/* <ButtonGroup>
-            <Button color="light" onClick={() => this.handleClick("register")}>Register</Button>
-            <Button color="light" onClick={() => this.handleClick("login")}>Login</Button>
-          </ButtonGroup> */}
-          <NavLink href="#" className="user-text text-dark">
-          <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
-            <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-white">
-              {this.props.current_user}
-            </DropdownToggle>
-            <DropdownMenu>
-              <DropdownItem>
-                <Link exact="true" to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          </NavLink>
-        </Collapse>
-      </Navbar>
-    )
+                <NavItem>
+                  <NavLink tag={rNavLink} exact to="/login" activeClassName="active" onClick={() => this.handleClick("login")}>Login</NavLink>
+                </NavItem> */}
+
+                {/* <NavItem>
+                  <NavLink tag={rNavLink} exact to="/logout" activeClassName="active" onClick={() => this.handleClick("logout")}>Logout</NavLink>
+                  <NavLink onClick={() => this.handleClick("logout")}>Logout</NavLink>
+                </NavItem> */}
+              </Nav>
+
+              {/* <ButtonGroup>
+                <Button color="light" onClick={() => this.handleClick("register")}>Register</Button>
+                <Button color="light" onClick={() => this.handleClick("login")}>Login</Button>
+              </ButtonGroup> */}
+              <NavLink href="#" className="user-text text-dark">
+                <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
+                  <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-dark">
+                    {this.props.current_user}
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem>
+                      <Link exact="true" to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </NavLink>
+            </Collapse>
+          </Navbar>
+        </div>
+      )
+    }
   }
 }
 
