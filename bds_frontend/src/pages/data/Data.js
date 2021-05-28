@@ -16,7 +16,7 @@ import MUIDataTable from "mui-datatables";
 import { FormGroup, Label, Button, } from 'reactstrap';
 
 // react-select:
-import Select from "react-select";
+import Select from 'react-select';
 
 // datepicker:
 import DayPickerInput from 'react-day-picker/DayPickerInput';
@@ -29,7 +29,7 @@ import MomentLocaleUtils, { formatDate, parseDate, } from 'react-day-picker/mome
 // Import CSS:
 import './styles.css';
 
-class Data extends Component {
+export default class Data extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -466,7 +466,7 @@ class Data extends Component {
       filterType: 'dropdown',
       tableBodyHeight: '420px',
       tableBodyMaxHeight: '100%',
-      responsive: 'vertical',
+      responsive: 'simple',
       jumpToPage: false,
       serverSide: true,
       // rowsPerPageOptions:{},
@@ -546,102 +546,109 @@ class Data extends Component {
           <div className="row mt-5">
             <div className="col-1 col-md-1 bg-light"></div>
             <div className="col-10 col-md-10">
-      
+
               <div className="row">
-                <div className="col-3 col-md-3">
-                  <FormGroup className="mt-4">
-                      <Label className="control-label">Choose website</Label>
-                      <Select
-                        // className="customSelect"
-                        options={chooseWebPage}
-                        defaultValue={chooseWebPage[0]}
-                        onChange={this.handleWebsiteChange}
-                        onMenuOpen={this.handleSelectMenuOpen}
-                      />
-                  </FormGroup>
-                </div>
+                <div className="col- col-md-10">
+                  <div className="row">
+                    <div className="col-10 col-md-3">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Choose website</Label>
+                        <Select
+                          // className="customSelect"
+                          options={chooseWebPage}
+                          defaultValue={chooseWebPage[0]}
+                          onChange={this.handleWebsiteChange}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
 
-                <div className="col-2 col-md-2">
-                  <FormGroup className="mt-4">
-                      <Label className="control-label">Choose Price</Label>
-                      <Select
-                        // className="customSelect"
-                        options={choosePrice}
-                        defaultValue={choosePrice[0]}
-                        onChange={this.handleChangePrice}
-                        onMenuOpen={this.handleSelectMenuOpen}
-                      />
-                  </FormGroup>
-                </div>
+                    <div className="col-10 col-md-2">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Choose Price</Label>
+                        <Select
+                          // className="customSelect"
+                          options={choosePrice}
+                          defaultValue={choosePrice[0]}
+                          onChange={this.handleChangePrice}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
 
-                <div className="col-2 col-md-2">
-                  <FormGroup className="mt-4">
-                      <Label className="control-label">Choose Post Type</Label>
-                      <Select
-                        // className="customSelect"
-                        options={choosePostType}
-                        defaultValue={choosePostType[0]}
-                        onChange={this.handleChangePostType}
-                        onMenuOpen={this.handleSelectMenuOpen}
-                      />
-                  </FormGroup>
-                </div>
+                    <div className="col-10 col-md-2">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Choose Post Type</Label>
+                        <Select
+                          // className="customSelect"
+                          options={choosePostType}
+                          defaultValue={choosePostType[0]}
+                          onChange={this.handleChangePostType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
 
-                <div className="col-3 col-md-3">
-                  <Button className="ml-3 mt-5 web-btn" onClick={this.submitData}>Filter</Button>
+                    <div className="col-10 col-md-2">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">From Date</Label>
+                        <br/>
+                        <DayPickerInput
+                          formatDate={formatDate}
+                          parseDate={parseDate}
+                          format="L"
+                          placeholder={`${formatDate(this.state.startDate, 'L', 'en')}`}
+                          dayPickerProps={{
+                            locale: 'en',
+                            localeUtils: MomentLocaleUtils,
+                          }} 
+                          onDayChange={day => this.handleStartDate(day)} 
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-2">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">To Date</Label>
+                        <br/>
+                        <DayPickerInput
+                          formatDate={formatDate}
+                          parseDate={parseDate}
+                          format="L"
+                          placeholder={`${formatDate(this.state.endDate, 'L', 'en')}`}
+                          dayPickerProps={{
+                            locale: 'en',
+                            localeUtils: MomentLocaleUtils,
+                          }} 
+                          onDayChange={day => this.handleEndDate(day)} 
+                        />
+                      </FormGroup>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-10 col-md-2">
+                      <FormGroup>
+                          <Label className="control-label">Rows per Page</Label>
+                          <Select
+                            // className="customSelect"
+                            options={rowsPerPage}
+                            defaultValue={{ label: "10", value: 10 }}
+                            onChange={this.handleChangeRowsPerPage}
+                          />
+                      </FormGroup>
+                    </div>
+
+                  </div>
+                </div>
+                <div className="col- col-md-2 pl-0">
+                  <Button className="ml-3 mt-5 web-btn text-left" onClick={this.submitData}>Filter</Button>
                 </div>
               </div>
+
               
-              <div className="row">
-                <div className="col-2 col-md-2">
-                  <FormGroup>
-                      <Label className="control-label">Rows per Page</Label>
-                      <Select
-                        // className="customSelect"
-                        options={rowsPerPage}
-                        defaultValue={{ label: "10", value: 10 }}
-                        onChange={this.handleChangeRowsPerPage}
-                      />
-                  </FormGroup>
-                </div>
-
-                <div className="col-2 col-md-2">
-                  <FormGroup>
-                    <Label className="control-label">From Date</Label>
-                    <br/>
-                    <DayPickerInput
-                      formatDate={formatDate}
-                      parseDate={parseDate}
-                      format="L"
-                      placeholder={`${formatDate(this.state.startDate, 'L', 'en')}`}
-                      dayPickerProps={{
-                        locale: 'en',
-                        localeUtils: MomentLocaleUtils,
-                      }} 
-                      onDayChange={day => this.handleStartDate(day)} 
-                    />
-                  </FormGroup>
-                </div>
-
-                <div className="col-2 col-md-2">
-                  <FormGroup>
-                    <Label className="control-label">To Date</Label>
-                    <br/>
-                    <DayPickerInput
-                      formatDate={formatDate}
-                      parseDate={parseDate}
-                      format="L"
-                      placeholder={`${formatDate(this.state.endDate, 'L', 'en')}`}
-                      dayPickerProps={{
-                        locale: 'en',
-                        localeUtils: MomentLocaleUtils,
-                      }} 
-                      onDayChange={day => this.handleEndDate(day)} 
-                    />
-                  </FormGroup>
-                </div>
-
-              </div>
+              
+              
 
               {/* Table */}
               <div className="mt-2">
@@ -681,5 +688,3 @@ class Data extends Component {
     )
   }
 }
-
-export default Data; 
