@@ -79,8 +79,8 @@ export default class Login extends Component {
     let self = this
     axios
       .post('/bds/login/', {
-        username: this.state.username,
-        password: this.state.password
+        username: self.state.username,
+        password: self.state.password
       }, 
       {
         headers: {
