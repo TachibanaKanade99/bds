@@ -2,15 +2,10 @@ import { Fragment, Component } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-import WebNavbar from './../../components/layout/WebNavbar';
-import { Redirect } from 'react-router-dom';
-import Login from './../login/Login';
-
 // MUI Datatable:
 import { CircularProgress, Typography } from "@material-ui/core";
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import MUIDataTable from "mui-datatables";
-// import Table from './Table';
 
 // reactstrap
 import { FormGroup, Label, Button, } from 'reactstrap';
@@ -21,13 +16,16 @@ import Select from 'react-select';
 // datepicker:
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
+
 // moment js:
 import 'moment/locale/vi';
-
 import MomentLocaleUtils, { formatDate, parseDate, } from 'react-day-picker/moment';
 
 // Import CSS:
 import './styles.css';
+
+// Local components:
+import WebNavbar from './../../components/layout/WebNavbar';
 
 export default class Data extends Component {
   constructor(props) {
@@ -455,11 +453,6 @@ export default class Data extends Component {
   }
 
   render() {
-
-    if (this.state.isLogged === false) {
-      // return <Login message="You need to login before view contents!" />
-      return <Redirect exact to="/login" component={<Login message="You need to login before view contents!" />} />
-    }
 
     // Table variables:
     const options = {
