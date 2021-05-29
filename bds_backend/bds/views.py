@@ -21,6 +21,15 @@ from .models import Bds, RealEstateData
 
 from datetime import datetime
 
+# Use joblib to load model:
+from joblib import load
+
+import unidecode
+import numpy as np
+
+# import FunctionTransformer from sklearn.preprocessing:
+from sklearn.preprocessing import FunctionTransformer, PolynomialFeatures
+
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return  # To not perform the csrf check previously happening
@@ -382,6 +391,78 @@ class PieChart(APIView):
         }
 
         return Response(result, status=status.HTTP_200_OK)
+
+class WardLst(APIView):
+    def post(self, request):
+        district = self.request.data['district']
+        ward_lst = []   
+        
+        if district is None:
+            query = RealEstateData.objects.values('ward').exclude(ward__exact=None).distinct()
+        else:
+            query = RealEstateData.objects.values('ward').filter(district__exact=district).exclude(ward__exact=None).distinct()
+
+        for q in query:
+            ward_lst.append(q['ward'])
+
+        return Response(ward_lst, status=status.HTTP_200_OK)
+
+class StreetLst(APIView):
+    def post(self, request):
+        ward = self.request.data['ward']
+        district = self.request.data['district']
+        street_lst = []
+        
+        if ward is None and district is None:
+            query = RealEstateData.objects.values('street').exclude(street__exact=None).distinct()
+        elif ward is not None and district is None:
+            query = RealEstateData.objects.values('street').filter(ward__exact=ward).exclude(street__exact=None).distinct()
+        elif ward is None and district is not None:
+            query = RealEstateData.objects.values('street').filter(district__exact=district).exclude(street__exact=None).distinct()
+        else:
+            query = RealEstateData.objects.values('street').filter(ward__contains=ward, district__contains=district).exclude(street__exact=None).distinct()
+
+        for q in query:
+            street_lst.append(q['street'])
+
+        return Response(street_lst, status=status.HTTP_200_OK)
+
+class PricePredict(APIView):
+    def post(self, request):
+        property_type = self.request.data['property_type']
+        area = float(self.request.data['area'])
+        street = self.request.data['street']
+        ward = self.request.data['ward']
+        district = self.request.data['district']
+
+        # format into filename:
+        property_type = unidecode.unidecode(property_type).lower().replace(" ", "")
+        street = unidecode.unidecode(street).lower().replace(" ", "")
+        ward = unidecode.unidecode(ward).lower().replace(" ", "")
+        district = unidecode.unidecode(district).lower().replace(" ", "")
+        model_name = property_type + "_" + street + "_" + ward + "_" + district
+
+        model, degree = load('../price_prediction_model/trained/' + model_name + ".joblib")
+
+        if model is not None:
+            # transform area into 2D numpy array:
+            area = np.array([area])
+            area = area[:, np.newaxis]
+            # scale area into log:
+            area = FunctionTransformer(np.log1p).fit_transform(area)
+
+            if degree == 1:
+                predicted_price = model.predict(area)
+            else:
+                poly_area = PolynomialFeatures(degree).fit_transform(area)
+                predicted_price = model.predict(poly_area)
+
+            # reverse price:
+            predicted_price = FunctionTransformer(np.log1p).inverse_transform(predicted_price)
+
+            return Response(predicted_price, status=status.HTTP_200_OK)
+        else:
+            return Response("Model not found!", status=status.HTTP_404_NOT_FOUND)
 
 
 class BdsView(viewsets.ModelViewSet):

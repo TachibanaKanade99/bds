@@ -1,0 +1,9 @@
+.web-body {
+    min-height: 88vh;
+}
+
+.web-btn {
+	color: white !important;
+    font-weight: 400 !important;
+	background: #3C5999 !important;
+}
