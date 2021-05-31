@@ -40,11 +40,11 @@ class WebChart extends Component {
           },
         },
         dataLabels: {
-          enabled: false,
+          enabled: true,
           style: {
             colors: ['#343a40']
           },
-          // offsetY: 0,
+          offsetY: -20,
           dropShadow: {
             enabled: false,
           }
