@@ -172,10 +172,11 @@ export default class PricePrediction extends Component {
       )
       .then((res) => {
         console.log(res);
-        self.setState({ predicted_price: res.data + " billion" })
+        self.setState({ predicted_price: res.data })
       })
       .catch((err) => {
         console.log(err);
+        self.setState({ predicted_price: err.data })
       })
   }
 
