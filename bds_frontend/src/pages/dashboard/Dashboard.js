@@ -36,6 +36,8 @@ class Dashboard extends Component {
     super(props);
     this.state = {
       current_user: null,
+      message: null,
+      btnClass: "d-none btn fa fa-window-close",
       count: {
         all: 1,
         lands: 1,
@@ -113,6 +115,14 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
+    if (this.props.location.state.message !== undefined) {
+      console.log(this.props.location.state.message);
+      this.setState({ 
+        message: this.props.location.state.message,
+        btnClass: "btn fa fa-window-close"
+      })
+    }
+
     this.getCurrentUser();
     this.handleCount();
     this.handleChart();
@@ -133,6 +143,12 @@ class Dashboard extends Component {
 
   handleEndDatePieChart = (date) => {
     this.setState({ endDatePieChart: date.toLocaleDateString() })
+  }
+
+  removeMessage = () => {
+    this.setState({
+      message: null, 
+      btnClass: "d-none btn fa fa-window-close" })
   }
 
   getCurrentUser = () => {
@@ -322,6 +338,16 @@ class Dashboard extends Component {
           <div className="row mt-5">
             <div className="col-0 col-md-1 bg-light"></div>
             <div className="col-12 col-md-10">
+
+              <div className="mt-3 text-center">
+                <span>{this.state.message}</span>
+                <button 
+                  className={this.state.btnClass}
+                  onClick={this.removeMessage}
+                >  
+                </button>
+              </div>
+
               <div className="row mt-5 justify-content-center">
 
                 <div className="col-10 col-md-2 mx-2 my-2">

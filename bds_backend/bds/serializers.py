@@ -42,11 +42,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            # 'first_name',
-            # 'last_name',
-            # 'email',
             'username',
             'password',
+            'is_superuser',
+            'last_login',
+            'is_active',
+            'date_joined',
         )
 
 class GetImageSerializer(serializers.ModelSerializer):

@@ -49,11 +49,15 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 #             return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUESTS)          
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def current_user(request):
     # get current user:
-    permission_classes = [IsAuthenticated]
     serializer = UserSerializer(request.user)
-    return Response({ 'username': serializer.data.get('username') })
+    response = { 
+        'username': serializer.data.get('username'),
+        'is_superuser': serializer.data.get('is_superuser')
+    }
+    return Response(response)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -113,7 +117,7 @@ class LogoutView(APIView):
 #             return paginator.get_paginated_response(results_serializer.data)
 
 class RealEstateDataView(generics.ListAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = RealEstateDataSerializer
 
     def get_queryset(self):
@@ -145,7 +149,7 @@ class RealEstateDataView(generics.ListAPIView):
         return queryset
 
 class CountView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         start_date = request.data['start_date']
@@ -220,6 +224,7 @@ class CountView(APIView):
         return Response(counts, status=status.HTTP_200_OK)
 
 class ChartCount(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         start_date = request.data['start_date']
@@ -335,7 +340,7 @@ class ChartCount(APIView):
         return Response(counts, status=status.HTTP_200_OK)
 
 class PieChart(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         start_date = self.request.data['start_date']
@@ -393,6 +398,8 @@ class PieChart(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 class WardLst(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         district = self.request.data['district']
         ward_lst = []   
@@ -408,6 +415,8 @@ class WardLst(APIView):
         return Response(ward_lst, status=status.HTTP_200_OK)
 
 class StreetLst(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         ward = self.request.data['ward']
         district = self.request.data['district']
@@ -428,6 +437,8 @@ class StreetLst(APIView):
         return Response(street_lst, status=status.HTTP_200_OK)
 
 class PricePredict(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         property_type = self.request.data['property_type']
         area = float(self.request.data['area'])
@@ -442,9 +453,9 @@ class PricePredict(APIView):
         district = unidecode.unidecode(district).lower().replace(" ", "")
         model_name = property_type + "_" + street + "_" + ward + "_" + district
 
-        model, degree = load('../price_prediction_model/trained/' + model_name + ".joblib")
+        try:
+            model, degree = load('../price_prediction_model/trained/' + model_name + ".joblib")
 
-        if model is not None:
             # transform area into 2D numpy array:
             area = np.array([area])
             area = area[:, np.newaxis]
@@ -459,15 +470,18 @@ class PricePredict(APIView):
 
             # reverse price:
             predicted_price = FunctionTransformer(np.log1p).inverse_transform(predicted_price)
+            predicted_price = predicted_price[0][0]
+            predicted_price = str(predicted_price) + " billion"
 
             return Response(predicted_price, status=status.HTTP_200_OK)
-        else:
-            return Response("Model not found!", status=status.HTTP_404_NOT_FOUND)
+            
+        except FileNotFoundError:
+            return Response("Model not found!", status=status.HTTP_200_OK)
 
 
 class BdsView(viewsets.ModelViewSet):
     # authentication_classes = [ CsrfExemptSessionAuthentication, BasicAuthentication ]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = BdsSerializer
     queryset = Bds.objects.all().order_by('id')
     pagination_class = CustomPageNumber

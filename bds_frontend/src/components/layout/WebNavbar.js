@@ -37,6 +37,7 @@ class WebNavbar extends Component {
       isOpen: false,
       isLogout: false,
       message: '',
+      isSuperUser: false,
 
       // dropdown:
       dropdownOpen: false,
@@ -46,22 +47,24 @@ class WebNavbar extends Component {
     this.handleClick = this.handleClick.bind(this);
   }
 
-  // componentDidMount() {
-  //   this.getCurrentUser();
-  // }
+  componentDidMount() {
+    this.getCurrentUser();
+  }
 
-  // getCurrentUser = () => {
-  //   let self = this;
-  //   axios
-  //     .get("/bds/current_user/")
-  //     .then(function(response) {
-  //       // console.log(response);
-  //       self.setState({ current_user: response.data.username })
-  //     })
-  //     .catch(function(errors) {
-  //       console.log(errors);
-  //     })
-  // }
+  getCurrentUser = () => {
+    if (this.props.name !== "Login" && this.props.name !== "Register") {
+      let self = this;
+      axios
+        .get("/bds/current_user/")
+        .then((res) => {
+          // console.log(res);
+          self.setState({ isSuperUser: res.data.is_superuser })
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+    }
+  }
 
   toggleDropdown = () => {
     this.setState(state => ({
@@ -169,6 +172,14 @@ class WebNavbar extends Component {
                     to={{ pathname: "/price_prediction", state: { isAuthenticated: true } }}
                     activeStyle={{ color: "#3C5999" }}
                   >Price Prediction</NavLink>
+                </NavItem>
+
+                <NavItem>
+                  <NavLink 
+                    tag={rNavLink} 
+                    to={{ pathname: "/admin_page", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser } }}
+                    activeStyle={{ color: "#3C5999" }}
+                  >Admin</NavLink>
                 </NavItem>
                 
                 {/* <NavItem>
