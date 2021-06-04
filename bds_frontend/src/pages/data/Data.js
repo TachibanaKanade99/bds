@@ -356,7 +356,7 @@ export default class Data extends Component {
 
   changePage = (page) => {
     // console.log("Go to page", page);
-    this.setState({ isLoading: true, });
+    this.setState({ isLoading: true });
     let self = this;
     
     axios
