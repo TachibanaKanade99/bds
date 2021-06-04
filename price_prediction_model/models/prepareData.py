@@ -41,12 +41,16 @@ def calcMinimumMaximum(vals):
 def preprocessData(data):
 
     # sort data in post_date order:
-    data = data.sort_values(by=['posted_date'])
+    # data = data.sort_values(by=['posted_date'])
 
     # Drop duplicates:    
-    data = data.drop_duplicates(subset='area', keep='last', inplace=False)
+    # data = data.drop_duplicates(subset='area', keep='last', inplace=False)
 
-    # sort data by area to perform smoothing data:
+    # Instead of drop duplicates try calc and use its mean value:
+    if data.duplicated().any():
+        data = data.groupby(['area'], as_index=False).mean()
+
+    # sort data by area:
     data = data.sort_values(by=['area'])
 
     # remove outliner:
@@ -93,6 +97,19 @@ def preprocessData(data):
         else:
             data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
+
+    area_mean = np.mean(data['area'])
+
+    price_mean = np.mean(data['price'])
+    price_std = np.std(data['price'])
+
+    data = data[~(data['area'] < 10)]
+    data = data[~(data['price'] > 200)]
+
+    data = data[~( (data['area'] < area_mean) & (data['price'] > price_mean) )]
+    data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean - price_std) )]
+
+
     # smooth data:
 
     # convolve:
@@ -107,12 +124,7 @@ def preprocessData(data):
     # data['price'] = data['price'].rolling(window=5).mean()
     # data = data.dropna()
 
-    if len(data) > 35:
-        return data
-    else:
-        return None
-
-    
+    return data
 
 def scaleData(data):
 
