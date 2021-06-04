@@ -38,6 +38,7 @@ class WebNavbar extends Component {
       isLogout: false,
       message: '',
       isSuperUser: false,
+      adminNavItemClass: "d-none",
 
       // dropdown:
       dropdownOpen: false,
@@ -59,6 +60,10 @@ class WebNavbar extends Component {
         .then((res) => {
           // console.log(res);
           self.setState({ isSuperUser: res.data.is_superuser })
+
+          if (res.data.is_superuser === true) {
+            self.setState({ adminNavItemClass: null })
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -142,6 +147,59 @@ class WebNavbar extends Component {
       )
     }
 
+    else if (this.props.name === "Admin Page") {
+      return (
+        <div className="bg-white" id="customNavbar">
+          <Navbar expand="md">
+            <NavbarBrand href="/" className="text-blue">{this.props.name}</NavbarBrand>
+            <NavbarToggler onClick={this.toggleOpen} />
+            <Collapse isOpen={this.state.isOpen} navbar>
+              <Nav className="mr-auto" navbar>
+                <NavLink 
+                  tag={rNavLink} 
+                  to={{ pathname: "/admin_page/:users", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser }}} 
+                  activeStyle={{ color: "#3C5999" }}
+                >
+                  Users
+                </NavLink>
+
+                <NavLink 
+                  tag={rNavLink} 
+                  to={{ pathname: "/admin_page/:models", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser }}}
+                  activeStyle={{ color: "#3C5999" }}
+                >
+                  Models
+                </NavLink>
+
+                <NavLink 
+                  tag={rNavLink} 
+                  to={{ pathname: "/dashboard"}}
+                  activeStyle={{ color: "#3C5999" }}
+                >
+                  Back to Main Page
+                </NavLink>
+
+              </Nav>
+
+              <NavLink href="#" className="user-text text-dark">
+                <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
+                  <DropdownToggle tag="span" data-toggle="dropdown" aria-expanded={this.state.dropdownOpen} className="text-dark">
+                    {this.props.current_user}
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem>
+                      <Link exact="true" to="/login" className="text-dark text-decoration-none" onClick={() => this.handleClick("logout")}>Logout</Link>
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </NavLink>
+
+            </Collapse>
+          </Navbar>
+        </div>
+      )
+    }
+
     else {
       return(
         <div className="bg-white" id="customNavbar">
@@ -174,10 +232,10 @@ class WebNavbar extends Component {
                   >Price Prediction</NavLink>
                 </NavItem>
 
-                <NavItem>
-                  <NavLink 
+                <NavItem className={this.state.adminNavItemClass}>
+                  <NavLink
                     tag={rNavLink} 
-                    to={{ pathname: "/admin_page", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser } }}
+                    to={{ pathname: "/admin_page/:users", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser } }}
                     activeStyle={{ color: "#3C5999" }}
                   >Admin</NavLink>
                 </NavItem>

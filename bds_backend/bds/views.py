@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max
 
-from rest_framework import generics, pagination, status, viewsets, permissions
+from rest_framework import generics, pagination, serializers, status, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
@@ -57,12 +57,20 @@ def current_user(request):
         'username': serializer.data.get('username'),
         'is_superuser': serializer.data.get('is_superuser')
     }
-    return Response(response)
+    return Response(response, status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_authentication(request):
     return Response({ 'detail': 'User is authenticated' }, status=status.HTTP_200_OK)
+
+class UserLstView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        queryset = User.objects.all().order_by('id')
+        return queryset
 
 # @method_decorator(csrf_protect, 'dispatch')
 class RegisterView(APIView):
@@ -128,6 +136,7 @@ class RealEstateDataView(generics.ListAPIView):
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
 
+        # format start_date & end_date into datetime format:
         start_date = datetime.strptime(start_date, "%m/%d/%Y")
         end_date = datetime.strptime(end_date, "%m/%d/%Y")
         # now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)

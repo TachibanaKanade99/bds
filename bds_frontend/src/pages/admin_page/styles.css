@@ -1,0 +1,7 @@
+th.MuiTableCell-root {
+    z-index: 0 !important;
+}
+
+.dataTables_wrapper {
+    margin-top: 80px;
+}

@@ -46,7 +46,7 @@ class App extends Component {
     super(props);
     this.state = {
       isAuthenticated: true,
-      isSuperUser: false,
+      isSuperUser: true,
     }
 
     this.checkAuthentication = this.checkAuthentication.bind(this);
@@ -122,28 +122,31 @@ class App extends Component {
           }}>
           </Route>
 
-          <Route path="/admin_page" render={(props) => {
+          <Route path="/admin_page/:users" render={(props) => {
             let auth = this.state.isAuthenticated;
-            let isAdmin = this.state.isSuperUser;
+            let isSuperUser = this.state.isSuperUser;
 
             if (props.location.state !== null && props.location.state !== undefined) {
-              auth = props.location.state.isAuthenticated;
-              isAdmin = props.location.state.isSuperUser;
+              if (props.location.state.isAuthenticated !== null && props.location.state.isAuthenticated !== undefined){
+                auth = props.location.state.isAuthenticated;
+              }
+
+              if (props.location.state.isSuperUser !== null && props.location.state.isSuperUser !== undefined) {
+                isSuperUser = props.location.state.isSuperUser;
+              }
             }
 
             if (auth === true) {
-              if (isAdmin === true) {
+              if (isSuperUser === true) {
                 return <AdminPage {...props} />
               }
               else {
-                return <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, message: "You need to be an admin to access this service!" } }} />
+                return <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, isSuperUser: isSuperUser, message: "You need to be an admin to access this service!" } }} />
               }
             }
             else{
               return <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
             }
-
-            // return (auth && isAdmin) === true ? <AdminPage {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to be an admin to access this service!" } }} />
           }}>
           </Route>
 
