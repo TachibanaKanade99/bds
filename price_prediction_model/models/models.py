@@ -5,6 +5,9 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score, KFold
 from sklearn.preprocessing import PolynomialFeatures
 
+# ignore warnings: =))) 
+import warnings
+
 # Linear Regression Model:
 def linearRegressionModel(X_train, Y_train):
     model = linear_model.LinearRegression()
@@ -100,6 +103,8 @@ def polynomialRegression(X, Y, X_train, Y_train, X_test, Y_test, X_validate, Y_v
     alphas = [0.00001, 0.00003, 0.00005, 0.00008, 0.0001, 0.0003, 0.0005, 0.0008, 0.001, 0.005, 0.01, 0.02, 0.04, 0.06, 0.1, 1.0, 3.0, 5.0, 10.0, 50.0, 100.0]
 
     selected_alpha = alphas[0]
+    
+    warnings.filterwarnings('ignore')
     # selected_regularized_model = ridgeRegressionModel(selected_X_train_poly, Y_train, selected_alpha)
     selected_regularized_model = lassoRegressionModel(selected_X_train_poly, Y_train, selected_alpha)
 
