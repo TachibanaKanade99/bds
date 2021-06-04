@@ -3,13 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import QuantileTransformer, PowerTransformer, FunctionTransformer
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error
 
 from models.prepareData import getData, convertData, divideData, preprocessData, scaleData
 from models.models import linearRegressionModel, polynomialRegression
 
-def evaluateModel(post_type):
+import unidecode
+from joblib import dump
+
+def evaluateModel(_post_type):
 
     # Database Connection:
     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
@@ -17,10 +20,11 @@ def evaluateModel(post_type):
 
     # Execute SQL query:
 
-    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( post_type, 100 ) )
+    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 100 ) )
     item_lst = cur.fetchall()
 
     for item in item_lst:
+        post_type = item[0]
         street = item[1]
         ward = item[2]
         district = item[3]
@@ -35,9 +39,9 @@ def evaluateModel(post_type):
         # preprocessing data:
         data = preprocessData(data)
 
-        if data is not None:
+        if len(data) > 20:
             print("\n\n")
-            print("Sample data: ")
+            print("Sample data in {street}, {ward}, {district}".format(street=street, ward=ward, district=district))
             print("--------------------------------------------------------")
             print(data.head())
             print("--------------------------------------------------------")
@@ -172,13 +176,48 @@ def evaluateModel(post_type):
 
                 # Linear score:
                 print("\n")
-                print("Linear Model score on train dataset: ", linear_model.score(X_train, Y_train))
-                print("Linear Model score on test dataset: ", linear_model.score(X_test, Y_test))
+
+                linear_train_r2_score = linear_model.score(X_train, Y_train)
+                print("Linear Model score on train dataset: ", linear_train_r2_score)
+                
+                linear_test_r2_score = linear_model.score(X_test, Y_test)
+                print("Linear Model score on test dataset: ", linear_test_r2_score)
 
                 # Poly score:
                 print("\n")
-                print("Poly Model score on train dataset: ", poly_model.score(X_train_poly, Y_train))
-                print("Poly Model score on test dataset: ", poly_model.score(X_test_poly, Y_test))
+
+                poly_train_r2_score = poly_model.score(X_train_poly, Y_train)
+                print("Poly Model score on train dataset: ", poly_train_r2_score)
+
+                poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
+                print("Poly Model score on test dataset: ", poly_test_r2_score)
+
+
+                # Save model after training:
+                # calc cross validation score of linear to compare with poly for best model selection
+                linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
+                poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
+
+                best_r2_score = linear_test_r2_score if linear_test_r2_score > poly_test_r2_score else poly_test_r2_score
+                best_model = linear_model if (linear_cv > poly_cv and linear_test_r2_score > poly_test_r2_score) else poly_model
+                best_degree = 1 if linear_cv > poly_cv else degree
+
+                print(linear_cv)
+                print(poly_cv)
+
+                # remove "dấu":
+                post_type = unidecode.unidecode(post_type.lower().replace(" ", ""))
+                street = unidecode.unidecode(street.lower().replace(" ", ""))
+                ward = unidecode.unidecode(ward.lower().replace(" ", ""))
+                district = unidecode.unidecode(district.lower().replace(" ", ""))
+                model_name = post_type + "_" + street + "_" + ward + "_" + district
+
+                if best_r2_score > 0.7:
+                    # Save model:
+                    dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+
+        else:
+            print("Length data in {street}, {ward}, {district} is {length}".format(street=street, ward=ward, district=district, length=len(data)))
 
     # Close connection:
     cur.close()
