@@ -115,12 +115,16 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
-    if (this.props.location.state.message !== undefined) {
-      console.log(this.props.location.state.message);
-      this.setState({ 
-        message: this.props.location.state.message,
-        btnClass: "btn fa fa-window-close"
-      })
+    if (this.props.location.state !== undefined) {
+      let message = this.props.location.state.message;
+      console.log(message);
+      
+      if (message !== undefined) {
+        this.setState({ 
+          message: message,
+          btnClass: "btn fa fa-window-close"
+        })
+      }
     }
 
     this.getCurrentUser();
