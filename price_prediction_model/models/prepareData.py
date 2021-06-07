@@ -47,8 +47,7 @@ def preprocessData(data):
     # data = data.drop_duplicates(subset='area', keep='last', inplace=False)
 
     # Instead of drop duplicates try calc and use its mean value:
-    if data.duplicated().any():
-        data = data.groupby(['area'], as_index=False).mean()
+    data = data.groupby(['area'], as_index=False).mean()
 
     # sort data by area:
     data = data.sort_values(by=['area'])
@@ -83,19 +82,25 @@ def preprocessData(data):
     # ]
 
     # USE IQR instead to detect outlier
-    while True:
-        area_minimum, area_maximum = calcMinimumMaximum(data['area'])
-        if (data['area'] > area_minimum).all() and (data['area'] < area_maximum).all():
-            break
-        else:
-            data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
+    # while True:
+    #     area_minimum, area_maximum = calcMinimumMaximum(data['area'])
+    #     if (data['area'] > area_minimum).all() and (data['area'] < area_maximum).all():
+    #         break
+    #     else:
+    #         data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
 
-    while True:
-        price_minimum, price_maximum = calcMinimumMaximum(data['price'])
-        if (data['price'] > price_minimum).all() and (data['price'] < price_maximum).all():
-            break
-        else:
-            data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
+    # while True:
+    #     price_minimum, price_maximum = calcMinimumMaximum(data['price'])
+    #     if (data['price'] > price_minimum).all() and (data['price'] < price_maximum).all():
+    #         break
+    #     else:
+    #         data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
+
+    area_minimum, area_maximum = calcMinimumMaximum(data['area'])
+    data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
+
+    price_minimum, price_maximum = calcMinimumMaximum(data['price'])
+    data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
 
     area_mean = np.mean(data['area'])
@@ -103,8 +108,8 @@ def preprocessData(data):
     price_mean = np.mean(data['price'])
     price_std = np.std(data['price'])
 
-    data = data[~(data['area'] < 10)]
-    data = data[~(data['price'] > 200)]
+    # data = data[~(data['area'] < 10)]
+    # data = data[~(data['price'] > 200)]
 
     data = data[~( (data['area'] < area_mean) & (data['price'] > price_mean) )]
     data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean - price_std) )]
