@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error
 
 from models.prepareData import getData, convertData, divideData, preprocessData, scaleData
-from models.models import linearRegressionModel, polynomialRegression
+from models.models import linearRegressionModel, polynomialRegression, nearestNeighbors
 
 import unidecode
 from joblib import dump
@@ -28,24 +28,25 @@ def evaluateModel(_post_type):
         street = item[1]
         ward = item[2]
         district = item[3]
-
-        # print("----------------------------------------------------")
-        # print("Model Evaluation for {} in {}".format(post_type, district))
-        # print("----------------------------------------------------")
-        # print("\n")
         
         data = getData(post_type, street, ward, district)
 
+        # transform data into log1p
+        data['area'] = (data['area']).transform(np.log1p)
+        data['price'] = (data['price']).transform(np.log1p)
+        
         # preprocessing data:
         data = preprocessData(data)
 
-        if len(data) > 20:
+        if len(data) > 30:
             print("\n\n")
             print("Sample data in {street}, {ward}, {district}".format(street=street, ward=ward, district=district))
             print("--------------------------------------------------------")
             print(data.head())
             print("--------------------------------------------------------")
             print("Data Length: ", len(data))
+
+            data = nearestNeighbors(data)
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3)
@@ -92,18 +93,17 @@ def evaluateModel(_post_type):
                 # Y_validate = PowerTransformer(method='yeo-johnson').fit_transform(Y_validate)
 
                 # Log Transformer:
+                # X = FunctionTransformer(np.log).fit_transform(X)
+                # Y = FunctionTransformer(np.log).fit_transform(Y)
 
-                X = FunctionTransformer(np.log).fit_transform(X)
-                Y = FunctionTransformer(np.log).fit_transform(Y)
+                # X_train = FunctionTransformer(np.log1p).fit_transform(X_train)
+                # Y_train = FunctionTransformer(np.log1p).fit_transform(Y_train)
 
-                X_train = FunctionTransformer(np.log1p).fit_transform(X_train)
-                Y_train = FunctionTransformer(np.log1p).fit_transform(Y_train)
+                # X_test = FunctionTransformer(np.log1p).fit_transform(X_test)
+                # Y_test = FunctionTransformer(np.log1p).fit_transform(Y_test)
 
-                X_test = FunctionTransformer(np.log1p).fit_transform(X_test)
-                Y_test = FunctionTransformer(np.log1p).fit_transform(Y_test)
-
-                X_validate = FunctionTransformer(np.log1p).fit_transform(X_validate)
-                Y_validate = FunctionTransformer(np.log1p).fit_transform(Y_validate)
+                # X_validate = FunctionTransformer(np.log1p).fit_transform(X_validate)
+                # Y_validate = FunctionTransformer(np.log1p).fit_transform(Y_validate)
 
                 # find model by using linear regression:
                 linear_model = linearRegressionModel(X_train, Y_train)
