@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max
+from django.db.models.aggregates import Count
 
 from rest_framework import generics, pagination, serializers, status, viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
@@ -414,9 +415,9 @@ class WardLst(APIView):
         ward_lst = []   
         
         if district is None:
-            query = RealEstateData.objects.values('ward').exclude(ward__exact=None).distinct()
+            query = RealEstateData.objects.values('ward').exclude(street__exact=None, ward__exact=None, district__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
         else:
-            query = RealEstateData.objects.values('ward').filter(district__exact=district).exclude(ward__exact=None).distinct()
+            query = RealEstateData.objects.values('ward').filter(district__exact=district).exclude(ward__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
 
         for q in query:
             ward_lst.append(q['ward'])
@@ -432,13 +433,13 @@ class StreetLst(APIView):
         street_lst = []
         
         if ward is None and district is None:
-            query = RealEstateData.objects.values('street').exclude(street__exact=None).distinct()
+            query = RealEstateData.objects.values('street').exclude(street__exact=None, ward__exact=None, district__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
         elif ward is not None and district is None:
-            query = RealEstateData.objects.values('street').filter(ward__exact=ward).exclude(street__exact=None).distinct()
+            query = RealEstateData.objects.values('street').filter(ward__exact=ward).exclude(street__exact=None, district__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
         elif ward is None and district is not None:
-            query = RealEstateData.objects.values('street').filter(district__exact=district).exclude(street__exact=None).distinct()
+            query = RealEstateData.objects.values('street').filter(district__exact=district).exclude(street__exact=None, ward__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
         else:
-            query = RealEstateData.objects.values('street').filter(ward__contains=ward, district__contains=district).exclude(street__exact=None).distinct()
+            query = RealEstateData.objects.values('street').filter(ward__exact=ward, district__exact=district).exclude(street__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
 
         for q in query:
             street_lst.append(q['street'])
@@ -479,7 +480,7 @@ class PricePredict(APIView):
 
             # reverse price:
             predicted_price = FunctionTransformer(np.log1p).inverse_transform(predicted_price)
-            predicted_price = predicted_price[0][0]
+            predicted_price = predicted_price[0]
             predicted_price = str(predicted_price) + " billion"
 
             return Response(predicted_price, status=status.HTTP_200_OK)
