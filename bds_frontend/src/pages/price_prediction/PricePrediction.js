@@ -187,7 +187,7 @@ export default class PricePrediction extends Component {
     const propertyTypes = [
       { label: "Lands", value: "Bán đất" },
       { label: "Houses", value: "Bán nhà riêng" },
-      { label: "Departments", value: "Bán căn hộ, chung cư" }
+      { label: "Departments", value: "Bán căn hộ chung cư" }
     ]
 
     const districtTypes = [
