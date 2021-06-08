@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error
 
 from models.prepareData import getData, convertData, divideData, preprocessData, scaleData
-from models.models import linearRegressionModel, polynomialRegression, nearestNeighbors
+from models.models import linearRegressionModel, polynomialRegression, nearestNeighbors, localOutlierFactor
 
 import unidecode
 from joblib import dump
@@ -20,7 +20,7 @@ def evaluateModel(_post_type):
 
     # Execute SQL query:
 
-    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 100 ) )
+    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 40 ) )
     item_lst = cur.fetchall()
 
     for item in item_lst:
@@ -30,6 +30,9 @@ def evaluateModel(_post_type):
         district = item[3]
         
         data = getData(post_type, street, ward, district)
+
+        data = data[~(data['area'] < 10)]
+        data = data[~(data['price'] > 200)]
 
         # transform data into log1p
         data['area'] = (data['area']).transform(np.log1p)
@@ -46,7 +49,8 @@ def evaluateModel(_post_type):
             print("--------------------------------------------------------")
             print("Data Length: ", len(data))
 
-            data = nearestNeighbors(data)
+            # data = nearestNeighbors(data)
+            data = localOutlierFactor(data)
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3)

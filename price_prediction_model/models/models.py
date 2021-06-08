@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import linear_model
+from sklearn import neighbors
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import NearestNeighbors, LocalOutlierFactor
 
 # ignore warnings: =))) 
 import warnings
@@ -41,7 +42,7 @@ def nearestNeighbors(data):
 
     # convert dataframe into numpy array:
     X = data.to_numpy()
-    n_neighbors = 10
+    n_neighbors = 3
 
     # Apply NN:
 
@@ -84,6 +85,35 @@ def nearestNeighbors(data):
     plt.show()
 
     return data
+
+# Local Outlier Factor:
+def localOutlierFactor(data):
+
+    # convert dataframe into numpy array:
+    X = data.to_numpy()
+    n_neighbors = 18
+
+    isNeighbors = LocalOutlierFactor(n_neighbors=n_neighbors, algorithm='brute', metric='euclidean').fit_predict(X)
+    
+    # locate outliers by index:
+    outlier_indexes = np.where(isNeighbors == -1)
+    outlier_values = data.iloc[outlier_indexes]
+
+    # drop outliers:
+    data = data.drop(outlier_values.index)
+
+    print("\nOutliers detected by Local Outlier Factor")
+    # plot outliers removed:
+    plt.scatter(data['area'], data['price'], color='blue', label='inliers')
+    plt.scatter(outlier_values['area'], outlier_values['price'], color='red', label='outliers')
+    plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+    plt.tight_layout()
+    plt.xlabel('area')
+    plt.ylabel('price')
+    plt.show()
+
+    return data
+
 
 # ElasticNet using both L1 and L2 Regularization:
 def elasticNetRegressionModel(X_train, Y_train, alpha=0.01, max_iter=2000, l1_ratio=0.5, tol=0.001):
