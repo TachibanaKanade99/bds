@@ -96,23 +96,19 @@ def preprocessData(data):
     #     else:
     #         data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
-    area_minimum, area_maximum = calcMinimumMaximum(data['area'])
-    data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
+    # area_minimum, area_maximum = calcMinimumMaximum(data['area'])
+    # data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
 
-    price_minimum, price_maximum = calcMinimumMaximum(data['price'])
-    data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
-
+    # price_minimum, price_maximum = calcMinimumMaximum(data['price'])
+    # data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
     area_mean = np.mean(data['area'])
 
     price_mean = np.mean(data['price'])
     price_std = np.std(data['price'])
 
-    # data = data[~(data['area'] < 10)]
-    # data = data[~(data['price'] > 200)]
-
     data = data[~( (data['area'] < area_mean) & (data['price'] > price_mean) )]
-    data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean - price_std) )]
+    data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean) )]
 
 
     # smooth data:
