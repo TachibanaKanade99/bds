@@ -56,15 +56,15 @@ def nearestNeighbors(data, n_neighbors):
     # drop outliers:
     data = data.drop(outlier_values.index)
 
-    print("\nOutliers detected by K-Nearest Neighbors with n_neighbors = ", n_neighbors)
-    # plot outliers removed:
-    plt.scatter(data['area'], data['price'], color='blue', label='inliers')
-    plt.scatter(outlier_values['area'], outlier_values['price'], color='red', label='outliers')
-    plt.legend(bbox_to_anchor=(1,1), loc="upper left")
-    plt.tight_layout()
-    plt.xlabel('area')
-    plt.ylabel('price')
-    plt.show()
+    # print("\nOutliers detected by K-Nearest Neighbors with n_neighbors = ", n_neighbors)
+    # # plot outliers removed:
+    # plt.scatter(data['area'], data['price'], color='blue', label='inliers')
+    # plt.scatter(outlier_values['area'], outlier_values['price'], color='red', label='outliers')
+    # plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+    # plt.tight_layout()
+    # plt.xlabel('area')
+    # plt.ylabel('price')
+    # plt.show()
 
     return data
 
@@ -83,15 +83,15 @@ def localOutlierFactor(data, n_neighbors):
     # drop outliers:
     data = data.drop(outlier_values.index)
 
-    print("\nOutliers detected by Local Outlier Factor with n_neighbors = ", n_neighbors)
-    # plot outliers removed:
-    plt.scatter(data['area'], data['price'], color='blue', label='inliers')
-    plt.scatter(outlier_values['area'], outlier_values['price'], color='red', label='outliers')
-    plt.legend(bbox_to_anchor=(1,1), loc="upper left")
-    plt.tight_layout()
-    plt.xlabel('area')
-    plt.ylabel('price')
-    plt.show()
+    # print("\nOutliers detected by Local Outlier Factor with n_neighbors = ", n_neighbors)
+    # # plot outliers removed:
+    # plt.scatter(data['area'], data['price'], color='blue', label='inliers')
+    # plt.scatter(outlier_values['area'], outlier_values['price'], color='red', label='outliers')
+    # plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+    # plt.tight_layout()
+    # plt.xlabel('area')
+    # plt.ylabel('price')
+    # plt.show()
 
     return data
 

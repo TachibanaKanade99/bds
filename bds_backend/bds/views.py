@@ -15,6 +15,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 
+import sys
+sys.path.append('D:\\Tuan_Minh\\bds\\price_prediction_model')
+from models.prepareData import getData, preprocessData, convertData
+from models.models import localOutlierFactor, linearRegressionModel, polynomialRegression
+
 
 from .serializers import UserSerializer, RealEstateDataSerializer, BdsSerializer, GetImageSerializer
 from .pagination import CustomPageNumber
@@ -23,13 +28,17 @@ from .models import Bds, RealEstateData
 from datetime import datetime
 
 # Use joblib to load model:
-from joblib import load
+from joblib import load, dump
 
 import unidecode
 import numpy as np
 
 # import FunctionTransformer from sklearn.preprocessing:
 from sklearn.preprocessing import FunctionTransformer, PolynomialFeatures
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+import io, base64
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -487,6 +496,131 @@ class PricePredict(APIView):
             
         except FileNotFoundError:
             return Response("Model not found!", status=status.HTTP_200_OK)
+
+class TrainModel(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        property_type = self.request.data['property_type']
+        street = self.request.data['street']
+        ward = self.request.data['ward']
+        district = self.request.data['district']
+
+        data = getData(property_type, street, ward, district)
+        data = data[~(data['area'] < 10)]
+        data = data[~(data['price'] > 200)]
+
+        # transform data into log1p
+        data['area'] = (data['area']).transform(np.log1p)
+        data['price'] = (data['price']).transform(np.log1p)
+
+        # preprocessing data:
+        data = preprocessData(data)
+
+        if len(data) > 30:
+            data = localOutlierFactor(data, 10)
+
+            # divide data into train, validate, test data:
+            train_data, test_data = train_test_split(data, test_size=0.3)
+            test_data, validate_data = train_test_split(test_data, test_size=0.5)
+
+            # Train model with train_data:
+            if train_data is not None and test_data is not None and validate_data is not None:
+
+                # Sort data by area column:
+                train_data = train_data.sort_values(by=['area'])
+                test_data = test_data.sort_values(by=['area'])
+                validate_data = validate_data.sort_values(by=['area'])
+
+                print("\nTrain data length: ", len(train_data))
+                print("Test data length: ", len(test_data))
+                print("Validate data length: ", len(validate_data))
+
+                # Manipulate data:
+                X, Y = convertData(data)
+                X_train, Y_train = convertData(train_data)
+                X_test, Y_test = convertData(test_data)
+                X_validate, Y_validate = convertData(validate_data)
+
+                # find model by using linear regression:
+                linear_model = linearRegressionModel(X_train, Y_train)
+
+                # find Y by using linear model predict:
+                Y_train_pred = linear_model.predict(X_train)
+                Y_test_pred = linear_model.predict(X_test)
+
+                # find model by using polynomial regression:
+                poly_model, degree, validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
+
+                # transform X and X_test:
+                polynomial_features = PolynomialFeatures(degree=degree)
+                X_train_poly = polynomial_features.fit_transform(X_train)
+                X_test_poly = polynomial_features.fit_transform(X_test)
+
+                # Try predicting Y
+                Y_train_poly_pred = poly_model.predict(X_train_poly)
+
+                # Linear score:
+                linear_train_r2_score = linear_model.score(X_train, Y_train)
+                print("Linear Model score on train dataset: ", linear_train_r2_score)
+                linear_test_r2_score = linear_model.score(X_test, Y_test)
+                print("Linear Model score on test dataset: ", linear_test_r2_score)
+
+                # Poly score:
+                poly_train_r2_score = poly_model.score(X_train_poly, Y_train)
+                print("Poly Model score on train dataset: ", poly_train_r2_score)
+                poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
+                print("Poly Model score on test dataset: ", poly_test_r2_score)
+
+                linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
+                poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
+
+                best_r2_score = linear_test_r2_score if linear_test_r2_score > poly_test_r2_score else poly_test_r2_score
+                best_model = linear_model if (linear_cv > poly_cv and linear_test_r2_score > poly_test_r2_score) else poly_model
+                best_degree = 1 if linear_cv > poly_cv else degree
+
+                if best_degree == 1:
+                    # Plot linear model:
+                    plt.figure(figsize=(7, 4))
+                    plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
+                    plt.scatter(X_test, Y_test, marker='o', color='red', label='test_data')
+                    plt.scatter(X_validate, Y_validate, marker='o', color='green', label='validate_data')
+                    plt.plot(X_train, Y_train_pred, color='black', label='train_model')
+                    plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+                    plt.tight_layout()
+                    plt.xlabel('area')
+                    plt.ylabel('price')
+
+                else:
+                    # Plot model:
+                    plt.figure(figsize=(7, 4))
+                    plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
+                    plt.scatter(X_test, Y_test, marker='o', color='red', label='test_data')
+                    plt.scatter(X_validate, Y_validate, marker='o', color='green', label='validate_data')
+                    plt.plot(X_train, Y_train_poly_pred, color='black', label='train_model')
+                    plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+                    plt.tight_layout()
+                    plt.xlabel('area')
+                    plt.ylabel('price')
+
+                flike = io.BytesIO()
+                plt.savefig(flike)
+                b64 = base64.b64encode(flike.getvalue()).decode()
+                plt.close()
+
+                # remove "dấu":
+                property_type = unidecode.unidecode(property_type.lower().replace(" ", ""))
+                street = unidecode.unidecode(street.lower().replace(" ", ""))
+                ward = unidecode.unidecode(ward.lower().replace(" ", ""))
+                district = unidecode.unidecode(district.lower().replace(" ", ""))
+                model_name = property_type + "_" + street + "_" + ward + "_" + district
+
+                if best_r2_score > 0.7:
+                    # Save model:
+                    if model_name != 'bannharieng_3/2_14_10':
+                        dump((best_model, best_degree), '../price_prediction_model/trained/' + model_name + ".joblib")
+                
+                return Response(b64, status=status.HTTP_200_OK)
 
 
 class BdsView(viewsets.ModelViewSet):
