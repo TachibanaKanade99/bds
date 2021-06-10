@@ -49,8 +49,8 @@ def evaluateModel(_post_type):
             print("--------------------------------------------------------")
             print("Data Length: ", len(data))
 
-            # data = nearestNeighbors(data)
-            data = localOutlierFactor(data)
+            # data = nearestNeighbors(data, 2)
+            data = localOutlierFactor(data, 10)
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3)
@@ -143,7 +143,7 @@ def evaluateModel(_post_type):
                 print("\n\n")
 
                 # find model by using polynomial regression:
-                poly_model, degree, train_rmse, validate_rmse, test_rmse = polynomialRegression(X, Y, X_train, Y_train, X_test, Y_test, X_validate, Y_validate)
+                poly_model, degree, validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
 
                 # transform X and X_test:
                 polynomial_features = PolynomialFeatures(degree=degree)
@@ -172,9 +172,9 @@ def evaluateModel(_post_type):
                 print("Polynomial model intercept: {}\n".format(poly_model.intercept_))
 
                 # poly_model rmse:
-                print("Polynomial Model RMSE on train data: {}".format(train_rmse))
+                # print("Polynomial Model RMSE on train data: {}".format(train_rmse))
                 print("Polynomial Model RMSE on validate data: {}".format(validate_rmse))
-                print("Polynomial Model RMSE on test data: {}".format(test_rmse))
+                # print("Polynomial Model RMSE on test data: {}".format(test_rmse))
 
                 # score the model with test data:
 
@@ -218,7 +218,8 @@ def evaluateModel(_post_type):
 
                 if best_r2_score > 0.7:
                     # Save model:
-                    dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+                    if model_name != 'bannharieng_3/2_14_10':
+                        dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
 
         else:
             print("Length data in {street}, {ward}, {district} is {length}".format(street=street, ward=ward, district=district, length=len(data)))
