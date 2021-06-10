@@ -479,7 +479,7 @@ class PricePredict(APIView):
                 predicted_price = model.predict(poly_area)
 
             # reverse price:
-            predicted_price = FunctionTransformer(np.log1p).inverse_transform(predicted_price)
+            predicted_price = FunctionTransformer(np.log1p).inverse_transform(predicted_price).reshape((1,))
             predicted_price = predicted_price[0]
             predicted_price = str(predicted_price) + " billion"
 
