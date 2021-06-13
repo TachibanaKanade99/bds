@@ -26,6 +26,10 @@ def getData(post_type, street, ward, district):
     # close db connection:
     conn.close()
 
+    # check if data is existed:
+    if len(data) <= 0:
+        data = None
+
     return data
 
 def calcMinimumMaximum(vals):
