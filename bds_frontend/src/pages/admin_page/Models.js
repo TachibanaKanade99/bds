@@ -26,12 +26,15 @@ export default class Models extends Component {
 
       street_lst: [],
       street: null,
-
-      // train - test r2 score:
-      // train_score: null,
-      // test_score: null,
-
-      img: null,
+      
+      message: null,
+      model_name: null,
+      degree: null,
+      train_rmse: null,
+      test_rmse: null,
+      train_r2_score: null,
+      test_r2_score: null,
+      figure: null,
     }
 
     this.handleChoosePropertyType = this.handleChoosePropertyType.bind(this);
@@ -46,19 +49,21 @@ export default class Models extends Component {
   }
 
   componentDidMount() {
-    this.getWardLst(null);
-    this.getStreetLst(null, null);
+    this.getWardLst(this.state.district, this.state.street);
+    this.getStreetLst(this.state.district, this.state.ward);
   }
 
   convertIntoOptions = (value, index, array) => {
     return { "label": value, "value": value }
   }
 
-  getWardLst = (district) => {
+  getWardLst = (district, street) => {
     let self = this;
     axios
       .post("/bds/api/realestatedata/ward_lst/", {
-        district: district
+        property_type: self.state.property_type,
+        district: district,
+        street: street
       },
       {
         headers: {
@@ -75,12 +80,13 @@ export default class Models extends Component {
       })
   }
 
-  getStreetLst = (ward, district) => {
+  getStreetLst = (district, ward) => {
     let self = this;
     axios
       .post("/bds/api/realestatedata/street_lst/", {
-        ward: ward,
+        property_type: self.state.property_type,
         district: district,
+        ward: ward
       },
       {
         headers: {
@@ -109,17 +115,19 @@ export default class Models extends Component {
     this.setState({ district: selectedOption.value })
 
     // handle ward_lst:
-    this.getWardLst(selectedOption.value);
+    this.getWardLst(selectedOption.value, this.state.street);
 
     // handle street_lst:
-    this.getStreetLst(this.state.ward, selectedOption.value);
+    this.getStreetLst(selectedOption.value, this.state.ward);
   }
 
   handleChooseWardType = (selectedOption) => {
     this.setState({ ward: selectedOption.value })
 
+    this.setState({ street: '' })
+
     // handle street_lst:
-    this.getStreetLst(selectedOption.value, this.state.district);
+    this.getStreetLst(this.state.district, selectedOption.value);
   }
 
   handleChooseStreetType = (selectedOption) => {
@@ -144,7 +152,23 @@ export default class Models extends Component {
       })
       .then((res) => {
         console.log(res);
-        self.setState({ img: 'data:image/png;base64,' + res.data })
+        
+        self.setState({ message: res.data.message })
+        
+        if (res.data.message !== "Data Length is empty or less than 30!!"){
+          self.setState({
+            model_name: res.data.model_name,
+            degree: res.data.degree,
+            train_rmse: res.data.train_rmse,
+            test_rmse: res.data.test_rmse,
+            train_r2_score: res.data.train_r2_score,
+            test_r2_score: res.data.test_r2_score,
+            figure: 'data:image/png;base64,' + res.data.figure 
+          })
+        }
+        else {
+          self.setState({ figure: null })
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -193,85 +217,86 @@ export default class Models extends Component {
 
         <div className="row">
           <div className="col-12 col-md-5">
-            <Form onSubmit={this.handleSubmit}>
-              <div className="row">
-                <div className="col-1 col-md-1"></div>
-                <div className="col-10 col-md-6">
-                  <FormGroup className="mt-4">
-                    <Label className="control-label">Property Type</Label>
-                    <Select
-                      // className="customSelect"
-                      options={propertyTypes}
-                      defaultValue={""}
-                      onChange={this.handleChoosePropertyType}
-                      onMenuOpen={this.handleSelectMenuOpen}
-                    />
-                  </FormGroup>
-                </div>
+            <div className="row">
+              <div className="col-10 col-md-6">
+                <Form onSubmit={this.handleSubmit}>
+                  <div className="row">
+                    <div className="col-10 col-md-10 pl-4">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Property Type</Label>
+                        <Select
+                          // className="customSelect"
+                          options={propertyTypes}
+                          defaultValue={null}
+                          onChange={this.handleChoosePropertyType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-10 pl-4">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">District</Label>
+                        <Select
+                          options={districtTypes}
+                          name="district"
+                          placeholder="Choose district"
+                          defaultValue={null}
+                          onChange={this.handleChooseDistrictType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-10 pl-4">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Ward</Label>
+                        <Select
+                          options={this.state.ward_lst}
+                          name="ward"
+                          defaultValue={null}
+                          placeholder="Choose ward"
+                          onChange={this.handleChooseWardType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-10 pl-4">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Street</Label>
+                        <Select
+                          options={this.state.street_lst}
+                          name="street"
+                          defaultValue={null}
+                          placeholder="Choose street"
+                          onChange={this.handleChooseStreetType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-10 text-center">
+                      <button type="submit" className="mt-3 btn btn-primary">Train model</button>
+                    </div>
+                  </div>
+                </Form>
               </div>
 
-              <div className="row">
-                <div className="col-1 col-md-1"></div>
-                <div className="col-10 col-md-6">
-                  <FormGroup className="mt-4">
-                    <Label className="control-label">District</Label>
-                    <Select
-                      options={districtTypes}
-                      name="district"
-                      placeholder="Choose district"
-                      defaultValue={""}
-                      onChange={this.handleChooseDistrictType}
-                      onMenuOpen={this.handleSelectMenuOpen}
-                    />
-                  </FormGroup>
-                </div>
+              <div className="col-10 col-md-6">
+                <p>{this.state.message}</p>
+                <p>Model used to train data:  {this.state.model_name}</p>
+                <p>Degree: {this.state.degree}</p>
+                <p>Train RMSE: {this.state.train_rmse}</p>
+                <p>Test RMSE: {this.state.test_rmse}</p>
+                <p>Train R2 score: {this.state.train_r2_score}</p>
+                <p>Test R2 score: {this.state.test_r2_score}</p>
               </div>
 
-              <div className="row">
-                <div className="col-1 col-md-1"></div>
-                <div className="col-10 col-md-6">
-                  <FormGroup className="mt-4">
-                    <Label className="control-label">Ward</Label>
-                    <Select
-                      options={this.state.ward_lst}
-                      name="ward"
-                      defaultValue={""}
-                      placeholder="Choose ward"
-                      onChange={this.handleChooseWardType}
-                      onMenuOpen={this.handleSelectMenuOpen}
-                    />
-                  </FormGroup>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-1 col-md-1"></div>
-                <div className="col-10 col-md-6">
-                  <FormGroup className="mt-4">
-                    <Label className="control-label">Street</Label>
-                    <Select
-                      options={this.state.street_lst}
-                      name="street"
-                      defaultValue={""}
-                      placeholder="Choose street"
-                      onChange={this.handleChooseStreetType}
-                      onMenuOpen={this.handleSelectMenuOpen}
-                    />
-                  </FormGroup>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-1 col-md-1"></div>
-                <div className="col-10 col-md-6 text-center">
-                  <button type="submit" className="mt-4 btn btn-primary">Train model</button>
-                </div>
-              </div>
-
-            </Form>
+            </div>
           </div>
           <div className="col-12 col-md-7 text-center">
-            <img src={this.state.img} alt='image of trained model' />
+            <img src={this.state.figure} />
           </div>
         </div>
       </Fragment>
