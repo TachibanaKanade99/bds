@@ -92,6 +92,28 @@ DATABASES = {
     }
 }
 
+# LOGGING:
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        },
+      'django.db.template': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+
+    }
+}
+
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
 ]
