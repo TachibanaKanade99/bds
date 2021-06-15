@@ -234,8 +234,9 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
     # selected_rmse = min_poly_rmse if selected_model == selected_poly_model else regularized_rmse
 
     selected_model = selected_regularized_model
-    selected_rmse = regularized_name
+    model_name = regularized_name
+    selected_rmse = regularized_rmse
 
-    return selected_model, selected_degree, selected_rmse
+    return selected_model, model_name, selected_degree, selected_rmse
 
 
