@@ -15,12 +15,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 
-import sys
-sys.path.append('D:\\Tuan_Minh\\bds\\price_prediction_model')
-from models.prepareData import getData, preprocessData, convertData
-from models.models import localOutlierFactor, linearRegressionModel, polynomialRegression
-
-
 from .serializers import UserSerializer, RealEstateDataSerializer, BdsSerializer, GetImageSerializer
 from .pagination import CustomPageNumber
 from .models import Bds, RealEstateData
@@ -33,12 +27,21 @@ from joblib import load, dump
 import unidecode
 import numpy as np
 
+"""
+Price predition libraries 
+"""
+
 # import FunctionTransformer from sklearn.preprocessing:
 from sklearn.preprocessing import FunctionTransformer, PolynomialFeatures
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import io, base64
+
+import sys
+sys.path.append('D:\\Tuan_Minh\\bds\\price_prediction_model')
+from models.prepareData import getData, preprocessData, convertData
+from models.models import localOutlierFactor, linearRegressionModel, polynomialRegression, calcRMSE
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -420,13 +423,23 @@ class WardLst(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        property_type = self.request.data['property_type']
         district = self.request.data['district']
+        street = self.request.data['street']
         ward_lst = []   
         
-        if district is None:
-            query = RealEstateData.objects.values('ward').exclude(street__exact=None, ward__exact=None, district__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
-        else:
-            query = RealEstateData.objects.values('ward').filter(district__exact=district).exclude(ward__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
+        # basic query:
+        query = RealEstateData.objects.values('ward')
+
+        if property_type is not None:
+            query = query.filter(post_type__exact=property_type)
+        if district is not None:
+            query = query.filter(district__exact=district)
+        if street is not None:
+            query = query.filter(street__exact=street)
+
+        # update full query:
+        query = query.exclude(ward__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
 
         for q in query:
             ward_lst.append(q['ward'])
@@ -437,18 +450,25 @@ class StreetLst(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        ward = self.request.data['ward']
+        property_type = self.request.data['property_type']
         district = self.request.data['district']
+        ward = self.request.data['ward']
         street_lst = []
         
-        if ward is None and district is None:
-            query = RealEstateData.objects.values('street').exclude(street__exact=None, ward__exact=None, district__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
-        elif ward is not None and district is None:
-            query = RealEstateData.objects.values('street').filter(ward__exact=ward).exclude(street__exact=None, district__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
-        elif ward is None and district is not None:
-            query = RealEstateData.objects.values('street').filter(district__exact=district).exclude(street__exact=None, ward__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
-        else:
-            query = RealEstateData.objects.values('street').filter(ward__exact=ward, district__exact=district).exclude(street__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
+        # basic query:
+        query = RealEstateData.objects.values('street')
+
+        if property_type is not None:
+            query = query.filter(post_type__exact=property_type)
+        if district is not None:
+            query = query.filter(district__exact=district)
+        if ward is not None:
+            query = query.filter(ward__exact=ward)
+
+        # update full query:
+        query = query.exclude(street__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
+
+        # query = RealEstateData.objects.values('street').filter(post_type__contains=property_type, district__contains=district, ward__contains=ward).exclude(street__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
 
         for q in query:
             street_lst.append(q['street'])
@@ -507,17 +527,19 @@ class TrainModel(APIView):
         district = self.request.data['district']
 
         data = getData(property_type, street, ward, district)
-        data = data[~(data['area'] < 10)]
-        data = data[~(data['price'] > 200)]
 
-        # transform data into log1p
-        data['area'] = (data['area']).transform(np.log1p)
-        data['price'] = (data['price']).transform(np.log1p)
+        if data is not None and len(data) > 30:
+            data = data[~(data['area'] < 10)]
+            data = data[~(data['price'] > 200)]
 
-        # preprocessing data:
-        data = preprocessData(data)
+            # transform data into log1p
+            data['area'] = (data['area']).transform(np.log1p)
+            data['price'] = (data['price']).transform(np.log1p)
 
-        if len(data) > 30:
+            # preprocessing data:
+            data = preprocessData(data)
+            
+            # remove noise data:
             data = localOutlierFactor(data, 10)
 
             # divide data into train, validate, test data:
@@ -547,10 +569,13 @@ class TrainModel(APIView):
 
                 # find Y by using linear model predict:
                 Y_train_pred = linear_model.predict(X_train)
-                Y_test_pred = linear_model.predict(X_test)
+
+                # calculate RMSE on linear model:
+                linear_train_rmse = calcRMSE(linear_model, X_train, Y_train)
+                linear_test_rmse = calcRMSE(linear_model, X_test, Y_test)
 
                 # find model by using polynomial regression:
-                poly_model, degree, validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
+                poly_model, poly_model_name, degree, validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
 
                 # transform X and X_test:
                 polynomial_features = PolynomialFeatures(degree=degree)
@@ -559,6 +584,10 @@ class TrainModel(APIView):
 
                 # Try predicting Y
                 Y_train_poly_pred = poly_model.predict(X_train_poly)
+
+                # calculate RMSE on poly model:
+                poly_train_rmse = calcRMSE(poly_model, X_train_poly, Y_train)
+                poly_test_rmse = calcRMSE(poly_model, X_test_poly, Y_test)
 
                 # Linear score:
                 linear_train_r2_score = linear_model.score(X_train, Y_train)
@@ -575,11 +604,21 @@ class TrainModel(APIView):
                 linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
                 poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
 
-                best_r2_score = linear_test_r2_score if linear_test_r2_score > poly_test_r2_score else poly_test_r2_score
-                best_model = linear_model if (linear_cv > poly_cv and linear_test_r2_score > poly_test_r2_score) else poly_model
-                best_degree = 1 if linear_cv > poly_cv else degree
+                if linear_cv > poly_cv and linear_test_r2_score > poly_test_r2_score:
+                    best_model = linear_model
+                    model_name = "Linear Regression"
+                    best_degree = 1
 
-                if best_degree == 1:
+                    # RMSE:
+                    best_train_rmse = linear_train_rmse
+                    best_test_rmse = linear_test_rmse
+
+                    # R2 score:
+                    best_train_r2_score = linear_train_r2_score
+                    best_test_r2_score = linear_test_r2_score
+
+                    print("Best Model is Linear")
+
                     # Plot linear model:
                     plt.figure(figsize=(7, 4))
                     plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
@@ -592,6 +631,20 @@ class TrainModel(APIView):
                     plt.ylabel('price')
 
                 else:
+                    best_model = poly_model
+                    model_name = poly_model_name
+                    best_degree = degree
+
+                    # RMSE:
+                    best_train_rmse = poly_train_rmse
+                    best_test_rmse = poly_test_rmse
+
+                    # R2 score:
+                    best_train_r2_score = poly_train_r2_score
+                    best_test_r2_score = poly_test_r2_score
+                    
+                    print("Best Model is Poly")
+
                     # Plot model:
                     plt.figure(figsize=(7, 4))
                     plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
@@ -603,6 +656,7 @@ class TrainModel(APIView):
                     plt.xlabel('area')
                     plt.ylabel('price')
 
+                # Save figure and encode:
                 flike = io.BytesIO()
                 plt.savefig(flike)
                 b64 = base64.b64encode(flike.getvalue()).decode()
@@ -613,14 +667,31 @@ class TrainModel(APIView):
                 street = unidecode.unidecode(street.lower().replace(" ", ""))
                 ward = unidecode.unidecode(ward.lower().replace(" ", ""))
                 district = unidecode.unidecode(district.lower().replace(" ", ""))
-                model_name = property_type + "_" + street + "_" + ward + "_" + district
+                saved_model_name = property_type + "_" + street + "_" + ward + "_" + district
 
-                if best_r2_score > 0.7:
+                if best_test_r2_score > 0.7:
                     # Save model:
-                    if model_name != 'bannharieng_3/2_14_10':
+                    if saved_model_name != 'bannharieng_3/2_14_10':
                         dump((best_model, best_degree), '../price_prediction_model/trained/' + model_name + ".joblib")
                 
-                return Response(b64, status=status.HTTP_200_OK)
+                response = {
+                    "message": "Model trained successfully",
+                    "model_name": model_name,
+                    "degree": best_degree,
+                    "train_rmse": best_train_rmse,
+                    "test_rmse": best_test_rmse,
+                    "train_r2_score": best_train_r2_score,
+                    "test_r2_score": best_test_r2_score,
+                    "figure": b64
+                }
+
+                return Response(response, status=status.HTTP_200_OK)
+        else:
+            response = {
+                "message": "Data Length is empty or less than 30!!"
+            }
+
+            return Response(response, status=status.HTTP_200_OK)
 
 
 class BdsView(viewsets.ModelViewSet):
