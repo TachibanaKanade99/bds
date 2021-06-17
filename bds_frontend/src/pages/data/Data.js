@@ -119,7 +119,7 @@ export default class Data extends Component {
           label: 'Post Type',
           name: 'post_type',
           options: {
-            setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+            setCellProps: () => ({ style: { minWidth: "200px", maxWidth: "1500px" } })
           }
         },
         {
@@ -250,12 +250,21 @@ export default class Data extends Component {
       isMenuOpen: false,
 
       // Filter options:
-      website: "",
+      website: null,
       price: "0-max",
-      post_type: "",
+      post_type: null,
       page_size: 10,
       startDate: new Date(2020, 7, 31).toLocaleDateString(),
       endDate: new Date().toLocaleDateString(),
+
+      request_page: "data",
+      district: null,
+
+      ward_lst: [],
+      ward: null,
+
+      street_lst: [],
+      street: null,
     }
 
     this.getCurrentUser = this.getCurrentUser.bind(this);
@@ -272,6 +281,14 @@ export default class Data extends Component {
     this.handleStartDate = this.handleStartDate.bind(this);
     this.handleEndDate = this.handleEndDate.bind(this);
 
+    this.getWardLst = this.getWardLst.bind(this);
+    this.getStreetLst = this.getStreetLst.bind(this);
+    this.convertIntoOptions = this.convertIntoOptions.bind(this);
+
+    this.handleChooseDistrictType = this.handleChooseDistrictType.bind(this);
+    this.handleChooseWardType = this.handleChooseWardType.bind(this);
+    this.handleChooseStreetType = this.handleChooseStreetType.bind(this);
+
     // Submit:
     this.submitData = this.submitData.bind(this);
   }
@@ -279,6 +296,12 @@ export default class Data extends Component {
   componentDidMount() {
     this.getCurrentUser();
     this.getData();
+    this.getWardLst(this.state.district);
+    this.getStreetLst(this.state.district, this.state.ward);
+  }
+
+  convertIntoOptions = (value, index, array) => {
+    return { "label": value, "value": value }
   }
 
   getCurrentUser = () => {
@@ -290,6 +313,53 @@ export default class Data extends Component {
         self.setState({ current_user: res.data.username })
       })
       .catch(function(err) {
+        console.log(err);
+      })
+  }
+
+  getWardLst = (district) => {
+    let self = this;
+    axios
+      .post("/bds/api/realestatedata/ward_lst/", {
+        request_page: self.state.request_page,
+        property_type: null,
+        district: district
+      },
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
+      )
+      .then((res) => {
+        console.log(res);
+        self.setState({ ward_lst: res.data.map(self.convertIntoOptions) })
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+  }
+
+  getStreetLst = (district, ward) => {
+    let self = this;
+    axios
+      .post("/bds/api/realestatedata/street_lst/", {
+        request_page: self.state.request_page,
+        property_type: null,
+        district: district,
+        ward: ward
+      },
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
+      )
+      .then((res) => {
+        console.log(res);
+        self.setState({ street_lst: res.data.map(self.convertIntoOptions) })
+      })
+      .catch((err) => {
         console.log(err);
       })
   }
@@ -447,6 +517,29 @@ export default class Data extends Component {
     this.setState({ endDate: date.toLocaleDateString()})
   }
 
+  handleChooseDistrictType = (selectedOption) => {
+    this.setState({ district: selectedOption.value })
+
+    // handle ward_lst:
+    this.getWardLst(selectedOption.value);
+
+    // handle street_lst:
+    this.getStreetLst(selectedOption.value, this.state.ward);
+  }
+
+  handleChooseWardType = (selectedOption) => {
+    this.setState({ ward: selectedOption.value })
+
+    this.setState({ street: '' })
+
+    // handle street_lst:
+    this.getStreetLst(this.state.district, selectedOption.value);
+  }
+
+  handleChooseStreetType = (selectedOption) => {
+    this.setState({ street: selectedOption.value })
+  }
+
   submitData = (e) => {
     // e.preventDefault();
     this.getData();
@@ -495,7 +588,7 @@ export default class Data extends Component {
 
     // Buttons state:
     const chooseWebPage = [
-      { label: "All", value: "" },
+      { label: "All", value: null },
       { label: "https://batdongsan.com.vn/", value: "https://batdongsan.com.vn" },
       { label: "https://propzy.vn/", value: "https://propzy.vn/" },
       { label: "https://homedy.com/", value: "https://homedy.com/" }
@@ -519,16 +612,44 @@ export default class Data extends Component {
     ];
 
     const choosePostType = [
-      { label: "All", value: "" },
+      { label: "All", value: null },
       { label: "Bán đất", value: "Bán đất" },
-      { label: "Bán đất nền dự án", value: "Bán đất nền dự án" },
+      { label: "Bán đất nền dự án", value: "Bán đất nền dự án (đất trong dự án quy hoạch)" },
       { label: "Bán nhà riêng", value: "Bán nhà riêng" },
       { label: "Bán nhà mặt phố", value: "Bán nhà mặt phố" },
-      { label: "Bán nhà biệt thự, liền kề", value: "Bán nhà biệt thự" },
+      { label: "Bán nhà mặt phố (nhà mặt tiền trên các tuyến phố)", value: "Bán nhà mặt phố (nhà mặt tiền trên các tuyến phố)" },
+      { label: "Bán nhà biệt thự, liền kề", value: "Bán nhà biệt thự, liệt kề (nhà trong dự án quy hoạch)" },
       { label: "Bán căn hộ chung cư", value: "Bán căn hộ chung cư" },
-      { label: "Bán kho, nhà xưởng", value: "Bán kho nhà xưởng" },
+      { label: "Bán kho, nhà xưởng", value: "Bán kho, nhà xưởng" },
       { label: "Bán trang trại, khu nghỉ dưỡng", value: "Bán trang trại, khu nghỉ dưỡng"},
       { label: "Bán loại đất động sản khác", value: "Bán loại bất động sản khác" }
+    ]
+
+    const districtTypes = [
+      { label: "1", value: "1" },
+      { label: "2", value: "2" },
+      { label: "3", value: "3" },
+      { label: "4", value: "4" },
+      { label: "5", value: "5" },
+      { label: "6", value: "6" },
+      { label: "7", value: "7" },
+      { label: "8", value: "8" },
+      { label: "9", value: "9" },
+      { label: "10", value: "10" },
+      { label: "11", value: "11" },
+      { label: "12", value: "12" },
+      { label: "Bình Tân", value: "Bình Tân" },
+      { label: "Bình Thạnh", value: "Bình Thạnh" },
+      { label: "Thủ Đức", value: "Thủ Đức" },
+      { label: "Hóc Môn", value: "Hóc Môn" },
+      { label: "Tân Bình", value: "Tân Bình" },
+      { label: "Bình Chánh", value: "Bình Chánh" },
+      { label: "Phú Nhuận", value: "Phú Nhuận" },
+      { label: "Gò Vấp", value: "Gò Vấp" },
+      { label: "Tân Phú", value: "Tân Phú" },
+      { label: "Nhà Bè", value: "Nhà Bè" },
+      { label: "Cần Giờ", value: "Cần Giờ" },
+      { label: "Củ Chi", value: "Củ Chi" }
     ]
 
     return (
@@ -569,7 +690,7 @@ export default class Data extends Component {
                       </FormGroup>
                     </div>
 
-                    <div className="col-10 col-md-2">
+                    <div className="col-10 col-md-3">
                       <FormGroup className="mt-4">
                         <Label className="control-label">Choose Post Type</Label>
                         <Select
@@ -624,11 +745,52 @@ export default class Data extends Component {
                       <FormGroup>
                           <Label className="control-label">Rows per Page</Label>
                           <Select
-                            // className="customSelect"
                             options={rowsPerPage}
                             defaultValue={{ label: "10", value: 10 }}
                             onChange={this.handleChangeRowsPerPage}
                           />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-3 pl-4">
+                      <FormGroup>
+                        <Label className="control-label">District</Label>
+                        <Select
+                          options={districtTypes}
+                          name="district"
+                          placeholder="Choose district"
+                          defaultValue={null}
+                          onChange={this.handleChooseDistrictType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-3 pl-4">
+                      <FormGroup>
+                        <Label className="control-label">Ward</Label>
+                        <Select
+                          options={this.state.ward_lst}
+                          name="ward"
+                          defaultValue={null}
+                          placeholder="Choose ward"
+                          onChange={this.handleChooseWardType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
+                      </FormGroup>
+                    </div>
+
+                    <div className="col-10 col-md-3 pl-4">
+                      <FormGroup>
+                        <Label className="control-label">Street</Label>
+                        <Select
+                          options={this.state.street_lst}
+                          name="street"
+                          defaultValue={null}
+                          placeholder="Choose street"
+                          onChange={this.handleChooseStreetType}
+                          onMenuOpen={this.handleSelectMenuOpen}
+                        />
                       </FormGroup>
                     </div>
 

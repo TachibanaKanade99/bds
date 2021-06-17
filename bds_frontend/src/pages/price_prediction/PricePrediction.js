@@ -21,6 +21,7 @@ export default class PricePrediction extends Component {
       current_user: null,
 
       // property states:
+      request_page: "predict",
       property_type: null,
       area: null,
       district: null,
@@ -52,8 +53,8 @@ export default class PricePrediction extends Component {
 
   componentDidMount() {
     this.getCurrentUser();
-    this.getWardLst(null);
-    this.getStreetLst(null, null);
+    this.getWardLst(this.state.district);
+    this.getStreetLst(this.state.district, this.state.ward);
   }
 
   getCurrentUser = () => {
@@ -76,6 +77,8 @@ export default class PricePrediction extends Component {
     let self = this;
     axios
       .post("/bds/api/realestatedata/ward_lst/", {
+        request_page: self.state.request_page,
+        property_type: self.state.property_type,
         district: district
       },
       {
@@ -93,12 +96,14 @@ export default class PricePrediction extends Component {
       })
   }
 
-  getStreetLst = (ward, district) => {
+  getStreetLst = (district, ward) => {
     let self = this;
     axios
       .post("/bds/api/realestatedata/street_lst/", {
-        ward: ward,
+        request_page: self.state.request_page,
+        property_type: self.state.property_type,
         district: district,
+        ward: ward
       },
       {
         headers: {
@@ -136,17 +141,17 @@ export default class PricePrediction extends Component {
     this.setState({ district: selectedOption.value })
 
     // handle ward_lst:
-    this.getWardLst(selectedOption.value);
+    this.getWardLst(selectedOption.value, this.state.street);
 
     // handle street_lst:
-    this.getStreetLst(this.state.ward, selectedOption.value);
+    this.getStreetLst(selectedOption.value, this.state.ward);
   }
 
   handleChooseWardType = (selectedOption) => {
     this.setState({ ward: selectedOption.value })
 
     // handle street_lst:
-    this.getStreetLst(selectedOption.value, this.state.district);
+    this.getStreetLst(this.state.district, selectedOption.value);
   }
 
   handleChooseStreetType = (selectedOption) => {
@@ -231,7 +236,7 @@ export default class PricePrediction extends Component {
                   <Select
                     options={propertyTypes}
                     name="property_type"
-                    defaultValue={""}
+                    defaultValue={null}
                     placeholder="Choose property type"
                     onChange={this.handleChoosePropertyType}
                     onMenuOpen={this.handleSelectMenuOpen}
@@ -258,7 +263,7 @@ export default class PricePrediction extends Component {
                     options={districtTypes}
                     name="district"
                     placeholder="Choose district"
-                    defaultValue={""}
+                    defaultValue={null}
                     onChange={this.handleChooseDistrictType}
                     onMenuOpen={this.handleSelectMenuOpen}
                     className="col-7 col-md-4 px-0"
@@ -270,7 +275,7 @@ export default class PricePrediction extends Component {
                   <Select
                     options={this.state.ward_lst}
                     name="ward"
-                    defaultValue={""}
+                    defaultValue={null}
                     placeholder="Choose ward"
                     onChange={this.handleChooseWardType}
                     onMenuOpen={this.handleSelectMenuOpen}
@@ -283,7 +288,7 @@ export default class PricePrediction extends Component {
                   <Select
                     options={this.state.street_lst}
                     name="street"
-                    defaultValue={""}
+                    defaultValue={null}
                     placeholder="Choose street"
                     onChange={this.handleChooseStreetType}
                     onMenuOpen={this.handleSelectMenuOpen}

@@ -8,6 +8,9 @@ import Select from 'react-select';
 // reactstrap:
 import { FormGroup, Label, Form, } from 'reactstrap';
 
+// @material-ui:
+import Switch from '@material-ui/core/Switch';
+
 // import CSS:
 import './styles.css';
 
@@ -26,6 +29,8 @@ export default class Models extends Component {
 
       street_lst: [],
       street: null,
+
+      isEnableLOF: true,
       
       message: null,
       model_name: null,
@@ -45,11 +50,12 @@ export default class Models extends Component {
     this.handleChooseDistrictType = this.handleChooseDistrictType.bind(this);
     this.handleChooseWardType = this.handleChooseWardType.bind(this);
     this.handleChooseStreetType = this.handleChooseStreetType.bind(this);
+    this.handleChangeEnableLOF = this.handleChangeEnableLOF.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   componentDidMount() {
-    this.getWardLst(this.state.district, this.state.street);
+    this.getWardLst(this.state.district);
     this.getStreetLst(this.state.district, this.state.ward);
   }
 
@@ -57,13 +63,12 @@ export default class Models extends Component {
     return { "label": value, "value": value }
   }
 
-  getWardLst = (district, street) => {
+  getWardLst = (district) => {
     let self = this;
     axios
       .post("/bds/api/realestatedata/ward_lst/", {
         property_type: self.state.property_type,
-        district: district,
-        street: street
+        district: district
       },
       {
         headers: {
@@ -115,7 +120,7 @@ export default class Models extends Component {
     this.setState({ district: selectedOption.value })
 
     // handle ward_lst:
-    this.getWardLst(selectedOption.value, this.state.street);
+    this.getWardLst(selectedOption.value);
 
     // handle street_lst:
     this.getStreetLst(selectedOption.value, this.state.ward);
@@ -134,6 +139,10 @@ export default class Models extends Component {
     this.setState({ street: selectedOption.value })
   }
 
+  handleChangeEnableLOF = (e) => {
+    this.setState({  isEnableLOF: e.target.checked })
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     let self = this;
@@ -141,9 +150,10 @@ export default class Models extends Component {
     axios
       .post("/bds/api/realestatedata/train_model/", {
         property_type: self.state.property_type,
-        street: self.state.street,
+        district: self.state.district,
         ward: self.state.ward,
-        district: self.state.district
+        street: self.state.street,
+        isEnableLOF: self.state.isEnableLOF
       },
       {
         headers: {
@@ -167,7 +177,15 @@ export default class Models extends Component {
           })
         }
         else {
-          self.setState({ figure: null })
+          self.setState({
+            model_name: "None",
+            degree: "None",
+            train_rmse: "None",
+            test_rmse: "None",
+            train_r2_score: "None",
+            test_r2_score: "None",
+            figure: null
+          })
         }
       })
       .catch((err) => {
@@ -276,6 +294,19 @@ export default class Models extends Component {
                       </FormGroup>
                     </div>
 
+                    <div className="col-10 col-md-10 pl-4">
+                      <FormGroup className="mt-4">
+                        <Label className="control-label">Use Local Outlier Factor</Label>
+                        <Switch
+                          checked={this.state.isEnableLOF}
+                          onChange={this.handleChangeEnableLOF} 
+                          color="primary"
+                          name="isEnableLOF"
+                          inputProps={{ 'aria-label': 'primary checkbox' }}
+                        />
+                      </FormGroup>
+                    </div>
+
                     <div className="col-10 col-md-10 text-center">
                       <button type="submit" className="mt-3 btn btn-primary">Train model</button>
                     </div>
@@ -285,12 +316,36 @@ export default class Models extends Component {
 
               <div className="col-10 col-md-6">
                 <p>{this.state.message}</p>
-                <p>Model used to train data:  {this.state.model_name}</p>
-                <p>Degree: {this.state.degree}</p>
-                <p>Train RMSE: {this.state.train_rmse}</p>
-                <p>Test RMSE: {this.state.test_rmse}</p>
-                <p>Train R2 score: {this.state.train_r2_score}</p>
-                <p>Test R2 score: {this.state.test_r2_score}</p>
+                
+                <p>
+                  <span className="font-weight-bold">Model used to train data: </span>
+                  <span>{this.state.model_name}</span> 
+                </p>
+                
+                <p>
+                  <span className="font-weight-bold">Degree: </span>
+                  <span>{this.state.degree}</span>
+                </p>
+                
+                <p>
+                  <span className="font-weight-bold">Train RMSE: </span>
+                  <span>{this.state.train_rmse}</span>  
+                </p>
+                
+                <p>
+                  <span className="font-weight-bold">Test RMSE: </span>
+                  <span>{this.state.test_rmse}</span>
+                </p>
+                
+                <p>
+                  <span className="font-weight-bold">Train R2 score: </span>
+                  <span>{this.state.train_r2_score}</span>
+                </p>
+                
+                <p>
+                  <span className="font-weight-bold">Test R2 score: </span>
+                  <span>{this.state.test_r2_score}</span>
+                </p>
               </div>
 
             </div>

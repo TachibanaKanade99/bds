@@ -7,9 +7,6 @@ import { CircularProgress, Typography, Checkbox, FormControlLabel, } from "@mate
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import MUIDataTable from "mui-datatables";
 
-// Reactstrap:
-import { FormGroup, Label, } from 'reactstrap';
-
 export default class Users extends Component {
   constructor(props) {
     super(props);
@@ -32,7 +29,6 @@ export default class Users extends Component {
             filter: true,
             setCellProps: () => ({ style: { minWidth: "200px", maxWidth: "500px" } }),
             customBodyRender: (value, tableMeta, updateValue) => {
-              console.log("1 " + value);
               return (
                 <div>
                   <i 
