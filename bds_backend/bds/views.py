@@ -163,10 +163,17 @@ class RealEstateDataView(generics.ListAPIView):
         min_price = float(min_price)
         max_price = float(max_price)
 
-        if post_type == "Bán đất":
-            queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type=post_type, posted_date__range=[start_date, end_date]).order_by('id')
-        else:
-            queryset = RealEstateData.objects.filter(url__contains=website, price__range=[min_price, max_price], post_type__contains=post_type, posted_date__range=[start_date, end_date]).order_by('id')
+        # create basic query:
+        queryset = RealEstateData.objects
+
+        if website is not None:
+            queryset = queryset.filter(url__contains=website)
+
+        if post_type is not None:
+            queryset = queryset.filter(post_type__exact=post_type)
+
+        # update full query:
+        queryset = queryset.filter(price__range=[min_price, max_price], posted_date__range=[start_date, end_date]).order_by('id')
         
         return queryset
 
@@ -423,9 +430,9 @@ class WardLst(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        request_page = self.request.data['request_page']
         property_type = self.request.data['property_type']
         district = self.request.data['district']
-        street = self.request.data['street']
         ward_lst = []   
         
         # basic query:
@@ -435,11 +442,15 @@ class WardLst(APIView):
             query = query.filter(post_type__exact=property_type)
         if district is not None:
             query = query.filter(district__exact=district)
-        if street is not None:
-            query = query.filter(street__exact=street)
 
+        # retrieve wards by its number depend of page request:
+        query = query.exclude(ward__exact=None).annotate(count_ward=Count('ward'))
+
+        if request_page == "data":
+            query = query.filter(count_ward__gt=40)
+        
         # update full query:
-        query = query.exclude(ward__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
+        query = query.order_by().distinct()
 
         for q in query:
             ward_lst.append(q['ward'])
@@ -450,6 +461,7 @@ class StreetLst(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        request_page = self.request.data['request_page']
         property_type = self.request.data['property_type']
         district = self.request.data['district']
         ward = self.request.data['ward']
@@ -466,9 +478,13 @@ class StreetLst(APIView):
             query = query.filter(ward__exact=ward)
 
         # update full query:
-        query = query.exclude(street__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
+        query = query.exclude(street__exact=None).annotate(count_street=Count('street'))
 
-        # query = RealEstateData.objects.values('street').filter(post_type__contains=property_type, district__contains=district, ward__contains=ward).exclude(street__exact=None).annotate(count_street=Count('street')).filter(count_street__gt=40).order_by().distinct()
+        if request_page == "data":
+            query = query.filter(count_street__gt=40)
+        
+        # update full query:
+        query = query.order_by().distinct()
 
         for q in query:
             street_lst.append(q['street'])
@@ -522,13 +538,15 @@ class TrainModel(APIView):
 
     def post(self, request):
         property_type = self.request.data['property_type']
-        street = self.request.data['street']
-        ward = self.request.data['ward']
         district = self.request.data['district']
+        ward = self.request.data['ward']
+        street = self.request.data['street']
+        isEnableLOF = self.request.data['isEnableLOF']
 
         data = getData(property_type, street, ward, district)
 
-        if data is not None and len(data) > 30:
+        # Preprocess data:
+        if data is not None:
             data = data[~(data['area'] < 10)]
             data = data[~(data['price'] > 200)]
 
@@ -539,8 +557,12 @@ class TrainModel(APIView):
             # preprocessing data:
             data = preprocessData(data)
             
-            # remove noise data:
-            data = localOutlierFactor(data, 10)
+            if isEnableLOF:
+                # remove noise data:
+                data = localOutlierFactor(data, 10)
+
+        # Split data & Train model:
+        if len(data) > 30:
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3)
@@ -688,7 +710,14 @@ class TrainModel(APIView):
                 return Response(response, status=status.HTTP_200_OK)
         else:
             response = {
-                "message": "Data Length is empty or less than 30!!"
+                "message": "Data Length is empty or less than 30!!",
+                "model_name": "None",
+                "degree": "None",
+                "train_rmse": "None",
+                "test_rmse": "None",
+                "train_r2_score": "None",
+                "test_r2_score": "None",
+                "figure": None
             }
 
             return Response(response, status=status.HTTP_200_OK)
