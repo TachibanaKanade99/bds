@@ -405,7 +405,10 @@ export default class Data extends Component {
             post_type: self.state.post_type,
             page_size: self.state.page_size,
             start_date: self.state.startDate,
-            end_date: self.state.endDate
+            end_date: self.state.endDate,
+            district: self.state.district,
+            ward: self.state.ward,
+            street: self.state.street
           }
         }, 
         {
@@ -438,8 +441,10 @@ export default class Data extends Component {
             post_type: self.state.post_type,
             page_size: self.state.page_size,
             start_date: self.state.startDate,
-            end_date: self.state.endDate
-            // offset: this.state.offset,
+            end_date: self.state.endDate,
+            district: self.state.district,
+            ward: self.state.ward,
+            street: self.state.street
         },
       },
       {

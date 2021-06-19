@@ -148,6 +148,9 @@ class RealEstateDataView(generics.ListAPIView):
         post_type = self.request.query_params.get('post_type', None)
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
+        district = self.request.query_params.get('district', None)
+        ward = self.request.query_params.get('ward', None)
+        street = self.request.query_params.get('street', None)
 
         # format start_date & end_date into datetime format:
         start_date = datetime.strptime(start_date, "%m/%d/%Y")
@@ -171,6 +174,15 @@ class RealEstateDataView(generics.ListAPIView):
 
         if post_type is not None:
             queryset = queryset.filter(post_type__exact=post_type)
+
+        if district is not None:
+            queryset = queryset.filter(district__exact=district)
+
+        if ward is not None:
+            queryset = queryset.filter(ward__exact=ward)
+
+        if street is not None:
+            queryset = queryset.filter(street__exact=street)
 
         # update full query:
         queryset = queryset.filter(price__range=[min_price, max_price], posted_date__range=[start_date, end_date]).order_by('id')
@@ -444,10 +456,10 @@ class WardLst(APIView):
             query = query.filter(district__exact=district)
 
         # retrieve wards by its number depend of page request:
-        query = query.exclude(ward__exact=None).annotate(count_ward=Count('ward'))
+        query = query.exclude(ward__exact=None)
 
-        if request_page == "data":
-            query = query.filter(count_ward__gt=40)
+        if request_page == "predict":
+            query = query.annotate(count_ward=Count('ward')).filter(count_ward__gt=40)
         
         # update full query:
         query = query.order_by().distinct()
@@ -478,10 +490,10 @@ class StreetLst(APIView):
             query = query.filter(ward__exact=ward)
 
         # update full query:
-        query = query.exclude(street__exact=None).annotate(count_street=Count('street'))
+        query = query.exclude(street__exact=None)
 
-        if request_page == "data":
-            query = query.filter(count_street__gt=40)
+        if request_page == "predict":
+            query = query.annotate(count_street=Count('street')).filter(count_street__gt=40)
         
         # update full query:
         query = query.order_by().distinct()
@@ -631,6 +643,10 @@ class TrainModel(APIView):
                     model_name = "Linear Regression"
                     best_degree = 1
 
+                    # Model coefficient and intercept:
+                    model_coef = linear_model.coef_
+                    model_intercept = linear_model.intercept_
+
                     # RMSE:
                     best_train_rmse = linear_train_rmse
                     best_test_rmse = linear_test_rmse
@@ -656,6 +672,10 @@ class TrainModel(APIView):
                     best_model = poly_model
                     model_name = poly_model_name
                     best_degree = degree
+
+                    # Model coefficient and intercept:
+                    model_coef = poly_model.coef_
+                    model_intercept = poly_model.intercept_
 
                     # RMSE:
                     best_train_rmse = poly_train_rmse
@@ -700,6 +720,8 @@ class TrainModel(APIView):
                     "message": "Model trained successfully",
                     "model_name": model_name,
                     "degree": best_degree,
+                    "model_coef": model_coef,
+                    "model_intercept": model_intercept,
                     "train_rmse": best_train_rmse,
                     "test_rmse": best_test_rmse,
                     "train_r2_score": best_train_r2_score,
@@ -707,12 +729,13 @@ class TrainModel(APIView):
                     "figure": b64
                 }
 
-                return Response(response, status=status.HTTP_200_OK)
         else:
             response = {
                 "message": "Data Length is empty or less than 30!!",
                 "model_name": "None",
                 "degree": "None",
+                "model_coef": "None",
+                "model_intercept": "None",
                 "train_rmse": "None",
                 "test_rmse": "None",
                 "train_r2_score": "None",
@@ -720,7 +743,7 @@ class TrainModel(APIView):
                 "figure": None
             }
 
-            return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class BdsView(viewsets.ModelViewSet):

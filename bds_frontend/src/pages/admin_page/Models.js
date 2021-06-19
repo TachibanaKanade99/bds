@@ -21,6 +21,7 @@ export default class Models extends Component {
       isMenuOpen: false,
 
       // property states:
+      request_page: "predict",
       property_type: null,
       district: null,
 
@@ -35,6 +36,8 @@ export default class Models extends Component {
       message: null,
       model_name: null,
       degree: null,
+      model_coef: null,
+      model_intercept: null,
       train_rmse: null,
       test_rmse: null,
       train_r2_score: null,
@@ -67,6 +70,7 @@ export default class Models extends Component {
     let self = this;
     axios
       .post("/bds/api/realestatedata/ward_lst/", {
+        request_page: self.state.request_page,
         property_type: self.state.property_type,
         district: district
       },
@@ -89,6 +93,7 @@ export default class Models extends Component {
     let self = this;
     axios
       .post("/bds/api/realestatedata/street_lst/", {
+        request_page: self.state.request_page,
         property_type: self.state.property_type,
         district: district,
         ward: ward
@@ -163,30 +168,16 @@ export default class Models extends Component {
       .then((res) => {
         console.log(res);
         
-        self.setState({ message: res.data.message })
-        
-        if (res.data.message !== "Data Length is empty or less than 30!!"){
-          self.setState({
-            model_name: res.data.model_name,
-            degree: res.data.degree,
-            train_rmse: res.data.train_rmse,
-            test_rmse: res.data.test_rmse,
-            train_r2_score: res.data.train_r2_score,
-            test_r2_score: res.data.test_r2_score,
-            figure: 'data:image/png;base64,' + res.data.figure 
-          })
-        }
-        else {
-          self.setState({
-            model_name: "None",
-            degree: "None",
-            train_rmse: "None",
-            test_rmse: "None",
-            train_r2_score: "None",
-            test_r2_score: "None",
-            figure: null
-          })
-        }
+        self.setState({
+          message: res.data.message,
+          model_name: res.data.model_name,
+          degree: res.data.degree,
+          train_rmse: res.data.train_rmse,
+          test_rmse: res.data.test_rmse,
+          train_r2_score: res.data.train_r2_score,
+          test_r2_score: res.data.test_r2_score,
+          figure: 'data:image/png;base64,' + res.data.figure 
+        })
       })
       .catch((err) => {
         console.log(err);
