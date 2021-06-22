@@ -438,6 +438,30 @@ class PieChart(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
+def isNum(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
+        return False
+
+def sortLstNumAndChar(lst):
+    numbers = []
+    chars = []
+
+    for item in lst:
+        if isNum(item):
+            numbers.append(int(item))
+        else:
+            chars.append(item)
+
+    if numbers is not None and chars is not None:
+        numbers.sort(reverse=False)
+        chars.sort(reverse=False)
+        return list(map(str, numbers)) + chars
+    else:
+        return None
+
 class WardLst(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -462,10 +486,13 @@ class WardLst(APIView):
             query = query.annotate(count_ward=Count('ward')).filter(count_ward__gt=40)
         
         # update full query:
-        query = query.order_by().distinct()
+        query = query.order_by('ward').distinct()
 
         for q in query:
             ward_lst.append(q['ward'])
+
+        # sort ward_lst:
+        ward_lst = sortLstNumAndChar(ward_lst)
 
         return Response(ward_lst, status=status.HTTP_200_OK)
 
@@ -496,10 +523,13 @@ class StreetLst(APIView):
             query = query.annotate(count_street=Count('street')).filter(count_street__gt=40)
         
         # update full query:
-        query = query.order_by().distinct()
+        query = query.order_by('street').distinct()
 
         for q in query:
             street_lst.append(q['street'])
+
+        # sort street_lst:
+        street_lst = sortLstNumAndChar(street_lst)
 
         return Response(street_lst, status=status.HTTP_200_OK)
 
@@ -577,8 +607,8 @@ class TrainModel(APIView):
         if len(data) > 30:
 
             # divide data into train, validate, test data:
-            train_data, test_data = train_test_split(data, test_size=0.3)
-            test_data, validate_data = train_test_split(test_data, test_size=0.5)
+            train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
+            test_data, validate_data = train_test_split(test_data, test_size=0.5, random_state=4)
 
             # Train model with train_data:
             if train_data is not None and test_data is not None and validate_data is not None:
@@ -717,7 +747,7 @@ class TrainModel(APIView):
                         dump((best_model, best_degree), '../price_prediction_model/trained/' + model_name + ".joblib")
                 
                 response = {
-                    "message": "Model trained successfully",
+                    "message": "Model trained successfully!",
                     "model_name": model_name,
                     "degree": best_degree,
                     "model_coef": model_coef,
@@ -731,7 +761,7 @@ class TrainModel(APIView):
 
         else:
             response = {
-                "message": "Data Length is empty or less than 30!!",
+                "message": "Data Length is empty or less than 30!",
                 "model_name": "None",
                 "degree": "None",
                 "model_coef": "None",
