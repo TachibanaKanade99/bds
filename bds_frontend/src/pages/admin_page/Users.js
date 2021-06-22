@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 // MUI Datatable:
-import { CircularProgress, Typography, Checkbox, FormControlLabel, } from "@material-ui/core";
+import { CircularProgress, Typography, } from "@material-ui/core";
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import MUIDataTable from "mui-datatables";
 
