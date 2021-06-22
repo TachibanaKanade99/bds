@@ -36,8 +36,8 @@ export default class Models extends Component {
       message: null,
       model_name: null,
       degree: null,
-      model_coef: null,
-      model_intercept: null,
+      model_coef: "",
+      model_intercept: "",
       train_rmse: null,
       test_rmse: null,
       train_r2_score: null,
@@ -172,6 +172,8 @@ export default class Models extends Component {
           message: res.data.message,
           model_name: res.data.model_name,
           degree: res.data.degree,
+          model_coef: res.data.model_coef,
+          model_intercept: res.data.model_intercept,
           train_rmse: res.data.train_rmse,
           test_rmse: res.data.test_rmse,
           train_r2_score: res.data.train_r2_score,
@@ -318,6 +320,22 @@ export default class Models extends Component {
                   <span>{this.state.degree}</span>
                 </p>
                 
+                <hr />
+
+                <div>
+                  <p className="font-weight-bold">Model Coefficients: </p>
+                  <span className="auto-newline">{"[" + this.state.model_coef.toString() + "]"}</span>
+                </div>
+
+                <br />
+
+                <div>
+                  <p className="font-weight-bold">Model Intercept: </p>
+                  <span>{"[" + this.state.model_intercept.toString() + "]"}</span>
+                </div>
+
+                <hr />
+
                 <p>
                   <span className="font-weight-bold">Train RMSE: </span>
                   <span>{this.state.train_rmse}</span>  
@@ -342,7 +360,7 @@ export default class Models extends Component {
             </div>
           </div>
           <div className="col-12 col-md-7 text-center">
-            <img src={this.state.figure} />
+            <img alt="train model" src={this.state.figure} />
           </div>
         </div>
       </Fragment>
