@@ -53,8 +53,8 @@ def evaluateModel(_post_type):
             data = localOutlierFactor(data, 10)
 
             # divide data into train, validate, test data:
-            train_data, test_data = train_test_split(data, test_size=0.3)
-            test_data, validate_data = train_test_split(test_data, test_size=0.5)
+            train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
+            test_data, validate_data = train_test_split(test_data, test_size=0.5, random_state=4)
         
             # Train model with train_data:
             if train_data is not None and test_data is not None and validate_data is not None:
