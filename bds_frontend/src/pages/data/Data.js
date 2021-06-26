@@ -126,14 +126,14 @@ export default class Data extends Component {
           label: 'Email',
           name: 'email',
           options: {
-            setCellProps: () => ({ style: { minWidth: "200px", maxWidth: "200px" } })
+            setCellProps: () => ({ style: { minWidth: "300px", maxWidth: "600px" } })
           }
         },
         {
           label: 'Facade',
           name: 'facade',
           options: {
-            setCellProps: () => ({ style: { minWidth: "150px", maxWidth: "1500px" } })
+            setCellProps: () => ({ style: { minWidth: "200px", maxWidth: "500px" } })
           }
         },
         {
@@ -757,7 +757,7 @@ export default class Data extends Component {
                       </FormGroup>
                     </div>
 
-                    <div className="col-10 col-md-3 pl-4">
+                    <div className="col-10 col-md-3">
                       <FormGroup>
                         <Label className="control-label">District</Label>
                         <Select
@@ -771,7 +771,7 @@ export default class Data extends Component {
                       </FormGroup>
                     </div>
 
-                    <div className="col-10 col-md-3 pl-4">
+                    <div className="col-10 col-md-3">
                       <FormGroup>
                         <Label className="control-label">Ward</Label>
                         <Select
@@ -785,7 +785,7 @@ export default class Data extends Component {
                       </FormGroup>
                     </div>
 
-                    <div className="col-10 col-md-3 pl-4">
+                    <div className="col-10 col-md-3">
                       <FormGroup>
                         <Label className="control-label">Street</Label>
                         <Select

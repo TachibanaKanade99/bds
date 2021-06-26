@@ -216,41 +216,43 @@ export default class Users extends Component {
     }
 
     return (
-      <Fragment>
-        <div className="mt-5 pt-5 pl-5 font-weight-bold h4">
-          List of Users
-        </div>
-
-        {/* Table */}
-        <div className="mt-5">
-          {/* <div className="text-center mb-4">{this.state.message}</div> */}
-          <div className="row data-table">
-            {/* <div class="col-1 col-md-1 px-0"></div> */}
-            <div className="col-11 col-md-11 px-3 ml-5">
-              <MuiThemeProvider theme={this.getMuiTheme()}>
-                <MUIDataTable
-                  title={
-                    <Typography variant="h6">
-                      Real Estate Data
-                      {this.state.isLoading && (
-                        <CircularProgress
-                        size={24}
-                        style={{ marginLeft: 15, position: "relative", top: 4 }}
-                        />
-                      )}
-                    </Typography>
-                  }
-                  columns = { this.state.columns }
-                  data = { this.state.data }
-                  options = { options }
-                />
-              </MuiThemeProvider>
-            </div>
-            {/* <div className="col-1 col-md-1 px-0"></div> */}
+      <div className="container-fluid">
+        <Fragment>
+          <div className="mt-5 pt-5 pl-5 font-weight-bold h4">
+            List of Users
           </div>
-        </div>
 
-      </Fragment>
+          {/* Table */}
+          <div className="mt-5">
+            {/* <div className="text-center mb-4">{this.state.message}</div> */}
+            <div className="row data-table">
+              {/* <div class="col-1 col-md-1 px-0"></div> */}
+              <div className="col-11 col-md-11 px-3 ml-5">
+                <MuiThemeProvider theme={this.getMuiTheme()}>
+                  <MUIDataTable
+                    title={
+                      <Typography variant="h6">
+                        Real Estate Data
+                        {this.state.isLoading && (
+                          <CircularProgress
+                          size={24}
+                          style={{ marginLeft: 15, position: "relative", top: 4 }}
+                          />
+                        )}
+                      </Typography>
+                    }
+                    columns = { this.state.columns }
+                    data = { this.state.data }
+                    options = { options }
+                  />
+                </MuiThemeProvider>
+              </div>
+              {/* <div className="col-1 col-md-1 px-0"></div> */}
+            </div>
+          </div>
+
+        </Fragment>
+      </div>
     )
   }
 }

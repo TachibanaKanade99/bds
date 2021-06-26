@@ -31,7 +31,7 @@ export default class Models extends Component {
       street_lst: [],
       street: null,
 
-      isEnableLOF: true,
+      isEnableLOF: false,
       
       message: null,
       model_name: null,
@@ -222,148 +222,150 @@ export default class Models extends Component {
     ]
 
     return (
-      <Fragment>
-        <div className="mt-5 ml-5 pt-5 h4 font-weight-bold">Admin can retrain model in specific locations here</div>
-        <hr />
+      <div className="container-fluid">
+        <Fragment>
+          <div className="mt-5 mx-auto pt-5 h4 font-weight-bold">Admin can retrain model in specific locations here</div>
+          <hr />
 
-        <div className="row">
-          <div className="col-12 col-md-5">
-            <div className="row">
-              <div className="col-10 col-md-6">
-                <Form onSubmit={this.handleSubmit}>
-                  <div className="row">
-                    <div className="col-10 col-md-10 pl-4">
-                      <FormGroup className="mt-4">
-                        <Label className="control-label">Property Type</Label>
-                        <Select
-                          // className="customSelect"
-                          options={propertyTypes}
-                          defaultValue={null}
-                          onChange={this.handleChoosePropertyType}
-                          onMenuOpen={this.handleSelectMenuOpen}
-                        />
-                      </FormGroup>
-                    </div>
+          <div className="row">
+            <div className="col-12 col-md-5">
+              <div className="row">
+                <div className="col-10 col-md-6">
+                  <Form onSubmit={this.handleSubmit}>
+                    <div className="row">
+                      <div className="col-10 col-md-10 pl-4">
+                        <FormGroup className="mt-4">
+                          <Label className="control-label">Property Type</Label>
+                          <Select
+                            // className="customSelect"
+                            options={propertyTypes}
+                            defaultValue={null}
+                            onChange={this.handleChoosePropertyType}
+                            onMenuOpen={this.handleSelectMenuOpen}
+                          />
+                        </FormGroup>
+                      </div>
 
-                    <div className="col-10 col-md-10 pl-4">
-                      <FormGroup className="mt-4">
-                        <Label className="control-label">District</Label>
-                        <Select
-                          options={districtTypes}
-                          name="district"
-                          placeholder="Choose district"
-                          defaultValue={null}
-                          onChange={this.handleChooseDistrictType}
-                          onMenuOpen={this.handleSelectMenuOpen}
-                        />
-                      </FormGroup>
-                    </div>
+                      <div className="col-10 col-md-10 pl-4">
+                        <FormGroup className="mt-4">
+                          <Label className="control-label">District</Label>
+                          <Select
+                            options={districtTypes}
+                            name="district"
+                            placeholder="Choose district"
+                            defaultValue={null}
+                            onChange={this.handleChooseDistrictType}
+                            onMenuOpen={this.handleSelectMenuOpen}
+                          />
+                        </FormGroup>
+                      </div>
 
-                    <div className="col-10 col-md-10 pl-4">
-                      <FormGroup className="mt-4">
-                        <Label className="control-label">Ward</Label>
-                        <Select
-                          options={this.state.ward_lst}
-                          name="ward"
-                          defaultValue={null}
-                          placeholder="Choose ward"
-                          onChange={this.handleChooseWardType}
-                          onMenuOpen={this.handleSelectMenuOpen}
-                        />
-                      </FormGroup>
-                    </div>
+                      <div className="col-10 col-md-10 pl-4">
+                        <FormGroup className="mt-4">
+                          <Label className="control-label">Ward</Label>
+                          <Select
+                            options={this.state.ward_lst}
+                            name="ward"
+                            defaultValue={null}
+                            placeholder="Choose ward"
+                            onChange={this.handleChooseWardType}
+                            onMenuOpen={this.handleSelectMenuOpen}
+                          />
+                        </FormGroup>
+                      </div>
 
-                    <div className="col-10 col-md-10 pl-4">
-                      <FormGroup className="mt-4">
-                        <Label className="control-label">Street</Label>
-                        <Select
-                          options={this.state.street_lst}
-                          name="street"
-                          defaultValue={null}
-                          placeholder="Choose street"
-                          onChange={this.handleChooseStreetType}
-                          onMenuOpen={this.handleSelectMenuOpen}
-                        />
-                      </FormGroup>
-                    </div>
+                      <div className="col-10 col-md-10 pl-4">
+                        <FormGroup className="mt-4">
+                          <Label className="control-label">Street</Label>
+                          <Select
+                            options={this.state.street_lst}
+                            name="street"
+                            defaultValue={null}
+                            placeholder="Choose street"
+                            onChange={this.handleChooseStreetType}
+                            onMenuOpen={this.handleSelectMenuOpen}
+                          />
+                        </FormGroup>
+                      </div>
 
-                    <div className="col-10 col-md-10 pl-4">
-                      <FormGroup className="mt-4">
-                        <Label className="control-label">Use Local Outlier Factor</Label>
-                        <Switch
-                          checked={this.state.isEnableLOF}
-                          onChange={this.handleChangeEnableLOF} 
-                          color="primary"
-                          name="isEnableLOF"
-                          inputProps={{ 'aria-label': 'primary checkbox' }}
-                        />
-                      </FormGroup>
-                    </div>
+                      <div className="col-10 col-md-10 pl-4">
+                        <FormGroup className="mt-4">
+                          <Label className="control-label">Use Local Outlier Factor</Label>
+                          <Switch
+                            checked={this.state.isEnableLOF}
+                            onChange={this.handleChangeEnableLOF} 
+                            color="primary"
+                            name="isEnableLOF"
+                            inputProps={{ 'aria-label': 'primary checkbox' }}
+                          />
+                        </FormGroup>
+                      </div>
 
-                    <div className="col-10 col-md-10 text-center">
-                      <button type="submit" className="mt-3 btn btn-primary">Train model</button>
+                      <div className="col-10 col-md-10 text-center">
+                        <button type="submit" className="mt-3 btn btn-primary">Train model</button>
+                      </div>
                     </div>
+                  </Form>
+                </div>
+
+                <div className="col-10 col-md-6">
+                  <p>{this.state.message}</p>
+                  
+                  <p>
+                    <span className="font-weight-bold">Model used to train data: </span>
+                    <span>{this.state.model_name}</span> 
+                  </p>
+                  
+                  <p>
+                    <span className="font-weight-bold">Degree: </span>
+                    <span>{this.state.degree}</span>
+                  </p>
+                  
+                  <hr />
+
+                  <div>
+                    <p className="font-weight-bold">Model Coefficients: </p>
+                    <span className="auto-newline">{"[" + this.state.model_coef.toString() + "]"}</span>
                   </div>
-                </Form>
-              </div>
 
-              <div className="col-10 col-md-6">
-                <p>{this.state.message}</p>
-                
-                <p>
-                  <span className="font-weight-bold">Model used to train data: </span>
-                  <span>{this.state.model_name}</span> 
-                </p>
-                
-                <p>
-                  <span className="font-weight-bold">Degree: </span>
-                  <span>{this.state.degree}</span>
-                </p>
-                
-                <hr />
+                  <br />
 
-                <div>
-                  <p className="font-weight-bold">Model Coefficients: </p>
-                  <span className="auto-newline">{"[" + this.state.model_coef.toString() + "]"}</span>
+                  <div>
+                    <p className="font-weight-bold">Model Intercept: </p>
+                    <span>{"[" + this.state.model_intercept.toString() + "]"}</span>
+                  </div>
+
+                  <hr />
+
+                  <p>
+                    <span className="font-weight-bold">Train RMSE: </span>
+                    <span>{this.state.train_rmse}</span>  
+                  </p>
+                  
+                  <p>
+                    <span className="font-weight-bold">Test RMSE: </span>
+                    <span>{this.state.test_rmse}</span>
+                  </p>
+                  
+                  <p>
+                    <span className="font-weight-bold">Train R2 score: </span>
+                    <span>{this.state.train_r2_score}</span>
+                  </p>
+                  
+                  <p>
+                    <span className="font-weight-bold">Test R2 score: </span>
+                    <span>{this.state.test_r2_score}</span>
+                  </p>
                 </div>
 
-                <br />
-
-                <div>
-                  <p className="font-weight-bold">Model Intercept: </p>
-                  <span>{"[" + this.state.model_intercept.toString() + "]"}</span>
-                </div>
-
-                <hr />
-
-                <p>
-                  <span className="font-weight-bold">Train RMSE: </span>
-                  <span>{this.state.train_rmse}</span>  
-                </p>
-                
-                <p>
-                  <span className="font-weight-bold">Test RMSE: </span>
-                  <span>{this.state.test_rmse}</span>
-                </p>
-                
-                <p>
-                  <span className="font-weight-bold">Train R2 score: </span>
-                  <span>{this.state.train_r2_score}</span>
-                </p>
-                
-                <p>
-                  <span className="font-weight-bold">Test R2 score: </span>
-                  <span>{this.state.test_r2_score}</span>
-                </p>
               </div>
-
+            </div>
+            <div className="col-12 col-md-7 text-center">
+              <img alt="train model" src={this.state.figure} />
             </div>
           </div>
-          <div className="col-12 col-md-7 text-center">
-            <img alt="train model" src={this.state.figure} />
-          </div>
-        </div>
-      </Fragment>
+        </Fragment>
+      </div>
     )
   }
 }
