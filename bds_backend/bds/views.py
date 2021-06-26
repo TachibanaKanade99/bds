@@ -730,7 +730,7 @@ class TrainModel(APIView):
 
                 # Save figure and encode:
                 flike = io.BytesIO()
-                plt.savefig(flike)
+                plt.savefig(flike, bbox_inches='tight')
                 b64 = base64.b64encode(flike.getvalue()).decode()
                 plt.close()
 
