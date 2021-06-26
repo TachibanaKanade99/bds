@@ -237,6 +237,10 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
     model_name = regularized_name
     selected_rmse = regularized_rmse
 
+    # selected_model = selected_poly_model
+    # model_name = "Polynomial Regression"
+    # selected_rmse = min_poly_rmse
+
     return selected_model, model_name, selected_degree, selected_rmse
 
 
