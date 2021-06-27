@@ -32,6 +32,7 @@ export default class Data extends Component {
     super(props);
     this.state = {
       current_user: null,
+      is_superuser: null,
 
       // Table state:
       count: null,
@@ -310,7 +311,10 @@ export default class Data extends Component {
       .get("/bds/current_user/")
       .then(function(res) {
         // console.log(res);
-        self.setState({ current_user: res.data.username })
+        self.setState({ 
+          current_user: res.data.username,
+          is_superuser: res.data.is_superuser
+        })
       })
       .catch(function(err) {
         console.log(err);
@@ -659,7 +663,7 @@ export default class Data extends Component {
 
     return (
       <Fragment>
-        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} />
+        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} is_superuser={this.state.is_superuser} />
         
         <div className="container-fluid mt-5">
           <div className="row mt-5">

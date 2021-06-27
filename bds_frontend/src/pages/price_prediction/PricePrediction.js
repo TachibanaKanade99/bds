@@ -19,6 +19,7 @@ export default class PricePrediction extends Component {
     super(props);
     this.state = {
       current_user: null,
+      is_superuser: null,
 
       // property states:
       request_page: "predict",
@@ -62,7 +63,10 @@ export default class PricePrediction extends Component {
     axios
       .get("/bds/current_user/")
       .then((res) => {
-        self.setState({ current_user: res.data.username })
+        self.setState({ 
+          current_user: res.data.username,
+          is_superuser: res.data.is_superuser
+        })
       })
       .catch((err) => {
         console.log(err);
@@ -224,7 +228,7 @@ export default class PricePrediction extends Component {
 
     return (
       <Fragment>
-        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} />
+        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} is_superuser={this.state.is_superuser} />
 
         <div className="container-fluid mt-5">
           <div className="row mt-5">

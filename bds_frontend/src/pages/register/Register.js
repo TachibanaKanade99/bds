@@ -141,13 +141,10 @@ export default class Register extends Component {
               </div>
             </div>
 
-            <button 
-              type="submit"
-              className="btn btn-primary btn-block"
-              defaultValue="Submit"
-            >
-              Sign Up
-            </button>
+            <div className="text-center">
+              <button type="submit" className="btn col-6 col-md-2" id="register-btn">Register</button>
+            </div>
+
             <p className="forgot-password text-right">
               Already registered? 
               <Link exact to="/login"> Sign in</Link>

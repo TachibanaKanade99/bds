@@ -3,6 +3,9 @@ import { Redirect, Link } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// @material-ui
+import { FormControlLabel, Checkbox } from '@material-ui/core';
+
 // Import Components:
 import WebNavbar from './../../components/layout/WebNavbar';
 
@@ -113,81 +116,92 @@ export default class Login extends Component {
     }
 
     return(
-      <Fragment>
-        <WebNavbar name="Login" />
+      <div className="container-fluid">
+        <Fragment>
+          <WebNavbar name="Login" />
 
-        <div className="text-center login-contents">
-          <p className="font-weight-bold text-danger">{this.state.message}</p>
-        </div>
+          <div className="text-center login-contents">
+            <p className="font-weight-bold text-danger">{this.state.message}</p>
+          </div>
 
-        <div className="row mt-1 px-0">
+          <div className="row mt-1 px-0">
 
-          <div className="col-2 col-md-4 px-0"></div>
-          <form className="col-8 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
-            <h3>Login</h3>
+            <div className="col-2 col-md-4 px-0"></div>
+            <form className="col-8 col-md-4 bg-light p-3" onSubmit={this.handleSubmit}>
+              <h3>Login</h3>
 
-            <div className="form-group">
-                <label>Username</label>
-                <input 
-                  type="text"
-                  name="username"
-                  value={this.state.username}
-                  onChange={this.handleChange}
-                  className="form-control" 
-                  placeholder="Enter username" />
-            </div>
-
-            <div className="form-group">
-                <label>Password</label>
-                <div className="d-flex">
+              <div className="form-group">
+                  <label>Username</label>
                   <input 
-                    type={this.state.passType}
-                    name="password"
-                    value={this.state.password}
+                    type="text"
+                    name="username"
+                    value={this.state.username}
                     onChange={this.handleChange}
                     className="form-control" 
-                    placeholder="Enter password" 
-                  />
-                  <button type="button" className="ml-1 btn btn-link" aria-label="Toggle Visibility" onClick={this.handleShowPassBtn} >
-                      <i aria-hidden="true" className={this.state.passIcon}></i>
-                  </button>
-                </div>
-            </div>
+                    placeholder="Enter username" />
+              </div>
 
-            <div className="form-group">
-                <div className="custom-control custom-checkbox">
+              <div className="form-group">
+                  <label>Password</label>
+                  <div className="d-flex">
                     <input 
-                      type="checkbox" 
-                      name="rememberMe"
-                      id="customCheck1 login-btn" 
-                      checked={this.state.rememberMe} 
+                      type={this.state.passType}
+                      name="password"
+                      value={this.state.password}
+                      onChange={this.handleChange}
+                      className="form-control" 
+                      placeholder="Enter password" 
+                    />
+                    <button type="button" className="ml-1 btn btn-link" aria-label="Toggle Visibility" onClick={this.handleShowPassBtn} >
+                        <i aria-hidden="true" className={this.state.passIcon}></i>
+                    </button>
+                  </div>
+              </div>
+
+              <div className="form-group">
+                {/* <input
+                  id="rememberMe-checkbox"
+                  type="checkbox" 
+                  name="rememberMe"
+                  checked={this.state.rememberMe} 
+                  onClick={this.handleChangeCheckbox} 
+                /> */}
+                
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={this.state.rememberMe}
                       onChange={this.handleChangeCheckbox}
-                      className="custom-control-input" />
-                    <label className="custom-control-label" htmlFor="customCheck1">Remember me</label>
+                      name="rememberMe"
+                      color="primary"
+                    />
+                  }
+                  label="Remember me"
+                />
+              </div>
+
+              <div className="text-center">
+                <button type="submit" className="btn col-6 col-md-2" id="login-btn">Login</button>
+              </div>
+
+              <div className="row justify-content-between">
+                <div className="col-6 col-md-6">
+                  <span className="forgot-password">
+                      Don't have account? Register 
+                      <Link to="/register"> here</Link>
+                  </span>
                 </div>
-            </div>
-
-            <div className="text-center">
-              <button type="submit" className="btn col-6 col-md-2" id="login-btn">Login</button>
-            </div>
-
-            <div className="row justify-content-between">
-              <div className="col-6 col-md-6">
-                <span className="forgot-password">
-                    Don't have account? Register 
-                    <Link to="/register"> here</Link>
-                </span>
+                <div className="col-4 col-md-3">
+                  <span className="forgot-password">
+                      Forgot <a href="/">password?</a>
+                  </span>
+                </div>
               </div>
-              <div className="col-4 col-md-3">
-                <span className="forgot-password">
-                    Forgot <a href="/">password?</a>
-                </span>
-              </div>
-            </div>
-          </form>
-          <div className="col-2 col-md-4"></div>
-        </div>
-      </Fragment>
+            </form>
+            <div className="col-2 col-md-4"></div>
+          </div>
+        </Fragment>
+      </div>
     )
   }
 }

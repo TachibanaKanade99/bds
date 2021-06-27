@@ -36,14 +36,15 @@ class Dashboard extends Component {
     super(props);
     this.state = {
       current_user: null,
+      is_superuser: null,
       message: null,
       btnClass: "d-none btn fa fa-window-close",
       count: {
-        all: 1,
-        lands: 1,
-        houses: 3,
-        departments: 1,
-        others: 1,
+        all: 99999,
+        lands: 99999,
+        houses: 99999,
+        departments: 99999,
+        others: 99999,
       },
 
       land_props: {
@@ -96,7 +97,7 @@ class Dashboard extends Component {
       endDatePieChart: new Date().toLocaleDateString(),
     }
 
-    this.getCurrentUser = this.getCurrentUser.bind(this);
+    // this.getCurrentUser = this.getCurrentUser.bind(this);
 
     // handle date filter chart:
     this.handleStartDateChart = this.handleStartDateChart.bind(this);
@@ -117,7 +118,7 @@ class Dashboard extends Component {
   componentDidMount() {
     if (this.props.location.state !== undefined) {
       let message = this.props.location.state.message;
-      console.log(message);
+      // console.log(message);
       
       if (message !== undefined) {
         this.setState({ 
@@ -161,7 +162,10 @@ class Dashboard extends Component {
       .get("/bds/current_user/")
       .then((res) => {
         // console.log(res);
-        self.setState({ current_user: res.data.username })
+        self.setState({ 
+          current_user: res.data.username,
+          is_superuser: res.data.is_superuser
+        })
       })
       .catch((err) => {
         // console.log(err);
@@ -336,7 +340,7 @@ class Dashboard extends Component {
   render() {
     return(
       <Fragment>
-        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} />
+        <WebNavbar name="Crawling WebApp" current_user={this.state.current_user} is_superuser={this.state.is_superuser} />
         
         <div className="container-fluid mt-5">
           <div className="row mt-5">
@@ -356,7 +360,7 @@ class Dashboard extends Component {
 
                 <div className="col-10 col-md-2 mx-2 my-2">
                   <Card className="text-white bg-dark">
-                      <CardBody>
+                      <CardBody className="px-1">
                           <blockquote className="card-blockquote mb-0">
                             <h1 className="text-center">
                               {this.state.count.all}
@@ -372,7 +376,7 @@ class Dashboard extends Component {
 
                 <div className="col-10 col-md-2 mx-2 my-2">
                   <Card className="text-white bg-violet">
-                      <CardBody>
+                      <CardBody className="px-1">
                           <blockquote className="card-blockquote mb-0">
                             <h1 className="text-center">
                               {this.state.count.lands}
@@ -388,7 +392,7 @@ class Dashboard extends Component {
 
                 <div className="col-10 col-md-2 mx-2 my-2">
                   <Card className="text-white bg-danger">
-                      <CardBody>
+                      <CardBody className="px-1">
                           <blockquote className="card-blockquote mb-0">
                             <h1 className="text-center">
                               {this.state.count.houses}
@@ -404,7 +408,7 @@ class Dashboard extends Component {
 
                 <div className="col-10 col-md-2 mx-2 my-2">
                   <Card className="text-white bg-warning">
-                      <CardBody>
+                      <CardBody className="px-1">
                           <blockquote className="card-blockquote mb-0">
                             <h1 className="text-center">
                               {this.state.count.departments}
@@ -420,7 +424,7 @@ class Dashboard extends Component {
 
                 <div className="col-10 col-md-2 mx-2 my-2">
                   <Card className="text-white bg-info">
-                      <CardBody>
+                      <CardBody className="px-1">
                           <blockquote className="card-blockquote mb-0">
                             <h1 className="text-center">
                               {this.state.count.others}

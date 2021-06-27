@@ -45,8 +45,9 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isAuthenticated: true,
-      isSuperUser: true,
+      isAuthenticated: null,
+      username: null,
+      isSuperUser: null,
     }
 
     this.checkAuthentication = this.checkAuthentication.bind(this);
@@ -67,7 +68,6 @@ class App extends Component {
         }
       })
       .then(function(res) {
-        // console.log(res.data.detail);
         self.setState({ isAuthenticated: true })
       })
       .catch(function(err) {
@@ -81,7 +81,10 @@ class App extends Component {
     axios
       .get("/bds/current_user/")
       .then((res) => {
-        self.setState({ isSuperUser: res.data.is_superuser })
+        self.setState({
+          username: res.data.username,
+          isSuperUser: res.data.is_superuser 
+        })
       })
       .catch((err) => {
         console.log(err);
@@ -95,58 +98,95 @@ class App extends Component {
           {/* <Route path="/dashboard"> <Dashboard /> </Route> */}
           {/* <Route path="/data"> <Data /> </Route> */}
           <Route path="/dashboard" render={(props) => {
-            let auth = this.state.isAuthenticated;
+            // let auth = this.state.isAuthenticated;
             if (props.location.state !== null && props.location.state !== undefined) {
-              auth = props.location.state.isAuthenticated;
+              // auth = props.location.state.isAuthenticated;
+              return props.location.state.isAuthenticated === true ? <Dashboard {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content" } }} />
             }
-            return auth === true ? <Dashboard {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
+
+            if (this.state.isAuthenticated !== null) {
+              return this.state.isAuthenticated === true ? <Dashboard {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
+            }
+            else{
+              return null;
+            }
           }}>
           </Route>
 
           <Route path="/data" render={(props) => {
-            let auth = this.state.isAuthenticated;
-            // console.log(props.location.state);
+            // let auth = this.state.isAuthenticated;
             if (props.location.state !== null && props.location.state !== undefined) {
-              auth = props.location.state.isAuthenticated;
+              // auth = props.location.state.isAuthenticated;
+              return props.location.state.isAuthenticated === true ? <Data {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content" } }} />
             }
-            return auth === true ? <Data {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
+            
+            if (this.state.isAuthenticated !== null) {
+              return this.state.isAuthenticated === true ? <Data {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
+            }
+            else {
+              return null;
+            }
           }}>
           </Route>
 
           <Route path="/price_prediction" render={(props) => {
-            let auth = this.state.isAuthenticated;
+            // let auth = this.state.isAuthenticated;
             if (props.location.state !== null && props.location.state !== undefined) {
-              auth = props.location.state.isAuthenticated;
+              // auth = props.location.state.isAuthenticated;
+              return props.location.state.isAuthenticated === true ? <PricePrediction {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content" } }} />
             }
-            return auth === true ? <PricePrediction {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
+            
+            if (this.state.isAuthenticated !== null) {
+              return this.state.isAuthenticated === true ? <PricePrediction {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
+            }
+            else {
+              return null;
+            }
           }}>
           </Route>
 
           <Route path="/admin_page/:users" render={(props) => {
-            let auth = this.state.isAuthenticated;
-            let isSuperUser = this.state.isSuperUser;
+            // let auth = this.state.isAuthenticated;
+            // let isSuperUser = this.state.isSuperUser;
 
             if (props.location.state !== null && props.location.state !== undefined) {
               if (props.location.state.isAuthenticated !== null && props.location.state.isAuthenticated !== undefined){
-                auth = props.location.state.isAuthenticated;
-              }
-
-              if (props.location.state.isSuperUser !== null && props.location.state.isSuperUser !== undefined) {
-                isSuperUser = props.location.state.isSuperUser;
+                if (props.location.state.isAuthenticated === true) {
+                  if (props.location.state.isSuperUser !== null && props.location.state.isSuperUser !== undefined) {
+                    return props.location.state.isSuperUser === true ? <AdminPage {...props} /> : <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, isSuperUser: props.location.state.isSuperUser, message: "You need to be an admin to access this service!" } }} />
+                  }
+                }
               }
             }
 
-            if (auth === true) {
-              if (isSuperUser === true) {
-                return <AdminPage {...props} />
+            if (this.state.isAuthenticated !== null) {
+              if (this.state.isAuthenticated === true) {
+                if (this.state.isSuperUser !== null) {
+                  return this.state.isSuperUser === true ? <AdminPage {...props} /> : <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser, message: "You need to be an admin to access this service!" } }} />
+                }
+                else {
+                  return null
+                }
               }
               else {
-                return <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, isSuperUser: isSuperUser, message: "You need to be an admin to access this service!" } }} />
+                return <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
               }
             }
-            else{
-              return <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
+            else {
+              return null
             }
+
+            // if (auth === true) {
+            //   if (isSuperUser === true) {
+            //     return <AdminPage {...props} />
+            //   }
+            //   else {
+            //     return <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, isSuperUser: isSuperUser, message: "You need to be an admin to access this service!" } }} />
+            //   }
+            // }
+            // else{
+            //   return <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
+            // }
           }}>
           </Route>
 

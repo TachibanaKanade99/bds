@@ -37,8 +37,6 @@ class WebNavbar extends Component {
       isOpen: false,
       isLogout: false,
       message: '',
-      isSuperUser: false,
-      adminNavItemClass: "d-none",
 
       // dropdown:
       dropdownOpen: false,
@@ -49,27 +47,27 @@ class WebNavbar extends Component {
   }
 
   componentDidMount() {
-    this.getCurrentUser();
+    // this.getCurrentUser();
   }
 
-  getCurrentUser = () => {
-    if (this.props.name !== "Login" && this.props.name !== "Register") {
-      let self = this;
-      axios
-        .get("/bds/current_user/")
-        .then((res) => {
-          // console.log(res);
-          self.setState({ isSuperUser: res.data.is_superuser })
+  // getCurrentUser = () => {
+  //   if (this.props.name !== "Login" && this.props.name !== "Register") {
+  //     let self = this;
+  //     axios
+  //       .get("/bds/current_user/")
+  //       .then((res) => {
+  //         // console.log(res);
+  //         self.setState({ isSuperUser: res.data.is_superuser })
 
-          if (res.data.is_superuser === true) {
-            self.setState({ adminNavItemClass: null })
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-    }
-  }
+  //         if (res.data.is_superuser === true) {
+  //           self.setState({ adminNavItemClass: null })
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         console.log(err);
+  //       })
+  //   }
+  // }
 
   toggleDropdown = () => {
     this.setState(state => ({
@@ -157,7 +155,7 @@ class WebNavbar extends Component {
               <Nav className="mr-auto" navbar>
                 <NavLink 
                   tag={rNavLink} 
-                  to={{ pathname: "/admin_page/:users", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser }}} 
+                  to={{ pathname: "/admin_page/:users", state: { isAuthenticated: true, isSuperUser: this.props.is_superuser }}} 
                   activeStyle={{ color: "#3C5999" }}
                 >
                   Users
@@ -165,7 +163,7 @@ class WebNavbar extends Component {
 
                 <NavLink 
                   tag={rNavLink} 
-                  to={{ pathname: "/admin_page/:models", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser }}}
+                  to={{ pathname: "/admin_page/:models", state: { isAuthenticated: true, isSuperUser: this.props.is_superuser }}}
                   activeStyle={{ color: "#3C5999" }}
                 >
                   Models
@@ -232,10 +230,10 @@ class WebNavbar extends Component {
                   >Price Prediction</NavLink>
                 </NavItem>
 
-                <NavItem className={this.state.adminNavItemClass}>
+                <NavItem className={this.props.is_superuser === true ? null : "d-none"}>
                   <NavLink
                     tag={rNavLink} 
-                    to={{ pathname: "/admin_page/:users", state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser } }}
+                    to={{ pathname: "/admin_page/:users", state: { isAuthenticated: true, isSuperUser: this.props.is_superuser } }}
                     activeStyle={{ color: "#3C5999" }}
                   >Admin</NavLink>
                 </NavItem>
