@@ -472,7 +472,7 @@ class WardLst(APIView):
         ward_lst = []   
         
         # basic query:
-        query = RealEstateData.objects.values('ward')
+        query = RealEstateData.objects.values('ward', 'street')
 
         if property_type is not None:
             query = query.filter(post_type__exact=property_type)
@@ -483,7 +483,7 @@ class WardLst(APIView):
         query = query.exclude(ward__exact=None)
 
         if request_page == "predict":
-            query = query.annotate(count_ward=Count('ward')).filter(count_ward__gt=40)
+            query = query.annotate(count_street=Count('street')).filter(count_street__gt=40)
         
         # update full query:
         query = query.order_by('ward').distinct()
