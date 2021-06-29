@@ -472,7 +472,7 @@ class WardLst(APIView):
         ward_lst = []   
         
         # basic query:
-        query = RealEstateData.objects.values('ward', 'street')
+        query = RealEstateData.objects.values('ward')
 
         if property_type is not None:
             query = query.filter(post_type__exact=property_type)
