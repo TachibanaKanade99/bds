@@ -10,11 +10,11 @@ from .views import current_user, check_authentication, BdsView, RegisterView, Lo
 
 urlpatterns = [
     # path('api/', include(router.urls)),
-    path('current_user/', current_user),
-    path('check_authentication/', check_authentication),
-    path('register/', RegisterView.as_view()),
-    path('login/', LoginView.as_view()),
-    path('logout/', LogoutView.as_view()),
+    path('api/current_user/', current_user),
+    path('api/check_authentication/', check_authentication),
+    path('api/register/', RegisterView.as_view()),
+    path('api/login/', LoginView.as_view()),
+    path('api/logout/', LogoutView.as_view()),
 
     path('api/user_lst/', UserLstView.as_view()),
 
