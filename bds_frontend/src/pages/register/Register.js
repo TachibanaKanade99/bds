@@ -49,7 +49,7 @@ export default class Register extends Component {
     e.preventDefault();
     let self = this
     axios
-      .post('/bds/register/', {
+      .post('/bds/api/register/', {
         username: this.state.username,
         password: this.state.password
       }, 

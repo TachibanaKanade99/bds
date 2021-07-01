@@ -31,9 +31,14 @@ export default class Login extends Component {
   }
 
   componentDidMount() {
-    if (this.props.location.state !== undefined) {
-      console.log(this.props.location.state.message);
-      this.setState({ message: this.props.location.state.message })
+    if (this.props.history.location.state && this.props.history.location.state.message) {
+      // console.log(this.props.history.location.state.message);
+      this.setState({ message: this.props.history.location.state.message })
+
+      // remove this message instantly after reloading page:
+      let state = { ...this.props.history.location.state};
+      delete state.message;
+      this.props.history.replace({ ...this.props.history.location, state });
     }
 
     // Handle value from localStorage:
@@ -81,7 +86,7 @@ export default class Login extends Component {
 
     let self = this
     axios
-      .post('/bds/login/', {
+      .post('/bds/api/login/', {
         username: self.state.username,
         password: self.state.password
       }, 

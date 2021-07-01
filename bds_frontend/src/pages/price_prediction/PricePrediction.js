@@ -61,7 +61,7 @@ export default class PricePrediction extends Component {
   getCurrentUser = () => {
     let self = this;
     axios
-      .get("/bds/current_user/")
+      .get("/bds/api/current_user/")
       .then((res) => {
         self.setState({ 
           current_user: res.data.username,

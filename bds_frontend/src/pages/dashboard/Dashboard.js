@@ -116,16 +116,25 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
-    if (this.props.location.state !== undefined) {
-      let message = this.props.location.state.message;
-      // console.log(message);
-      
-      if (message !== undefined) {
-        this.setState({ 
-          message: message,
-          btnClass: "btn fa fa-window-close"
-        })
-      }
+    if (this.props.history.location.state && this.props.history.location.state.message) {
+      // console.log(this.props.history.location.state.message);
+      this.setState({ 
+        message: this.props.history.location.state.message,
+        btnClass: "btn fa fa-window-close"
+      })
+
+      // remove this message instantly after reloading page:
+      let state = { ...this.props.history.location.state};
+      delete state.message;
+      this.props.history.replace({ ...this.props.history.location, state });
+    }
+
+    if (this.props.history.location.state && this.props.history.location.state.message) {
+      // console.log(this.props.history.location.state.message);
+      this.setState({ message: this.props.history.location.state.message })
+      let state = { ...this.props.history.location.state};
+      delete state.message;
+      this.props.history.replace({ ...this.props.history.location, state });
     }
 
     this.getCurrentUser();
@@ -159,7 +168,7 @@ class Dashboard extends Component {
   getCurrentUser = () => {
     let self = this;
     axios
-      .get("/bds/current_user/")
+      .get("/bds/api/current_user/")
       .then((res) => {
         // console.log(res);
         self.setState({ 
@@ -348,7 +357,7 @@ class Dashboard extends Component {
             <div className="col-12 col-md-10">
 
               <div className="mt-3 text-center">
-                <span>{this.state.message}</span>
+                <span className="font-weight-bold text-danger">{this.state.message}</span>
                 <button 
                   className={this.state.btnClass}
                   onClick={this.removeMessage}

@@ -308,7 +308,7 @@ export default class Data extends Component {
   getCurrentUser = () => {
     let self = this;
     axios
-      .get("/bds/current_user/")
+      .get("/bds/api/current_user/")
       .then(function(res) {
         // console.log(res);
         self.setState({ 

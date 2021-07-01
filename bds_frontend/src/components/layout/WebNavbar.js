@@ -84,7 +84,7 @@ class WebNavbar extends Component {
   handleClick = (selected) => {
     let self = this;
     axios
-      .post("/bds/logout/", 
+      .post("/bds/api/logout/", 
       {}, 
       {
         headers: {
