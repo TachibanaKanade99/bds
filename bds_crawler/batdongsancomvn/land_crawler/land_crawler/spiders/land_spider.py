@@ -49,7 +49,7 @@ class LandSpider(scrapy.Spider):
         # url = 'https://batdongsan.com.vn/ban-dat-dat-nen-tp-hcm?gcn=100-ty'
 
         yield scrapy.Request(url=url, callback=self.parse, meta={'selenium': True}, dont_filter=True)
-        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-duong-nguyen-huu-canh-phuong-22-prj-vinhomes-central-park/-ban-landmark-plus-binh-thanh-4-ty-1pn-pr28993381'
+        # item_url = 'https://batdongsan.com.vn/ban-can-ho-chung-cu-duong-1-phuong-truong-tho-2-prj-lavita-charm/-de-dang-mua-2pn-2wc-68m2-2-7-ty-90m2-3-1-ty-nha-trong-view-dep-0904722271-pr28449588'
         # yield scrapy.Request(item_url, callback=self.parse_item, meta={'selenium': True}, cb_kwargs=dict(item_url=item_url))
         # yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
 
@@ -64,11 +64,11 @@ class LandSpider(scrapy.Spider):
                 continue
         
         # next page
-        next_page = response.xpath('//div[@class="pagination"]/a[@class="actived"]/following-sibling::*')
+        next_page = response.xpath('//div[@id="product-lists-web"]/div[@class="text-center"]/div[@class="re__pagination-group"]/a[contains(@class, "re__pagination--actived")]/following-sibling::*')
 
         if next_page.get() is not None:
             nextpage_url = response.urljoin(next_page.attrib["href"])
-            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p150?gcn=100-ty':
+            if nextpage_url != 'https://batdongsan.com.vn/nha-dat-ban-tp-hcm/p200?gcn=100-ty':
                 yield scrapy.Request(nextpage_url, callback=self.parse, meta={'selenium': True})
         
         # close logging
@@ -80,7 +80,7 @@ class LandSpider(scrapy.Spider):
     def parse_item(self, response, item_url):
         item = LandCrawlerItem()
 
-        for land_item in response.xpath('//div[@class="form-content"]/div[contains(@class, "main-container clearfix")]'):
+        for land_item in response.xpath('//div[contains(@class, "main-container clearfix")]'):
             item['url'] = item_url
             item['content'] = land_item.xpath('./div[@class="main-left"]/section[@class="product-detail"]/div[contains(@class, "pr-container")]/div[@id="product-detail-web"]/div[@class="containerTitle"]/h1[contains(@class, "tile-product")]/text()').get()
             
@@ -126,7 +126,7 @@ class LandSpider(scrapy.Spider):
                     item['furniture'] = post_content
 
             item['posted_author'] = land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="name"]/text()').get()
-            item['phone'] = land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="phone text-center"]/span').attrib["raw"]
+            item['phone'] = land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[contains(@class, "phone text-center")]/span').attrib["raw"]
 
             # Check if existed email:
             email_item =  land_item.xpath('./div[@class="main-right"]/div[@class="box-contact"]/div[@class="user"]/div[@class="mail btn-border-grey text-center"]/a[@id="email"]')
