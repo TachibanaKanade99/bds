@@ -9,5 +9,6 @@ virenv_win/
 
 chromedriver.exe
 price_prediction_model/data_thesis/data_thesis.csv
+price_prediction_model/trained/
 
 bds_crawler/bds_realestatedata_*.csv
