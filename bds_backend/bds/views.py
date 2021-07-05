@@ -520,7 +520,7 @@ class StreetLst(APIView):
         query = query.exclude(street__exact=None)
 
         if request_page == "predict":
-            query = query.annotate(count_street=Count('street')).filter(count_street__gt=40)
+            query = query.annotate(count_street=Count('street')).filter(count_street__gt=50)
         
         # update full query:
         query = query.order_by('street').distinct()
@@ -595,6 +595,8 @@ class TrainModel(APIView):
             # transform data into log1p
             data['area'] = (data['area']).transform(np.log1p)
             data['price'] = (data['price']).transform(np.log1p)
+            max_area = data['area'].max()
+            max_price = data['price'].max()
 
             # preprocessing data:
             data = preprocessData(data)
@@ -604,7 +606,7 @@ class TrainModel(APIView):
                 data = localOutlierFactor(data, 10)
 
         # Split data & Train model:
-        if len(data) > 30:
+        if len(data) > 40:
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
@@ -636,10 +638,11 @@ class TrainModel(APIView):
 
                 # calculate RMSE on linear model:
                 linear_train_rmse = calcRMSE(linear_model, X_train, Y_train)
+                linear_validate_rmse = calcRMSE(linear_model, X_validate, Y_validate)
                 linear_test_rmse = calcRMSE(linear_model, X_test, Y_test)
 
                 # find model by using polynomial regression:
-                poly_model, poly_model_name, degree, validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
+                poly_model, poly_model_name, degree, poly_validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
 
                 # transform X and X_test:
                 polynomial_features = PolynomialFeatures(degree=degree)
@@ -665,10 +668,10 @@ class TrainModel(APIView):
                 poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
                 print("Poly Model score on test dataset: ", poly_test_r2_score)
 
-                linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
-                poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
+                # linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
+                # poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
 
-                if linear_cv > poly_cv and linear_test_r2_score > poly_test_r2_score:
+                if linear_validate_rmse > poly_validate_rmse:
                     best_model = linear_model
                     model_name = "Linear Regression"
                     best_degree = 1
@@ -697,6 +700,8 @@ class TrainModel(APIView):
                     plt.tight_layout()
                     plt.xlabel('area')
                     plt.ylabel('price')
+                    plt.xlim(right=max_area+0.3)
+                    plt.ylim(top=max_price+0.3)
 
                 else:
                     best_model = poly_model
@@ -727,6 +732,8 @@ class TrainModel(APIView):
                     plt.tight_layout()
                     plt.xlabel('area')
                     plt.ylabel('price')
+                    plt.xlim(right=max_area+0.3)
+                    plt.ylim(top=max_price+0.3)
 
                 # Save figure and encode:
                 flike = io.BytesIO()
