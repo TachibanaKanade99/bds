@@ -337,7 +337,9 @@ export default class Data extends Component {
       )
       .then((res) => {
         console.log(res);
-        self.setState({ ward_lst: res.data.map(self.convertIntoOptions) })
+        let ward_lst = res.data.map(self.convertIntoOptions);
+        ward_lst.unshift({ "label": "All", value: null });
+        self.setState({ ward_lst: ward_lst })
       })
       .catch((err) => {
         console.log(err);
@@ -361,7 +363,9 @@ export default class Data extends Component {
       )
       .then((res) => {
         console.log(res);
-        self.setState({ street_lst: res.data.map(self.convertIntoOptions) })
+        let street_lst = res.data.map(self.convertIntoOptions);
+        street_lst.unshift({ label: "All", value: null });
+        self.setState({ street_lst: street_lst })
       })
       .catch((err) => {
         console.log(err);
@@ -539,8 +543,6 @@ export default class Data extends Component {
   handleChooseWardType = (selectedOption) => {
     this.setState({ ward: selectedOption.value })
 
-    this.setState({ street: '' })
-
     // handle street_lst:
     this.getStreetLst(this.state.district, selectedOption.value);
   }
@@ -635,6 +637,7 @@ export default class Data extends Component {
     ]
 
     const districtTypes = [
+      { label: "All", value: null },
       { label: "1", value: "1" },
       { label: "2", value: "2" },
       { label: "3", value: "3" },
@@ -768,7 +771,7 @@ export default class Data extends Component {
                           options={districtTypes}
                           name="district"
                           placeholder="Choose district"
-                          defaultValue={null}
+                          defaultValue={districtTypes[0]}
                           onChange={this.handleChooseDistrictType}
                           onMenuOpen={this.handleSelectMenuOpen}
                         />
@@ -781,7 +784,7 @@ export default class Data extends Component {
                         <Select
                           options={this.state.ward_lst}
                           name="ward"
-                          defaultValue={null}
+                          defaultValue={{ label: "All", value: null }}
                           placeholder="Choose ward"
                           onChange={this.handleChooseWardType}
                           onMenuOpen={this.handleSelectMenuOpen}
@@ -795,7 +798,7 @@ export default class Data extends Component {
                         <Select
                           options={this.state.street_lst}
                           name="street"
-                          defaultValue={null}
+                          defaultValue={{ label: "All", value: null }}
                           placeholder="Choose street"
                           onChange={this.handleChooseStreetType}
                           onMenuOpen={this.handleSelectMenuOpen}
