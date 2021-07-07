@@ -11,16 +11,40 @@ from sklearn.neighbors import NearestNeighbors, LocalOutlierFactor
 import warnings
 
 # Linear Regression Model:
-def linearRegressionModel(X_train, Y_train):
-    model = linear_model.LinearRegression()
+def linearRegressionModel(X_train, Y_train, fit_intercept=True, normalize=False):
+    model = linear_model.LinearRegression(fit_intercept=fit_intercept, normalize=normalize)
 
     # Training process
     model.fit(X_train, Y_train)
 
     return model
 
+class PolynomialRegressionModel:
+    def __init__(self, degree=3, coef_=None):
+        self.degree = degree
+        self.coef_ = coef_
+        
+    def fit(self, X, Y):
+        X_poly = PolynomialFeatures(degree=self.degree).fit_transform(X)
+        self.poly_model = linearRegressionModel(X_poly, Y)
+        self.coef_ = self.poly_model.coef_
+        self.intercept_ = self.poly_model.intercept_
+        
+    def get_params(self, deep=False):
+        return {'coef_': self.coef_}
+    
+    def set_params(self, coef_=None, random_state=None):
+        self.coef_ = coef_
+    
+    def predict(self, X):
+        X_poly = PolynomialFeatures(degree=self.degree).fit_transform(X)
+        return self.poly_model.predict(X_poly)
+    
+    def score(self, X, Y):
+        return mean_squared_error(Y, self.predict(X))
+
 # Lasso Model using L1 Regularization:
-def lassoRegressionModel(X_train, Y_train, alpha, normalize=True, max_iter=2000, tol=0.001):
+def lassoRegressionModel(X_train, Y_train, alpha, normalize=False, max_iter=2000, tol=0.001):
     model = linear_model.Lasso(alpha=alpha, fit_intercept=True, normalize=normalize, max_iter=max_iter, tol=tol)
 
     # Training process:
@@ -29,7 +53,7 @@ def lassoRegressionModel(X_train, Y_train, alpha, normalize=True, max_iter=2000,
     return model
 
 # Ridge Regression using L2 Regularization:
-def ridgeRegressionModel(X_train, Y_train, alpha, normalize=True, max_iter=2000, tol=0.001):
+def ridgeRegressionModel(X_train, Y_train, alpha, normalize=False, max_iter=2000, tol=0.001):
     model = linear_model.Ridge(alpha=alpha, fit_intercept=True, normalize=normalize, max_iter=max_iter)
 
     # Training process:
@@ -106,8 +130,8 @@ def elasticNetRegressionModel(X_train, Y_train, alpha=0.01, max_iter=2000, l1_ra
     return model
 
 # RANSAC Regression:
-def RANSACRegressionModel(X_train, Y_train, random_state=0):
-    model = linear_model.RANSACRegressor(random_state=random_state)
+def RANSACRegressionModel(X_train, Y_train, base_estimator=linear_model.LinearRegression(), random_state=None):
+    model = linear_model.RANSACRegressor(base_estimator=base_estimator, random_state=random_state)
 
     # Training process:
     model.fit(X_train, Y_train)
@@ -167,27 +191,27 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
     selected_lasso_alpha = alphas[0]
     
     warnings.filterwarnings('ignore')
-    ridge_model = linear_model.Ridge(alpha=selected_ridge_alpha, fit_intercept=True, normalize=True, max_iter=2000, tol=0.001)
-    lasso_model = linear_model.Lasso(alpha=selected_lasso_alpha, fit_intercept=True, normalize=True, max_iter=2000, tol=0.001)
+    ridge_model = linear_model.Ridge(alpha=selected_ridge_alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
+    lasso_model = linear_model.Lasso(alpha=selected_lasso_alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
 
-    max_ridge_cv_score = calcCV(ridge_model, selected_X_train_poly, Y_train, 'r2')
-    # print("Ridge Regression with alpha = {} and cv_score = {}".format(alphas[0], max_ridge_cv_score))
-    max_lasso_cv_score = calcCV(lasso_model, selected_X_train_poly, Y_train, 'r2')
+    min_ridge_cv_score = calcCV(ridge_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
+    # print("Ridge Regression with alpha = {} and cv_score = {}".format(alphas[0], min_ridge_cv_score))
+    min_lasso_cv_score = calcCV(lasso_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
 
     for alpha in alphas[1:]:
-        ridge_model = linear_model.Ridge(alpha=alpha, fit_intercept=True, normalize=True, max_iter=2000, tol=0.001)
-        lasso_model = linear_model.Lasso(alpha=alpha, fit_intercept=True, normalize=True, max_iter=2000, tol=0.001)
+        ridge_model = linear_model.Ridge(alpha=alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
+        lasso_model = linear_model.Lasso(alpha=alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
         
-        ridge_cv_score = calcCV(ridge_model, selected_X_train_poly, Y_train, 'r2')
+        ridge_cv_score = calcCV(ridge_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
         # print("Ridge Regression with alpha = {} and cv_score = {}".format(alpha, ridge_cv_score))
-        lasso_cv_score = calcCV(lasso_model, selected_X_train_poly, Y_train, 'r2')
+        lasso_cv_score = calcCV(lasso_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
 
-        if ridge_cv_score > max_ridge_cv_score:
-            max_ridge_cv_score = ridge_cv_score
+        if ridge_cv_score < min_ridge_cv_score:
+            min_ridge_cv_score = ridge_cv_score
             selected_ridge_alpha = alpha
 
-        if lasso_cv_score > max_lasso_cv_score:
-            max_lasso_cv_score = lasso_cv_score
+        if lasso_cv_score < min_lasso_cv_score:
+            min_lasso_cv_score = lasso_cv_score
             selected_lasso_alpha = alpha
 
     # fit Ridge and Lasso model with selected alpha:
