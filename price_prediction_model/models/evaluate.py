@@ -12,7 +12,21 @@ from models.models import linearRegressionModel, polynomialRegression, nearestNe
 import unidecode
 from joblib import dump
 
-def evaluateModel(_post_type):
+train_model_count = {
+    'Bán đất': 0,
+    'Bán nhà riêng': 0,
+    'Bán căn hộ chung cư': 0,
+}
+
+def getTrainModelCount():
+    return train_model_count
+
+overfit_models = []
+
+def getOverFitModels():
+    return overfit_models
+
+def evaluateModel(_post_type, isUseLOF):
 
     # Database Connection:
     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
@@ -20,7 +34,7 @@ def evaluateModel(_post_type):
 
     # Execute SQL query:
 
-    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 40 ) )
+    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 60 ) )
     item_lst = cur.fetchall()
 
     for item in item_lst:
@@ -33,15 +47,17 @@ def evaluateModel(_post_type):
 
         data = data[~(data['area'] < 10)]
         data = data[~(data['price'] > 200)]
-
-        # transform data into log1p
-        data['area'] = (data['area']).transform(np.log1p)
-        data['price'] = (data['price']).transform(np.log1p)
         
         # preprocessing data:
         data = preprocessData(data)
 
-        if len(data) > 30:
+        # transform data into log1p
+        data['area'] = (data['area']).transform(np.log1p)
+        data['price'] = (data['price']).transform(np.log1p)
+        max_area = data['area'].max()
+        max_price = data['price'].max()
+
+        if len(data) > 50:
             print("\n\n")
             print("Sample data in {street}, {ward}, {district}".format(street=street, ward=ward, district=district))
             print("--------------------------------------------------------")
@@ -49,8 +65,9 @@ def evaluateModel(_post_type):
             print("--------------------------------------------------------")
             print("Data Length: ", len(data))
 
-            # data = nearestNeighbors(data, 2)
-            data = localOutlierFactor(data, 10)
+            if isUseLOF:
+                # data = nearestNeighbors(data, 2)
+                data = localOutlierFactor(data, 10)
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
@@ -114,10 +131,12 @@ def evaluateModel(_post_type):
 
                 # find Y by using linear model predict:
                 Y_train_pred = linear_model.predict(X_train)
+                Y_validate_pred = linear_model.predict(X_validate)
                 Y_test_pred = linear_model.predict(X_test)
 
                 # Calculate RMSE on train and test data:
                 train_linear_rmse = np.sqrt(mean_squared_error(Y_train, Y_train_pred))
+                validate_linear_rmse = np.sqrt(mean_squared_error(Y_validate, Y_validate_pred))
                 test_linear_rmse = np.sqrt(mean_squared_error(Y_test, Y_test_pred))
 
                 print("\nLinear Regression Model: ")
@@ -131,6 +150,8 @@ def evaluateModel(_post_type):
                 plt.tight_layout()
                 plt.xlabel('area')
                 plt.ylabel('price')
+                plt.xlim(right=max_area+0.3)
+                plt.ylim(top=max_price+0.3)
                 plt.show()
 
                 # Linear Model coefficient and intercept:
@@ -139,14 +160,15 @@ def evaluateModel(_post_type):
 
                 # linear_model rmse:
                 print("Linear model rmse on train data: {}".format(train_linear_rmse))
+                print("Linear model rmse on validate data: {}".format(validate_linear_rmse))
                 print("Linear model rmse on test data: {}".format(test_linear_rmse))
                 print("\n\n")
 
                 # find model by using polynomial regression:
-                poly_model, degree, validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
+                poly_model, poly_model_name, poly_degree, validate_poly_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
 
                 # transform X and X_test:
-                polynomial_features = PolynomialFeatures(degree=degree)
+                polynomial_features = PolynomialFeatures(degree=poly_degree)
                 X_train_poly = polynomial_features.fit_transform(X_train)
                 X_test_poly = polynomial_features.fit_transform(X_test)
 
@@ -163,9 +185,11 @@ def evaluateModel(_post_type):
                 plt.tight_layout()
                 plt.xlabel('area')
                 plt.ylabel('price')
+                plt.xlim(right=max_area+0.3)
+                plt.ylim(top=max_price+0.3)
                 plt.show()
 
-                print("Polynomial Regression with degree = {}\n".format(degree))
+                print("Polynomial Regression with degree = {}\n".format(poly_degree))
                 # Polynomial Model coefficient and intercept:
                 print("Polynomial model coefficient:")
                 print(poly_model.coef_)
@@ -173,7 +197,7 @@ def evaluateModel(_post_type):
 
                 # poly_model rmse:
                 # print("Polynomial Model RMSE on train data: {}".format(train_rmse))
-                print("Polynomial Model RMSE on validate data: {}".format(validate_rmse))
+                print("Polynomial Model RMSE on validate data: {}".format(validate_poly_rmse))
                 # print("Polynomial Model RMSE on test data: {}".format(test_rmse))
 
                 # score the model with test data:
@@ -196,18 +220,24 @@ def evaluateModel(_post_type):
                 poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
                 print("Poly Model score on test dataset: ", poly_test_r2_score)
 
+                if validate_linear_rmse < validate_poly_rmse:
+                    best_r2_score = linear_test_r2_score
+                    best_model = linear_model
+                    best_model_name = "Linear Regression"
+                    best_degree = 1
+                else:
+                    best_r2_score = poly_test_r2_score
+                    best_model = poly_model
+                    best_model_name = poly_model_name
+                    best_degree = poly_degree
+
+                print("Best Model is ", best_model_name)
+
+                for k, v in train_model_count.items():
+                    if post_type == k:
+                        k = v + 1
 
                 # Save model after training:
-                # calc cross validation score of linear to compare with poly for best model selection
-                linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
-                poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
-
-                best_r2_score = linear_test_r2_score if linear_test_r2_score > poly_test_r2_score else poly_test_r2_score
-                best_model = linear_model if (linear_cv > poly_cv and linear_test_r2_score > poly_test_r2_score) else poly_model
-                best_degree = 1 if linear_cv > poly_cv else degree
-
-                print(linear_cv)
-                print(poly_cv)
 
                 # remove "dấu":
                 post_type = unidecode.unidecode(post_type.lower().replace(" ", ""))
@@ -218,8 +248,10 @@ def evaluateModel(_post_type):
 
                 if best_r2_score > 0.7:
                     # Save model:
-                    if model_name != 'bannharieng_3/2_14_10':
+                    if model_name != 'bannharieng_3/2_14_10' and model_name != 'bannharieng_3/2_12_10':
                         dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+                if best_r2_score < 0.4:
+                    overfit_models.append(model_name)
 
         else:
             print("Length data in {street}, {ward}, {district} is {length}".format(street=street, ward=ward, district=district, length=len(data)))
