@@ -10,6 +10,9 @@ from sklearn.neighbors import NearestNeighbors, LocalOutlierFactor
 # ignore warnings: =))) 
 import warnings
 
+# local libs:
+from models.prepareData import convertData
+
 # Linear Regression Model:
 def linearRegressionModel(X_train, Y_train, fit_intercept=True, normalize=False):
     model = linear_model.LinearRegression(fit_intercept=fit_intercept, normalize=normalize)
@@ -130,13 +133,22 @@ def elasticNetRegressionModel(X_train, Y_train, alpha=0.01, max_iter=2000, l1_ra
     return model
 
 # RANSAC Regression:
-def RANSACRegressionModel(X_train, Y_train, base_estimator=linear_model.LinearRegression(), random_state=None):
+def RANSACRegressionModel(data, base_estimator=linear_model.LinearRegression(), random_state=None):
+
+    X_train, Y_train = convertData(data)
     model = linear_model.RANSACRegressor(base_estimator=base_estimator, random_state=random_state)
 
     # Training process:
     model.fit(X_train, Y_train)
 
-    return model
+    inlier_mask = model.inlier_mask_
+    outlier_mask = np.logical_not(inlier_mask)
+
+    outlier_indexes = np.where(outlier_mask==True)
+    outlier_values = data.iloc[outlier_indexes]
+    data = data.drop(outlier_values.index)
+
+    return data
 
 def polynomialTransform(dataset, degree):
     polynomial_features = PolynomialFeatures(degree=degree)
@@ -149,7 +161,7 @@ def calcRMSE(model, X, Y):
 def calcCV(model, X, Y, scoring):
     return np.mean(cross_val_score(model, X, Y, scoring=scoring, cv=5))
 
-def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test):
+def polynomialRegression(X_train, Y_train, X_validate, Y_validate):
 
     # degree = 2
     X_train_poly = polynomialTransform(X_train, 2)
@@ -161,7 +173,7 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
 
     # Choose model with specific degree:
     selected_degree = 2
-    selected_X_train_poly = X_train_poly
+    # selected_X_train_poly = X_train_poly
 
     min_degree = 3
     max_degree = 100
@@ -178,47 +190,55 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
         if rmse < min_poly_rmse:
             min_poly_rmse = rmse
             selected_poly_model = poly_model
-            selected_X_train_poly = X_train_poly
+            # selected_X_train_poly = X_train_poly
             selected_degree = i
 
     print("\nSelected Polynomial Regression with degree = {} and RMSE = {}".format(selected_degree, min_poly_rmse))
+
+    return selected_poly_model, "Polynomial Regression", selected_degree, min_poly_rmse
     
+def regularizedRegression(degree, X_train, Y_train, X_validate, Y_validate):
+
     # Apply Regularization to prevent overfitting on selected Polynomial Regression:
     
+    # Alpha Hyperparameter list:
     alphas = [0.00001, 0.00003, 0.00005, 0.00008, 0.0001, 0.0003, 0.0005, 0.0008, 0.001, 0.005, 0.01, 0.02, 0.04, 0.06, 0.1, 1.0, 3.0, 5.0, 10.0, 50.0, 100.0]
 
     selected_ridge_alpha = alphas[0]
     selected_lasso_alpha = alphas[0]
+
+    # Transform X_train with degree:
+    X_train_poly = polynomialTransform(X_train, degree)
     
     warnings.filterwarnings('ignore')
     ridge_model = linear_model.Ridge(alpha=selected_ridge_alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
     lasso_model = linear_model.Lasso(alpha=selected_lasso_alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
 
-    min_ridge_cv_score = calcCV(ridge_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
-    # print("Ridge Regression with alpha = {} and cv_score = {}".format(alphas[0], min_ridge_cv_score))
-    min_lasso_cv_score = calcCV(lasso_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
+    max_ridge_cv_score = calcCV(ridge_model, X_train_poly, Y_train, 'r2')
+    # print("Ridge Regression with alpha = {} and cv_score = {}".format(alphas[0], max_ridge_cv_score))
+    max_lasso_cv_score = calcCV(lasso_model, X_train_poly, Y_train, 'r2')
 
     for alpha in alphas[1:]:
         ridge_model = linear_model.Ridge(alpha=alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
         lasso_model = linear_model.Lasso(alpha=alpha, fit_intercept=True, normalize=False, max_iter=2000, tol=0.001)
         
-        ridge_cv_score = calcCV(ridge_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
+        ridge_cv_score = calcCV(ridge_model, X_train_poly, Y_train, 'r2')
         # print("Ridge Regression with alpha = {} and cv_score = {}".format(alpha, ridge_cv_score))
-        lasso_cv_score = calcCV(lasso_model, selected_X_train_poly, Y_train, 'neg_root_mean_squared_error')
+        lasso_cv_score = calcCV(lasso_model, X_train_poly, Y_train, 'r2')
 
-        if ridge_cv_score < min_ridge_cv_score:
-            min_ridge_cv_score = ridge_cv_score
+        if ridge_cv_score > max_ridge_cv_score:
+            max_ridge_cv_score = ridge_cv_score
             selected_ridge_alpha = alpha
 
-        if lasso_cv_score < min_lasso_cv_score:
-            min_lasso_cv_score = lasso_cv_score
+        if lasso_cv_score > max_lasso_cv_score:
+            max_lasso_cv_score = lasso_cv_score
             selected_lasso_alpha = alpha
 
     # fit Ridge and Lasso model with selected alpha:
-    ridge_model = ridgeRegressionModel(selected_X_train_poly, Y_train, selected_ridge_alpha)
-    lasso_model = lassoRegressionModel(selected_X_train_poly, Y_train, selected_lasso_alpha)
+    ridge_model = ridgeRegressionModel(X_train_poly, Y_train, selected_ridge_alpha)
+    lasso_model = lassoRegressionModel(X_train_poly, Y_train, selected_lasso_alpha)
 
-    X_validate_poly = polynomialTransform(X_validate, selected_degree)
+    X_validate_poly = polynomialTransform(X_validate, degree)
 
     # Ridge RMSE on validate data:
     ridge_rmse = calcRMSE(ridge_model, X_validate_poly, Y_validate)
@@ -230,6 +250,7 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
 
     # Choose regularized model by its R2 score:
     regularized_name = None
+
     if lasso_rmse < ridge_rmse:
         selected_regularized_model = lasso_model
         regularized_name = "Lasso"
@@ -238,33 +259,9 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_tes
         selected_regularized_model = ridge_model
         regularized_name = "Ridge"
         regularized_rmse = ridge_rmse
+
     print("Selected Regularization Model is ", regularized_name)
 
-    # Choose between Regularized Model and Polynomial Regression using r2 score on test data:
-    # X_test_poly = polynomialTransform(X_test, selected_degree)
-    
-    # poly_model_test_score = selected_poly_model.score(X_test_poly, Y_test)
-    # regularized_model_test_score = selected_regularized_model.score(X_test_poly, Y_test)
-
-    # print("Polynomial Regression cross validation score: ", poly_cv_score)
-    # print("Selected Regularized Regression cross validation score: ", max_regularized_cv_score)
-
-    # if poly_model_test_score > regularized_model_test_score:
-        # selected_model = selected_poly_model
-        # print("Final selected model is Polynomial Regression")
-    # else: 
-        # selected_model = selected_regularized_model
-        # print("Final selected model is ", regularized_name)
-    # selected_rmse = min_poly_rmse if selected_model == selected_poly_model else regularized_rmse
-
-    selected_model = selected_regularized_model
-    model_name = regularized_name
-    selected_rmse = regularized_rmse
-
-    # selected_model = selected_poly_model
-    # model_name = "Polynomial Regression"
-    # selected_rmse = min_poly_rmse
-
-    return selected_model, model_name, selected_degree, selected_rmse
+    return selected_regularized_model, regularized_name, regularized_rmse
 
 
