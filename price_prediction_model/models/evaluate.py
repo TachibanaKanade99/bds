@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error
 
 from models.prepareData import getData, convertData, divideData, preprocessData, scaleData
-from models.models import linearRegressionModel, polynomialRegression, nearestNeighbors, localOutlierFactor
+from models.models import linearRegressionModel, polynomialRegression, regularizedRegression, nearestNeighbors, localOutlierFactor
 
 import unidecode
 from joblib import dump
@@ -27,6 +27,7 @@ def getOverFitModels():
     return overfit_models
 
 def evaluateModel(_post_type, isUseLOF):
+    count = 0
 
     # Database Connection:
     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
@@ -45,17 +46,31 @@ def evaluateModel(_post_type, isUseLOF):
         
         data = getData(post_type, street, ward, district)
 
-        data = data[~(data['area'] < 10)]
-        data = data[~(data['price'] > 200)]
-        
-        # preprocessing data:
-        data = preprocessData(data)
+        if data is not None:
+            # Clean data by observing dataset:
 
-        # transform data into log1p
-        data['area'] = (data['area']).transform(np.log1p)
-        data['price'] = (data['price']).transform(np.log1p)
-        max_area = data['area'].max()
-        max_price = data['price'].max()
+            data = data[~(data['area'] < 10)]
+            data = data[~(data['price'] > 200)]
+
+            area_mean = np.mean(data['area'])
+            price_mean = np.mean(data['price'])
+
+            data = data[~( (data['area'] < area_mean) & (data['price'] > price_mean+1.5) )]
+            data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean+1.5) )]
+
+            # transform data into log1p
+            data['area'] = (data['area']).transform(np.log1p)
+            data['price'] = (data['price']).transform(np.log1p)
+
+            # preprocessing data:
+            data = preprocessData(data)
+
+            max_area = data['area'].max()
+            max_price = data['price'].max()
+
+            if isUseLOF:
+                # data = nearestNeighbors(data, 2)
+                data = localOutlierFactor(data, 10)
 
         if len(data) > 50:
             print("\n\n")
@@ -65,16 +80,15 @@ def evaluateModel(_post_type, isUseLOF):
             print("--------------------------------------------------------")
             print("Data Length: ", len(data))
 
-            if isUseLOF:
-                # data = nearestNeighbors(data, 2)
-                data = localOutlierFactor(data, 10)
-
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
             test_data, validate_data = train_test_split(test_data, test_size=0.5, random_state=4)
         
             # Train model with train_data:
             if train_data is not None and test_data is not None and validate_data is not None:
+
+                # increase trained model count:
+                count = count + 1
 
                 # Sort data by area column:
                 train_data = train_data.sort_values(by=['area'])
@@ -86,7 +100,6 @@ def evaluateModel(_post_type, isUseLOF):
                 print("Validate data length: ", len(validate_data))
 
                 # Manipulate data:
-                X, Y = convertData(data)
                 X_train, Y_train = convertData(train_data)
                 X_test, Y_test = convertData(test_data)
                 X_validate, Y_validate = convertData(validate_data)
@@ -164,8 +177,11 @@ def evaluateModel(_post_type, isUseLOF):
                 print("Linear model rmse on test data: {}".format(test_linear_rmse))
                 print("\n\n")
 
-                # find model by using polynomial regression:
-                poly_model, poly_model_name, poly_degree, validate_poly_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
+                # find degree by using polynomial regression:
+                poly_model, poly_model_name, poly_degree, validate_poly_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate)
+
+                # Optimize Polynomial Regression model using Regularization
+                regularized_model, regularized_model_name, validate_regularized_rmse = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
 
                 # transform X and X_test:
                 polynomial_features = PolynomialFeatures(degree=poly_degree)
@@ -173,14 +189,14 @@ def evaluateModel(_post_type, isUseLOF):
                 X_test_poly = polynomial_features.fit_transform(X_test)
 
                 # Try predicting Y
-                Y_train_poly_pred = poly_model.predict(X_train_poly)
+                Y_train_reg_pred = regularized_model.predict(X_train_poly)
 
                 # Plot model:
                 plt.figure(figsize=(7, 4))
                 plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
                 plt.scatter(X_test, Y_test, marker='o', color='red', label='test_data')
                 plt.scatter(X_validate, Y_validate, marker='o', color='green', label='validate_data')
-                plt.plot(X_train, Y_train_poly_pred, color='black', label='train_model')
+                plt.plot(X_train, Y_train_reg_pred, color='black', label='train_model')
                 plt.legend(bbox_to_anchor=(1,1), loc="upper left")
                 plt.tight_layout()
                 plt.xlabel('area')
@@ -189,16 +205,18 @@ def evaluateModel(_post_type, isUseLOF):
                 plt.ylim(top=max_price+0.3)
                 plt.show()
 
-                print("Polynomial Regression with degree = {}\n".format(poly_degree))
-                # Polynomial Model coefficient and intercept:
-                print("Polynomial model coefficient:")
-                print(poly_model.coef_)
-                print("Polynomial model intercept: {}\n".format(poly_model.intercept_))
+                print("Regularized Regression with degree = {}\n".format(poly_degree))
+                print("Model name is ", regularized_model_name)
 
-                # poly_model rmse:
-                # print("Polynomial Model RMSE on train data: {}".format(train_rmse))
-                print("Polynomial Model RMSE on validate data: {}".format(validate_poly_rmse))
-                # print("Polynomial Model RMSE on test data: {}".format(test_rmse))
+                # Regularized Model coefficient and intercept:
+                print("Regularized model coefficient:")
+                print(regularized_model.coef_)
+                print("Regularized model intercept: {}\n".format(regularized_model.intercept_))
+
+                # reg_model rmse:
+                # print("Regularized Model RMSE on train data: {}".format(train_rmse))
+                print("Regularized Model RMSE on validate data: {}".format(validate_regularized_rmse))
+                # print("Regularized Model RMSE on test data: {}".format(test_rmse))
 
                 # score the model with test data:
 
@@ -211,24 +229,24 @@ def evaluateModel(_post_type, isUseLOF):
                 linear_test_r2_score = linear_model.score(X_test, Y_test)
                 print("Linear Model score on test dataset: ", linear_test_r2_score)
 
-                # Poly score:
+                # Reg score:
                 print("\n")
 
-                poly_train_r2_score = poly_model.score(X_train_poly, Y_train)
-                print("Poly Model score on train dataset: ", poly_train_r2_score)
+                reg_train_r2_score = regularized_model.score(X_train_poly, Y_train)
+                print("Regularized Model score on train dataset: ", reg_train_r2_score)
 
-                poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
-                print("Poly Model score on test dataset: ", poly_test_r2_score)
+                reg_test_r2_score = regularized_model.score(X_test_poly, Y_test)
+                print("Poly Model score on test dataset: ", reg_test_r2_score)
 
-                if validate_linear_rmse < validate_poly_rmse:
+                if validate_linear_rmse < validate_regularized_rmse:
                     best_r2_score = linear_test_r2_score
                     best_model = linear_model
                     best_model_name = "Linear Regression"
                     best_degree = 1
                 else:
-                    best_r2_score = poly_test_r2_score
-                    best_model = poly_model
-                    best_model_name = poly_model_name
+                    best_r2_score = reg_test_r2_score
+                    best_model = regularized_model
+                    best_model_name = regularized_model_name
                     best_degree = poly_degree
 
                 print("Best Model is ", best_model_name)
@@ -246,15 +264,18 @@ def evaluateModel(_post_type, isUseLOF):
                 district = unidecode.unidecode(district.lower().replace(" ", ""))
                 model_name = post_type + "_" + street + "_" + ward + "_" + district
 
-                if best_r2_score > 0.7:
-                    # Save model:
-                    if model_name != 'bannharieng_3/2_14_10' and model_name != 'bannharieng_3/2_12_10':
-                        dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
-                if best_r2_score < 0.4:
+                # if best_r2_score > 0.7:
+                #     # Save model:
+                #     if model_name != 'bannharieng_3/2_14_10' and model_name != 'bannharieng_3/2_12_10':
+                #         dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+                if best_r2_score < 0.5:
                     overfit_models.append(model_name)
+                
 
         else:
             print("Length data in {street}, {ward}, {district} is {length}".format(street=street, ward=ward, district=district, length=len(data)))
+    
+    print("Trained Model count: ", count)
 
     # Close connection:
     cur.close()
