@@ -33,14 +33,14 @@ def getData(post_type, street, ward, district):
     return data
 
 def calcMinimumMaximum(vals):
-    q1 = vals.quantile(0.25)
-    q3 = vals.quantile(0.75)
+    q1 = vals.quantile(0.1)
+    q3 = vals.quantile(0.9)
     iqr = q3 - q1
 
-    minimum = q1 - 1.5 * iqr
-    maximum = q3 + 1.5 * iqr
+    # minimum = q1 - 1.5 * iqr
+    # maximum = q3 + 1.5 * iqr
 
-    return minimum, maximum
+    return q1, q3
 
 def preprocessData(data):
 
@@ -86,6 +86,7 @@ def preprocessData(data):
     # ]
 
     # USE IQR instead to detect outlier
+
     # while True:
     #     area_minimum, area_maximum = calcMinimumMaximum(data['area'])
     #     if (data['area'] > area_minimum).all() and (data['area'] < area_maximum).all():
@@ -102,19 +103,31 @@ def preprocessData(data):
 
     # area_minimum, area_maximum = calcMinimumMaximum(data['area'])
     # data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
-
     # price_minimum, price_maximum = calcMinimumMaximum(data['price'])
     # data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
-    area_mean = np.mean(data['area'])
+    part_data = data['price'][:len(data)//5]
+    price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    data_1 = data[:len(data)//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    price_mean = np.mean(data['price'])
-    price_std = np.std(data['price'])
+    part_data = data['price'][len(data)//5:len(data)*2//5]
+    price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    data_2 = data[len(data)//5:len(data)*2//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    data = data[~( (data['area'] < area_mean) & (data['price'] > price_mean) )]
-    data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean) )]
+    part_data = data['price'][len(data)*2//5:len(data)*3//5]
+    price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    data_3 = data[len(data)*2//5:len(data)*3//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
+    part_data = data['price'][len(data)*3//5:len(data)*4//5]
+    price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    data_4 = data[len(data)*3//5:len(data)*4//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
+    part_data = data['price'][len(data)*4//5:]
+    price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    data_5 = data[len(data)*4//5:][(part_data > price_minimum) & (part_data < price_maximum)]
+
+    data = pd.concat([data_1, data_2, data_3, data_4, data_5], ignore_index=True)
+    
     # smooth data:
 
     # convolve:
