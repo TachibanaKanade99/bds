@@ -41,7 +41,8 @@ import io, base64
 import sys
 sys.path.append('D:\\Tuan_Minh\\bds\\price_prediction_model')
 from models.prepareData import getData, preprocessData, convertData
-from models.models import localOutlierFactor, linearRegressionModel, polynomialRegression, calcRMSE
+from models.models import localOutlierFactor, linearRegressionModel, polynomialRegression, regularizedRegression
+from models.models import calcRMSE 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -589,8 +590,17 @@ class TrainModel(APIView):
 
         # Preprocess data:
         if data is not None:
+
+            # Clean data by observing dataset:
+
             data = data[~(data['area'] < 10)]
             data = data[~(data['price'] > 200)]
+
+            area_mean = np.mean(data['area'])
+            price_mean = np.mean(data['price'])
+
+            data = data[~( (data['area'] < area_mean) & (data['price'] > price_mean) )]
+            data = data[~( (data['area'] > area_mean) & (data['price'] < price_mean) )]
 
             # transform data into log1p
             data['area'] = (data['area']).transform(np.log1p)
@@ -606,7 +616,7 @@ class TrainModel(APIView):
                 data = localOutlierFactor(data, 10)
 
         # Split data & Train model:
-        if len(data) > 40:
+        if len(data) > 50:
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
@@ -625,7 +635,6 @@ class TrainModel(APIView):
                 print("Validate data length: ", len(validate_data))
 
                 # Manipulate data:
-                X, Y = convertData(data)
                 X_train, Y_train = convertData(train_data)
                 X_test, Y_test = convertData(test_data)
                 X_validate, Y_validate = convertData(validate_data)
@@ -641,20 +650,25 @@ class TrainModel(APIView):
                 linear_validate_rmse = calcRMSE(linear_model, X_validate, Y_validate)
                 linear_test_rmse = calcRMSE(linear_model, X_test, Y_test)
 
-                # find model by using polynomial regression:
-                poly_model, poly_model_name, degree, poly_validate_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate, X_test, Y_test)
+                # find degree by using polynomial regression:
+                poly_model, poly_model_name, poly_degree, validate_poly_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate)
+
+                # Optimize Polynomial Regression model using Regularization
+                regularized_model, regularized_model_name, validate_regularized_rmse = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
 
                 # transform X and X_test:
-                polynomial_features = PolynomialFeatures(degree=degree)
+                polynomial_features = PolynomialFeatures(degree=poly_degree)
                 X_train_poly = polynomial_features.fit_transform(X_train)
+                X_validate_poly = polynomial_features.fit_transform(X_validate)
                 X_test_poly = polynomial_features.fit_transform(X_test)
 
                 # Try predicting Y
-                Y_train_poly_pred = poly_model.predict(X_train_poly)
+                Y_train_reg_pred = regularized_model.predict(X_train_poly)
 
                 # calculate RMSE on poly model:
-                poly_train_rmse = calcRMSE(poly_model, X_train_poly, Y_train)
-                poly_test_rmse = calcRMSE(poly_model, X_test_poly, Y_test)
+                reg_train_rmse = calcRMSE(regularized_model, X_train_poly, Y_train)
+                reg_validate_rmse = calcRMSE(regularized_model, X_validate_poly, Y_validate)
+                reg_test_rmse = calcRMSE(regularized_model, X_test_poly, Y_test)
 
                 # Linear score:
                 linear_train_r2_score = linear_model.score(X_train, Y_train)
@@ -663,15 +677,15 @@ class TrainModel(APIView):
                 print("Linear Model score on test dataset: ", linear_test_r2_score)
 
                 # Poly score:
-                poly_train_r2_score = poly_model.score(X_train_poly, Y_train)
-                print("Poly Model score on train dataset: ", poly_train_r2_score)
-                poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
-                print("Poly Model score on test dataset: ", poly_test_r2_score)
+                reg_train_r2_score = regularized_model.score(X_train_poly, Y_train)
+                print("Regularized Model score on train dataset: ", reg_train_r2_score)
+                reg_test_r2_score = regularized_model.score(X_test_poly, Y_test)
+                print("Regularized Model score on test dataset: ", reg_test_r2_score)
 
-                # linear_cv = np.mean(cross_val_score(linear_model, X, Y, cv=5))
-                # poly_cv = np.mean(cross_val_score(poly_model, X, Y, cv=5))
+                print("Linear validate rmse score: ", linear_validate_rmse)
+                print("Regularized validate rmse score: ", reg_validate_rmse)
 
-                if linear_validate_rmse > poly_validate_rmse:
+                if linear_validate_rmse < reg_validate_rmse:
                     best_model = linear_model
                     model_name = "Linear Regression"
                     best_degree = 1
@@ -704,30 +718,30 @@ class TrainModel(APIView):
                     plt.ylim(top=max_price+0.3)
 
                 else:
-                    best_model = poly_model
-                    model_name = poly_model_name
-                    best_degree = degree
+                    best_model = regularized_model
+                    model_name = regularized_model_name
+                    best_degree = poly_degree
 
                     # Model coefficient and intercept:
-                    model_coef = poly_model.coef_
-                    model_intercept = poly_model.intercept_
+                    model_coef = regularized_model.coef_
+                    model_intercept = regularized_model.intercept_
 
                     # RMSE:
-                    best_train_rmse = poly_train_rmse
-                    best_test_rmse = poly_test_rmse
+                    best_train_rmse = reg_train_rmse
+                    best_test_rmse = reg_test_rmse
 
                     # R2 score:
-                    best_train_r2_score = poly_train_r2_score
-                    best_test_r2_score = poly_test_r2_score
+                    best_train_r2_score = reg_train_r2_score
+                    best_test_r2_score = reg_test_r2_score
                     
-                    print("Best Model is Poly")
+                    print("Best Model is ", regularized_model_name)
 
                     # Plot model:
                     plt.figure(figsize=(7, 4))
                     plt.scatter(X_train, Y_train, marker='o', color='blue', label='train_data')
                     plt.scatter(X_test, Y_test, marker='o', color='red', label='test_data')
                     plt.scatter(X_validate, Y_validate, marker='o', color='green', label='validate_data')
-                    plt.plot(X_train, Y_train_poly_pred, color='black', label='train_model')
+                    plt.plot(X_train, Y_train_reg_pred, color='black', label='train_model')
                     plt.legend(bbox_to_anchor=(1,1), loc="upper left")
                     plt.tight_layout()
                     plt.xlabel('area')
