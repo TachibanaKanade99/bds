@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error
 
 from models.prepareData import getData, convertData, divideData, preprocessData, scaleData
-from models.models import linearRegressionModel, polynomialRegression, regularizedRegression, nearestNeighbors, localOutlierFactor
+from models.models import calcRMSE, linearRegressionModel, polynomialRegression, regularizedRegression, nearestNeighbors, localOutlierFactor
 
 import unidecode
 from joblib import dump
@@ -178,18 +178,22 @@ def evaluateModel(_post_type, isUseLOF):
                 print("\n\n")
 
                 # find degree by using polynomial regression:
-                poly_model, poly_model_name, poly_degree, validate_poly_rmse = polynomialRegression(X_train, Y_train, X_validate, Y_validate)
+                poly_model, poly_model_name, poly_degree = polynomialRegression(X_train, Y_train, X_validate, Y_validate)
 
                 # Optimize Polynomial Regression model using Regularization
-                regularized_model, regularized_model_name, validate_regularized_rmse = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
+                regularized_model, regularized_model_name = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
 
                 # transform X and X_test:
                 polynomial_features = PolynomialFeatures(degree=poly_degree)
                 X_train_poly = polynomial_features.fit_transform(X_train)
+                X_validate_poly = polynomial_features.fit_transform(X_validate)
                 X_test_poly = polynomial_features.fit_transform(X_test)
 
                 # Try predicting Y
                 Y_train_reg_pred = regularized_model.predict(X_train_poly)
+
+                # calculate regularized rmse:
+                validate_regularized_rmse = calcRMSE(regularized_model, X_validate_poly, Y_validate)
 
                 # Plot model:
                 plt.figure(figsize=(7, 4))

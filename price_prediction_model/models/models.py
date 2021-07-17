@@ -195,7 +195,7 @@ def polynomialRegression(X_train, Y_train, X_validate, Y_validate):
 
     print("\nSelected Polynomial Regression with degree = {} and RMSE = {}".format(selected_degree, min_poly_rmse))
 
-    return selected_poly_model, "Polynomial Regression", selected_degree, min_poly_rmse
+    return selected_poly_model, "Polynomial Regression", selected_degree
     
 def regularizedRegression(degree, X_train, Y_train, X_validate, Y_validate):
 
@@ -262,6 +262,6 @@ def regularizedRegression(degree, X_train, Y_train, X_validate, Y_validate):
 
     print("Selected Regularization Model is ", regularized_name)
 
-    return selected_regularized_model, regularized_name, regularized_rmse
+    return selected_regularized_model, regularized_name
 
 

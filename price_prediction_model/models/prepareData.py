@@ -33,9 +33,9 @@ def getData(post_type, street, ward, district):
     return data
 
 def calcMinimumMaximum(vals):
-    q1 = vals.quantile(0.1)
-    q3 = vals.quantile(0.9)
-    iqr = q3 - q1
+    q1 = vals.quantile(0.05)
+    q3 = vals.quantile(0.95)
+    # iqr = q3 - q1
 
     # minimum = q1 - 1.5 * iqr
     # maximum = q3 + 1.5 * iqr
@@ -106,27 +106,43 @@ def preprocessData(data):
     # price_minimum, price_maximum = calcMinimumMaximum(data['price'])
     # data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
-    part_data = data['price'][:len(data)//5]
-    price_minimum, price_maximum = calcMinimumMaximum(part_data)
-    data_1 = data[:len(data)//5][(part_data > price_minimum) & (part_data < price_maximum)]
+    # part_data = data['price'][:len(data)//5]
+    # price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    # data_1 = data[:len(data)//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    part_data = data['price'][len(data)//5:len(data)*2//5]
-    price_minimum, price_maximum = calcMinimumMaximum(part_data)
-    data_2 = data[len(data)//5:len(data)*2//5][(part_data > price_minimum) & (part_data < price_maximum)]
+    # part_data = data['price'][len(data)//5:len(data)*2//5]
+    # price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    # data_2 = data[len(data)//5:len(data)*2//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    part_data = data['price'][len(data)*2//5:len(data)*3//5]
-    price_minimum, price_maximum = calcMinimumMaximum(part_data)
-    data_3 = data[len(data)*2//5:len(data)*3//5][(part_data > price_minimum) & (part_data < price_maximum)]
+    # part_data = data['price'][len(data)*2//5:len(data)*3//5]
+    # price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    # data_3 = data[len(data)*2//5:len(data)*3//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    part_data = data['price'][len(data)*3//5:len(data)*4//5]
-    price_minimum, price_maximum = calcMinimumMaximum(part_data)
-    data_4 = data[len(data)*3//5:len(data)*4//5][(part_data > price_minimum) & (part_data < price_maximum)]
+    # part_data = data['price'][len(data)*3//5:len(data)*4//5]
+    # price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    # data_4 = data[len(data)*3//5:len(data)*4//5][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    part_data = data['price'][len(data)*4//5:]
-    price_minimum, price_maximum = calcMinimumMaximum(part_data)
-    data_5 = data[len(data)*4//5:][(part_data > price_minimum) & (part_data < price_maximum)]
+    # part_data = data['price'][len(data)*4//5:]
+    # price_minimum, price_maximum = calcMinimumMaximum(part_data)
+    # data_5 = data[len(data)*4//5:][(part_data > price_minimum) & (part_data < price_maximum)]
 
-    data = pd.concat([data_1, data_2, data_3, data_4, data_5], ignore_index=True)
+    # data = pd.concat([data_1, data_2, data_3, data_4, data_5], ignore_index=True)
+
+    max_value = data['area'][len(data)-1]
+    min_value = data['area'][0]
+    frame_value = (max_value - min_value) / 4
+
+    # divide dataframe into smaller frames according to the their max and min value so number of rows in each small dataframe may be different: 
+    frames_data = [ data[(data['area'] > i*frame_value+min_value) & (data['area'] < (i+1)*frame_value+min_value)].copy() for i in range(0, 4)]
+    frames_data[-1] = frames_data[-1].append(data[data['area'] > 4*frame_value+min_value])
+
+    # Apply IQR into smaller frames
+    for i in range(len(frames_data)):
+        price_minimum, price_maximum = calcMinimumMaximum(frames_data[i]['price'])
+        print(price_minimum, " ", price_maximum)
+        frames_data[i] = frames_data[i][(frames_data[i]['price'] > price_minimum) & (frames_data[i]['price'] < price_maximum)]
+    
+    data = pd.concat(frames_data, ignore_index=True)
     
     # smooth data:
 
