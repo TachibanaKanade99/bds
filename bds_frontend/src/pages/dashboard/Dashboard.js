@@ -129,13 +129,13 @@ class Dashboard extends Component {
       this.props.history.replace({ ...this.props.history.location, state });
     }
 
-    if (this.props.history.location.state && this.props.history.location.state.message) {
-      // console.log(this.props.history.location.state.message);
-      this.setState({ message: this.props.history.location.state.message })
-      let state = { ...this.props.history.location.state};
-      delete state.message;
-      this.props.history.replace({ ...this.props.history.location, state });
-    }
+    // if (this.props.history.location.state && this.props.history.location.state.message) {
+    //   // console.log(this.props.history.location.state.message);
+    //   this.setState({ message: this.props.history.location.state.message })
+    //   let state = { ...this.props.history.location.state};
+    //   delete state.message;
+    //   this.props.history.replace({ ...this.props.history.location, state });
+    // }
 
     this.getCurrentUser();
     this.handleCount();

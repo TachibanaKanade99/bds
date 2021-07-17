@@ -2,7 +2,7 @@ import { Fragment, Component } from 'react';
 import axios from 'axios';
 
 // React router dom:
-import { Route, Redirect, } from "react-router-dom";
+import { Switch, Route, Redirect, } from "react-router-dom";
 
 // import CSS:
 import './styles.css'
@@ -49,9 +49,10 @@ export default class AdminPage extends Component {
         <WebNavbar name="Admin Page" current_user={this.state.current_user} is_superuser={this.state.is_superuser} />
 
         <Route 
-          path="/admin_page/:users"
-          render={({ match }) => {
+          path="/:users"
+          render={( { match } ) => {
             // Do something
+            console.log("Here is users");
             if (this.props.location.pathname === "/admin_page/:users") {
               if (this.props.location.state !== undefined) {
                 if (this.props.location.state.isAuthenticated) {
@@ -90,9 +91,11 @@ export default class AdminPage extends Component {
 
         <Route 
           path="/admin_page/:models"
-          render={({ match }) => {
+          render={( { match } ) => {
             // Do something
+            console.log("Here is models");
             if (this.props.location.pathname === "/admin_page/:models") {
+              console.log("Here");
               if (this.props.location.state !== undefined) {
                 if (this.props.location.state.isAuthenticated) {
                   if (this.props.location.state.isSuperUser) {

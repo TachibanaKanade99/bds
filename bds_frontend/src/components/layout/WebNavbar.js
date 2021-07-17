@@ -209,7 +209,7 @@ class WebNavbar extends Component {
                 <NavItem>
                   <NavLink 
                     tag={rNavLink} 
-                    to={{ pathname: "/dashboard", state: { isAuthenticated: true } }}
+                    to={{ pathname: "/dashboard", state: { isAuthenticated: true, isSuperUser: this.props.is_superuser } }}
                     activeStyle={{ color: "#3C5999" }}
                   >Dashboard</NavLink>
                 </NavItem>
@@ -217,7 +217,7 @@ class WebNavbar extends Component {
                 <NavItem>
                   <NavLink 
                     tag={rNavLink} 
-                    to={{ pathname: "/data", state: { isAuthenticated: true } }}
+                    to={{ pathname: "/data", state: { isAuthenticated: true, isSuperUser: this.props.is_superuser } }}
                     activeStyle={{ color: "#3C5999" }}
                   >Data</NavLink>
                 </NavItem>
@@ -225,7 +225,7 @@ class WebNavbar extends Component {
                 <NavItem>
                   <NavLink 
                     tag={rNavLink} 
-                    to={{ pathname: "/price_prediction", state: { isAuthenticated: true } }}
+                    to={{ pathname: "/price_prediction", state: { isAuthenticated: true, isSuperUser: this.props.is_superuser } }}
                     activeStyle={{ color: "#3C5999" }}
                   >Price Prediction</NavLink>
                 </NavItem>

@@ -145,7 +145,7 @@ class App extends Component {
           }}>
           </Route>
 
-          <Route path="/admin_page/:users" render={(props) => {
+          <Route path="/admin_page" render={(props) => {
             // let auth = this.state.isAuthenticated;
             // let isSuperUser = this.state.isSuperUser;
 
@@ -159,13 +159,27 @@ class App extends Component {
             //   }
             // }
 
-            if (this.state.isAuthenticated !== null) {
+            // if (props.location.state) {
+
+            // }
+            
+            if (this.state.isAuthenticated) {
               if (this.state.isAuthenticated === true) {
-                if (this.state.isSuperUser !== null) {
-                  return this.state.isSuperUser === true ? <AdminPage {...props} /> : <Redirect to={{ pathname: '/dashboard', state: { isAuthenticated: true, isSuperUser: this.state.isSuperUser, message: "You need to be an admin to access this service!" } }} />
+                if (this.state.isSuperUser) {
+                  return <AdminPage {...props} />;
+                }
+                else if (this.state.isSuperUser === false) {
+                  return <Redirect to={{ 
+                    pathname: '/dashboard', 
+                    state: { 
+                      isAuthenticated: true, 
+                      isSuperUser: this.state.isSuperUser, 
+                      message: "You need to be an admin to access this service!" 
+                    } 
+                  }} />;
                 }
                 else {
-                  return null
+                  return null;
                 }
               }
               else {
@@ -173,7 +187,7 @@ class App extends Component {
               }
             }
             else {
-              return null
+              return null;
             }
 
             // if (auth === true) {
@@ -200,7 +214,7 @@ class App extends Component {
             <Logout />
           </Route> */}
 
-          {/* Set default page: */}
+          {/* Set default route: */}
           <Route exact path="/">
             <Redirect to="/dashboard" />
           </Route>
