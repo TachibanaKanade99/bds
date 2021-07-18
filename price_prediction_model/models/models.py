@@ -240,6 +240,10 @@ def regularizedRegression(degree, X_train, Y_train, X_validate, Y_validate):
 
     X_validate_poly = polynomialTransform(X_validate, degree)
 
+    # Ridge and Lasso CV score:
+    print("Ridge max CV score: ", max_ridge_cv_score)
+    print("Lasso max CV score: ", max_lasso_cv_score)
+
     # Ridge RMSE on validate data:
     ridge_rmse = calcRMSE(ridge_model, X_validate_poly, Y_validate)
     print("Ridge Regression with alpha = {} and RMSE = {}".format(selected_ridge_alpha, ridge_rmse))
@@ -249,19 +253,18 @@ def regularizedRegression(degree, X_train, Y_train, X_validate, Y_validate):
     print("Lasso Model with alpha = {} and RMSE = {}".format(selected_lasso_alpha, lasso_rmse))
 
     # Choose regularized model by its R2 score:
-    regularized_name = None
 
-    if lasso_rmse < ridge_rmse:
+    if max_lasso_cv_score > max_ridge_cv_score:
         selected_regularized_model = lasso_model
         regularized_name = "Lasso"
-        regularized_rmse = lasso_rmse
+        regularized_cv_score = max_lasso_cv_score
     else:
         selected_regularized_model = ridge_model
         regularized_name = "Ridge"
-        regularized_rmse = ridge_rmse
+        regularized_cv_score = max_ridge_cv_score
 
     print("Selected Regularization Model is ", regularized_name)
 
-    return selected_regularized_model, regularized_name
+    return selected_regularized_model, regularized_name, regularized_cv_score
 
 

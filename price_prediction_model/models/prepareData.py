@@ -136,10 +136,9 @@ def preprocessData(data):
     frames_data = [ data[(data['area'] > i*frame_value+min_value) & (data['area'] < (i+1)*frame_value+min_value)].copy() for i in range(0, 4)]
     frames_data[-1] = frames_data[-1].append(data[data['area'] > 4*frame_value+min_value])
 
-    # Apply IQR into smaller frames
+    # Apply quantile into smaller frames
     for i in range(len(frames_data)):
         price_minimum, price_maximum = calcMinimumMaximum(frames_data[i]['price'])
-        print(price_minimum, " ", price_maximum)
         frames_data[i] = frames_data[i][(frames_data[i]['price'] > price_minimum) & (frames_data[i]['price'] < price_maximum)]
     
     data = pd.concat(frames_data, ignore_index=True)
