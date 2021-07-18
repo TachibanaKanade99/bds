@@ -104,7 +104,7 @@ class App extends Component {
               return props.location.state.isAuthenticated === true ? <Dashboard {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content" } }} />
             }
 
-            if (this.state.isAuthenticated) {
+            if (this.state.isAuthenticated !== null) {
               return this.state.isAuthenticated === true ? <Dashboard {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
             }
             else{
@@ -120,7 +120,7 @@ class App extends Component {
               return props.location.state.isAuthenticated === true ? <Data {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content" } }} />
             }
             
-            if (this.state.isAuthenticated) {
+            if (this.state.isAuthenticated !== null) {
               return this.state.isAuthenticated === true ? <Data {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content!" } }} />
             }
             else {
@@ -136,7 +136,7 @@ class App extends Component {
               return props.location.state.isAuthenticated === true ? <PricePrediction {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to view content" } }} />
             }
             
-            if (this.state.isAuthenticated) {
+            if (this.state.isAuthenticated !== null) {
               return this.state.isAuthenticated === true ? <PricePrediction {...props} /> : <Redirect to={{ pathname: '/login', state: { message: "You need to login to use this service!" } }} />
             }
             else {
@@ -163,7 +163,7 @@ class App extends Component {
 
             // }
             
-            if (this.state.isAuthenticated) {
+            if (this.state.isAuthenticated !== null) {
               if (this.state.isAuthenticated === true) {
                 if (this.state.isSuperUser) {
                   return <AdminPage {...props} />;
