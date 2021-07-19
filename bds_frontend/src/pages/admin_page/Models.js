@@ -288,7 +288,7 @@ export default class Models extends Component {
                         </FormGroup>
                       </div>
 
-                      <div className="col-10 col-md-10 pl-4">
+                      {/* <div className="col-10 col-md-10 pl-4">
                         <FormGroup className="mt-4">
                           <Label className="control-label">Use Local Outlier Factor</Label>
                           <Switch
@@ -299,7 +299,7 @@ export default class Models extends Component {
                             inputProps={{ 'aria-label': 'primary checkbox' }}
                           />
                         </FormGroup>
-                      </div>
+                      </div> */}
 
                       <div className="col-10 col-md-10 text-center">
                         <button type="submit" className="mt-3 btn btn-primary">Train model</button>
