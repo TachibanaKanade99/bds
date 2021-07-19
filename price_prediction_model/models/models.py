@@ -256,11 +256,11 @@ def regularizedRegression(degree, X_train, Y_train, X_validate, Y_validate):
 
     if max_lasso_cv_score > max_ridge_cv_score:
         selected_regularized_model = lasso_model
-        regularized_name = "Lasso"
+        regularized_name = "Lasso Regression"
         regularized_cv_score = max_lasso_cv_score
     else:
         selected_regularized_model = ridge_model
-        regularized_name = "Ridge"
+        regularized_name = "Ridge Regression"
         regularized_cv_score = max_ridge_cv_score
 
     print("Selected Regularization Model is ", regularized_name)
