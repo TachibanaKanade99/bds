@@ -588,6 +588,10 @@ class TrainModel(APIView):
         isEnableLOF = self.request.data['isEnableLOF']
 
         data = getData(property_type, street, ward, district)
+        # print(property_type)
+        # print(street)
+        # print(ward)
+        # print(district)
 
         # Preprocess data:
         if data is not None:
@@ -606,7 +610,7 @@ class TrainModel(APIView):
             # transform data into log1p
             data['area'] = (data['area']).transform(np.log1p)
             data['price'] = (data['price']).transform(np.log1p)
-
+            
             # preprocessing data:
             data = preprocessData(data)
 
