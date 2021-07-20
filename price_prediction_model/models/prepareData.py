@@ -73,10 +73,10 @@ def preprocessData(data):
     # ]
     
     # use percentiles:
-    # area_upper_bound = data['area'].quantile(0.8)
-    # area_lower_bound = data['area'].quantile(0.1)
-    # price_upper_bound = data['price'].quantile(0.8)
-    # price_lower_bound = data['price'].quantile(0.1)
+    # area_upper_bound = data['area'].quantile(0.95)
+    # area_lower_bound = data['area'].quantile(0.05)
+    # price_upper_bound = data['price'].quantile(0.95)
+    # price_lower_bound = data['price'].quantile(0.05)
 
     # data = data[
     #     (data['area'] < area_upper_bound) &
@@ -133,7 +133,7 @@ def preprocessData(data):
     frame_value = (max_value - min_value) / 4
 
     # divide dataframe into smaller frames according to the their max and min value so number of rows in each small dataframe may be different: 
-    frames_data = [ data[(data['area'] > i*frame_value+min_value) & (data['area'] < (i+1)*frame_value+min_value)].copy() for i in range(0, 4)]
+    frames_data = [ data[(data['area'] >= i*frame_value+min_value) & (data['area'] <= (i+1)*frame_value+min_value)].copy() for i in range(0, 4)]
     frames_data[-1] = frames_data[-1].append(data[data['area'] > 4*frame_value+min_value])
 
     # Apply quantile into smaller frames
