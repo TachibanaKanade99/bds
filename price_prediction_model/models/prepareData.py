@@ -101,8 +101,8 @@ def preprocessData(data):
     #     else:
     #         data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
-    # area_minimum, area_maximum = calcMinimumMaximum(data['area'])
-    # data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
+    area_minimum, area_maximum = calcMinimumMaximum(data['area'])
+    data = data[(data['area'] > area_minimum) & (data['area'] < area_maximum)]
     # price_minimum, price_maximum = calcMinimumMaximum(data['price'])
     # data = data[(data['price'] > price_minimum) & (data['price'] < price_maximum)]
 
@@ -128,8 +128,8 @@ def preprocessData(data):
 
     # data = pd.concat([data_1, data_2, data_3, data_4, data_5], ignore_index=True)
 
-    max_value = data['area'][len(data)-1]
-    min_value = data['area'][0]
+    max_value = data['area'].iloc[len(data)-1]
+    min_value = data['area'].iloc[0]
     frame_value = (max_value - min_value) / 4
 
     # divide dataframe into smaller frames according to the their max and min value so number of rows in each small dataframe may be different: 
