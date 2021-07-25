@@ -224,7 +224,7 @@ export default class Models extends Component {
     return (
       <div className="container-fluid">
         <Fragment>
-          <div className="mt-5 mx-auto pt-5 h4 font-weight-bold">Admin can retrain model in specific locations here</div>
+          <div className="mt-5 mx-auto pt-5 h4">Retrain model</div>
           <hr />
 
           <div className="row">

@@ -232,7 +232,7 @@ export default class Users extends Component {
                   <MUIDataTable
                     title={
                       <Typography variant="h6">
-                        Real Estate Data
+                        Users
                         {this.state.isLoading && (
                           <CircularProgress
                           size={24}
