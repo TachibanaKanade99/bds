@@ -14,9 +14,6 @@ from models.models import calcCV, calcRMSE, linearRegressionModel, polynomialReg
 import unidecode
 from joblib import dump
 
-def getTrainModelCount():
-    return train_model_count
-
 overfit_models = []
 
 def getOverFitModels():
@@ -24,6 +21,25 @@ def getOverFitModels():
 
 def evaluateModel(_post_type, isUseLOF):
     count = 0
+    # linear
+    linear_r2 = 0
+    linear_mse = 0
+    linear_rmse = 0
+
+    # poly
+    poly_r2 = 0
+    poly_mse = 0
+    poly_rmse = 0
+
+    # ridge
+    ridge_r2 = 0
+    ridge_mse = 0
+    ridge_rmse = 0
+
+    # lasso
+    lasso_r2 = 0
+    lasso_mse = 0
+    lasso_rmse = 0
 
     # Database Connection:
     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
@@ -31,7 +47,7 @@ def evaluateModel(_post_type, isUseLOF):
 
     # Execute SQL query:
 
-    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 50 ) )
+    cur.execute("SELECT post_type, street, ward, district, COUNT(id) FROM bds_realestatedata WHERE street IS NOT NULL AND ward IS NOT NULL AND district IS NOT NULL AND post_type = %s GROUP BY post_type, street, ward, district HAVING COUNT(id) > %s;", ( _post_type, 70 ) )
     item_lst = cur.fetchall()
 
     for item in item_lst:
@@ -68,7 +84,7 @@ def evaluateModel(_post_type, isUseLOF):
                 # data = nearestNeighbors(data, 2)
                 data = localOutlierFactor(data, 10)
 
-        if len(data) > 40:
+        if len(data) > 60:
             print("\n\n")
             print("Sample data in {street}, {ward}, {district}".format(street=street, ward=ward, district=district))
             print("--------------------------------------------------------")
@@ -143,10 +159,15 @@ def evaluateModel(_post_type, isUseLOF):
                 Y_validate_pred = linear_regression_model.predict(X_validate)
                 Y_test_pred = linear_regression_model.predict(X_test)
 
-                # Calculate RMSE on train and test data:
+                # Calculate linear MSE on test set:
+                test_linear_mse = mean_squared_error(Y_test, Y_test_pred)
+                linear_mse = linear_mse + test_linear_mse
+
+                # Calculate linear RMSE on each dataset:
                 train_linear_rmse = np.sqrt(mean_squared_error(Y_train, Y_train_pred))
                 validate_linear_rmse = np.sqrt(mean_squared_error(Y_validate, Y_validate_pred))
                 test_linear_rmse = np.sqrt(mean_squared_error(Y_test, Y_test_pred))
+                linear_rmse = linear_rmse + test_linear_rmse
 
                 print("\nLinear Regression Model: ")
                 # Plot linear model:
@@ -184,11 +205,17 @@ def evaluateModel(_post_type, isUseLOF):
 
                 # Try predicting Y_poly:
                 Y_train_poly_pred = poly_model.predict(X_train_poly)
+                Y_test_poly_pred = poly_model.predict(X_test_poly)
 
-                # calculate poly train rmse:
+                # calculate poly model test mse:
+                poly_test_mse = mean_squared_error(Y_test, Y_test_poly_pred)
+                poly_mse = poly_mse + poly_test_mse
+
+                # calculate poly model rmse:
                 poly_train_rmse = calcRMSE(poly_model, X_train_poly, Y_train)
                 poly_validate_rmse = calcRMSE(poly_model, X_validate_poly, Y_validate)
                 poly_test_rmse = calcRMSE(poly_model, X_test_poly, Y_test)
+                poly_rmse = poly_rmse + poly_test_rmse
 
                 # Plot model:
                 plt.figure(figsize=(7, 4))
@@ -218,7 +245,37 @@ def evaluateModel(_post_type, isUseLOF):
                 print("Poly Model RMSE on test dataset: {}".format(poly_test_rmse))
 
                 # Optimize Polynomial Regression model using Regularization
-                regularized_model, regularized_model_name, regularized_cv_score = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
+                # regularized_model, regularized_model_name, regularized_cv_score = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
+                ridge_model, ridge_model_name, ridge_cv_score, lasso_model, lasso_model_name, lasso_cv_score = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
+
+                # ridge MSE and RMSE on test set:
+                Y_test_ridge_pred = ridge_model.predict(X_test_poly)
+                ridge_test_mse = mean_squared_error(Y_test, Y_test_ridge_pred)
+                ridge_mse = ridge_mse + ridge_test_mse
+                ridge_test_rmse = np.sqrt(ridge_test_mse)
+                ridge_rmse = ridge_rmse + ridge_test_rmse
+                ridge_test_r2 = ridge_model.score(X_test_poly, Y_test)
+                ridge_r2 = ridge_r2 + ridge_test_r2
+
+                # lasso MSE and RMSE on test set:
+                Y_test_lasso_pred = lasso_model.predict(X_test_poly)
+                lasso_test_mse = mean_squared_error(Y_test, Y_test_lasso_pred)
+                lasso_mse = lasso_mse + lasso_test_mse
+                lasso_test_rmse = np.sqrt(lasso_test_mse)
+                lasso_rmse = lasso_rmse + lasso_test_rmse
+                lasso_test_r2 = lasso_model.score(X_test_poly, Y_test)
+                lasso_r2 = lasso_r2 + lasso_test_r2
+
+
+                if lasso_cv_score > ridge_cv_score:
+                    regularized_model = lasso_model
+                    regularized_model_name = lasso_model_name
+                    regularized_cv_score = lasso_cv_score
+                else:
+                    regularized_model = ridge_model
+                    regularized_model_name = ridge_model_name
+                    regularized_cv_score = ridge_cv_score
+
 
                 # Try predicting Y
                 Y_train_reg_pred = regularized_model.predict(X_train_poly)
@@ -265,6 +322,7 @@ def evaluateModel(_post_type, isUseLOF):
                 
                 linear_test_r2_score = linear_regression_model.score(X_test, Y_test)
                 print("Linear Model score on test dataset: ", linear_test_r2_score)
+                linear_r2 = linear_r2 + linear_test_r2_score
 
                 print("\n")
 
@@ -274,6 +332,7 @@ def evaluateModel(_post_type, isUseLOF):
 
                 poly_test_r2_score = poly_model.score(X_test_poly, Y_test)
                 print("Poly Model score on test dataset: ", poly_test_r2_score)
+                poly_r2 = poly_r2 + poly_test_r2_score
 
                 # Reg score:
                 print("\n")
@@ -327,7 +386,8 @@ def evaluateModel(_post_type, isUseLOF):
                 if best_r2_score > 0.7:
                     # Save model:
                     if model_name != 'bannharieng_3/2_14_10' and model_name != 'bannharieng_3/2_12_10':
-                        dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+                        # dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+                        print("\nGood model\n")
                 if best_r2_score < 0.5:
                     overfit_models.append(model_name)
 
@@ -335,6 +395,22 @@ def evaluateModel(_post_type, isUseLOF):
             print("\nLength data in {street}, {ward}, {district} is {length}\n".format(street=street, ward=ward, district=district, length=len(data)))
     
     print("Trained Model count: ", count)
+
+    print("Linear MSE: ", linear_mse / count)
+    print("Linear RMSE: ", linear_rmse / count)
+    print("Linear R2 score: ", linear_r2 / count)
+
+    print("Poly MSE: ", poly_mse / count)
+    print("Poly RMSE: ", poly_rmse / count)
+    print("Poly R2 score: ", poly_r2 / count)
+
+    print("Ridge MSE: ", ridge_mse / count)
+    print("Ridge RMSE: ", ridge_rmse / count)
+    print("Ridge R2 score: ", ridge_r2 / count)
+
+    print("Lasso MSE: ", lasso_mse / count)
+    print("Lasso RMSE: ", lasso_rmse / count)
+    print("Lasso R2 score: ", lasso_r2 / count)
 
     # Close connection:
     cur.close()
