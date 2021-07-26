@@ -32,15 +32,49 @@ def getData(post_type, street, ward, district):
 
     return data
 
+# def getData(post_type, district):
+#     # db connection:
+#     conn = psycopg2.connect(database="real_estate_data", user="postgres", password="361975Warcraft")
+
+#     query = """
+#         SELECT post_type, area, price, district, posted_date
+#         FROM bds_realestatedata 
+#         WHERE
+#             post_type = '{post_type}' AND
+#             area IS NOT NULL AND
+#             price IS NOT NULL AND
+#             posted_date IS NOT NULL AND
+#             district = '{district}';
+#     """.format(post_type=post_type, district=district)
+    
+#     data = pd.read_sql_query(query, con=conn)
+
+#     # close db connection:
+#     conn.close()
+
+#     # check if data is existed:
+#     if len(data) <= 0:
+#         data = None
+
+#     return data
+
 def calcMinimumMaximum(vals):
-    q1 = vals.quantile(0.05)
-    q3 = vals.quantile(0.95)
-    # iqr = q3 - q1
+    q1 = vals.quantile(0.25)
+    q3 = vals.quantile(0.75)
+    iqr = q3 - q1
 
-    # minimum = q1 - 1.5 * iqr
-    # maximum = q3 + 1.5 * iqr
+    minimum = q1 - 1.5 * iqr
+    maximum = q3 + 1.5 * iqr
 
-    return q1, q3
+    return minimum, maximum
+    # return q1, q3
+
+# percentiles's method:
+def calcPercentiles(vals):
+    min_val = vals.quantile(0.05)
+    max_val = vals.quantile(0.95)
+
+    return min_val, max_val
 
 def preprocessData(data):
 
@@ -138,7 +172,7 @@ def preprocessData(data):
 
     # Apply quantile into smaller frames
     for i in range(len(frames_data)):
-        price_minimum, price_maximum = calcMinimumMaximum(frames_data[i]['price'])
+        price_minimum, price_maximum = calcPercentiles(frames_data[i]['price'])
         frames_data[i] = frames_data[i][(frames_data[i]['price'] > price_minimum) & (frames_data[i]['price'] < price_maximum)]
     
     data = pd.concat(frames_data, ignore_index=True)
