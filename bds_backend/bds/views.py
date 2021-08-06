@@ -485,7 +485,7 @@ class WardLst(APIView):
         query = query.exclude(ward__exact=None)
 
         if request_page == "predict":
-            query = query.annotate(count_street=Count('street')).filter(count_street__gt=60)
+            query = query.annotate(count_street=Count('street')).filter(count_street__gt=70)
         
         # update full query:
         query = query.order_by('ward').distinct()
@@ -522,7 +522,7 @@ class StreetLst(APIView):
         query = query.exclude(street__exact=None)
 
         if request_page == "predict":
-            query = query.annotate(count_street=Count('street')).filter(count_street__gt=60)
+            query = query.annotate(count_street=Count('street')).filter(count_street__gt=70)
         
         # update full query:
         query = query.order_by('street').distinct()
@@ -622,7 +622,7 @@ class TrainModel(APIView):
                 data = localOutlierFactor(data, 10)
 
         # Split data & Train model:
-        if len(data) > 40:
+        if len(data) > 60:
 
             # divide data into train, validate, test data:
             train_data, test_data = train_test_split(data, test_size=0.3, random_state=4)
@@ -653,7 +653,7 @@ class TrainModel(APIView):
 
                 # calculate RMSE on linear model:
                 linear_train_rmse = calcRMSE(linear_regression_model, X_train, Y_train)
-                linear_validate_rmse = calcRMSE(linear_regression_model, X_validate, Y_validate)
+                # linear_validate_rmse = calcRMSE(linear_regression_model, X_validate, Y_validate)
                 linear_test_rmse = calcRMSE(linear_regression_model, X_test, Y_test)
 
                 # find degree by using polynomial regression:
@@ -662,7 +662,7 @@ class TrainModel(APIView):
                 # transform X and X_test:
                 polynomial_features = PolynomialFeatures(degree=poly_degree)
                 X_train_poly = polynomial_features.fit_transform(X_train)
-                X_validate_poly = polynomial_features.fit_transform(X_validate)
+                # X_validate_poly = polynomial_features.fit_transform(X_validate)
                 X_test_poly = polynomial_features.fit_transform(X_test)
 
                 # Try predicting Y_poly:
@@ -670,18 +670,27 @@ class TrainModel(APIView):
 
                 # Calculate poly_model RMSE:
                 poly_train_rmse = calcRMSE(poly_model, X_train_poly, Y_train)
-                poly_validate_rmse = calcRMSE(poly_model, X_validate_poly, Y_validate)
+                # poly_validate_rmse = calcRMSE(poly_model, X_validate_poly, Y_validate)
                 poly_test_rmse = calcRMSE(poly_model, X_test_poly, Y_test)
 
                 # Optimize Polynomial Regression model using Regularization
-                regularized_model, regularized_model_name, regularized_cv_score = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
+                ridge_model, ridge_model_name, ridge_cv_score, lasso_model, lasso_model_name, lasso_cv_score = regularizedRegression(poly_degree, X_train, Y_train)
+
+                if lasso_cv_score > ridge_cv_score:
+                    regularized_model = lasso_model
+                    regularized_model_name = lasso_model_name
+                    regularized_cv_score = lasso_cv_score
+                else:
+                    regularized_model = ridge_model
+                    regularized_model_name = ridge_model_name
+                    regularized_cv_score = ridge_cv_score
 
                 # Try predicting Y
                 Y_train_reg_pred = regularized_model.predict(X_train_poly)
 
                 # calculate RMSE on poly model:
                 reg_train_rmse = calcRMSE(regularized_model, X_train_poly, Y_train)
-                reg_validate_rmse = calcRMSE(regularized_model, X_validate_poly, Y_validate)
+                # reg_validate_rmse = calcRMSE(regularized_model, X_validate_poly, Y_validate)
                 reg_test_rmse = calcRMSE(regularized_model, X_test_poly, Y_test)
 
                 # Linear score:
@@ -716,7 +725,7 @@ class TrainModel(APIView):
 
                 models_cv_score = {
                     'Linear Regression': linear_cv_score,
-                    'Polynomial Regression': poly_cv_score,
+                    poly_model_name : poly_cv_score,
                     regularized_model_name: regularized_cv_score
                 }
 
@@ -755,7 +764,7 @@ class TrainModel(APIView):
                     plt.xlim(right=max_area+0.3)
                     plt.ylim(top=max_price+0.3)
 
-                elif best_model_name[0] == 'Polynomial Regression':
+                elif best_model_name[0] == poly_model_name:
                     best_model = poly_model
                     model_name = "Polynomial Regression"
                     best_degree = poly_degree
@@ -853,7 +862,7 @@ class TrainModel(APIView):
 
         else:
             response = {
-                "message": "Data Length is empty or less than 40 rows!",
+                "message": "Data Length is empty or less than 60 rows!",
                 "model_name": "None",
                 "degree": "None",
                 "model_coef": "None",
