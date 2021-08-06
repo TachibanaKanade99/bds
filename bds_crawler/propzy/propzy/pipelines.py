@@ -67,10 +67,6 @@ class CheckCrawledDataPipeline:
 
         # Handle comma in area:
         area_comma_idx = adapter['area'].find(",")
-        area_dot_idx = adapter['area'].find(".")
-        
-        if area_dot_idx != -1:
-            adapter['area'] = adapter['area'].replace('.', '')
         
         if area_comma_idx != -1:
             adapter['area'] = adapter['area'].replace(',', '.')    
