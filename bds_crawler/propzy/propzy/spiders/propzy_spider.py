@@ -7,6 +7,7 @@ import psycopg2
 import js2xml
 import lxml.etree
 from parsel import Selector
+import unidecode
 
 class PropzySpider(scrapy.Spider):
     name = 'propzy_spider'
@@ -50,6 +51,9 @@ class PropzySpider(scrapy.Spider):
                 logging.log(logging.ERROR, "Duplicated item in " + item_url)
                 continue
 
+        # item_url = 'https://propzy.vn/mua/dat-nen/hcm/huyen-binh-chanh/id392551'
+        # yield scrapy.Request(item_url, callback=self.parse_item, cb_kwargs=dict(item_url=item_url))
+
         # next page:
         next_page = response.xpath('//div[@class="pages"]/ul/li/a[contains(@class, "current")]/following::*')
 
@@ -58,9 +62,6 @@ class PropzySpider(scrapy.Spider):
 
             # if nextpage_url != 'https://propzy.vn/mua/bat-dong-san/hcm/p1000?property_type=11&selectprice=2&bed-value&loai=11,13,8,14':
             yield scrapy.Request(nextpage_url, callback=self.parse)
-
-        # url = 'https://propzy.vn/mua/dat-nen/hcm/quan-thu-duc/id337654'
-        # yield scrapy.Request(url, callback=self.parse_item, cb_kwargs=dict(item_url=url))
 
     def parse_item(self, response, item_url):
         item = PropzyItem()
@@ -98,16 +99,20 @@ class PropzySpider(scrapy.Spider):
         item['price'] = price
         
         for content in response.xpath('//div[@class="bl-parameter-listing"]/ul/li'):
-            type = content.xpath('./span[@class="sp-text"]/text()').get()
-            data = content.xpath('./span[@class="sp-info"]/text()').get()
-            if type == "Phòng ngủ":
-                item['number_of_bedrooms'] = data
-            elif type == "Phòng tắm":
-                item['number_of_toilets'] = data
-            elif type == "Diện tích":
-                item['area'] = data
-            elif type == "Hướng":
-                item['orientation'] = data
+            content_type = content.xpath('./span[@class="sp-text"]/text()').get()
+            content_type = unidecode.unidecode(content_type.lower().replace(" ", ""))
+            content_data = content.xpath('./span[@class="sp-info"]/text()').get()
+            
+            if content_type == "phongngu":
+                item['number_of_bedrooms'] = content_data
+            elif content_type == "phongtam":
+                item['number_of_toilets'] = content_data
+            elif content_type == "dientich":
+                item['area'] = content_data
+            elif content_type == "huong":
+                item['orientation'] = content_data
+            else:
+                continue
 
         # images:
         
