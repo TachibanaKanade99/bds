@@ -162,13 +162,14 @@ def preprocessData(data):
 
     # data = pd.concat([data_1, data_2, data_3, data_4, data_5], ignore_index=True)
 
+    num_of_parts = 5
     max_value = data['area'].iloc[len(data)-1]
     min_value = data['area'].iloc[0]
-    frame_value = (max_value - min_value) / 4
+    frame_value = (max_value - min_value) / num_of_parts
 
     # divide dataframe into smaller frames according to the their max and min value so number of rows in each small dataframe may be different: 
-    frames_data = [ data[(data['area'] >= i*frame_value+min_value) & (data['area'] <= (i+1)*frame_value+min_value)].copy() for i in range(0, 4)]
-    frames_data[-1] = frames_data[-1].append(data[data['area'] > 4*frame_value+min_value])
+    frames_data = [ data[(data['area'] >= i*frame_value+min_value) & (data['area'] <= (i+1)*frame_value+min_value)].copy() for i in range(0, num_of_parts)]
+    frames_data[-1] = frames_data[-1].append(data[data['area'] > num_of_parts*frame_value+min_value])
 
     # Apply quantile into smaller frames
     for i in range(len(frames_data)):
