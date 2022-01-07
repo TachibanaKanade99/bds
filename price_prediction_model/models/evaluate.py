@@ -246,7 +246,7 @@ def evaluateModel(_post_type, isUseLOF):
 
                 # Optimize Polynomial Regression model using Regularization
                 # regularized_model, regularized_model_name, regularized_cv_score = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
-                ridge_model, ridge_model_name, ridge_cv_score, lasso_model, lasso_model_name, lasso_cv_score = regularizedRegression(poly_degree, X_train, Y_train, X_validate, Y_validate)
+                ridge_model, ridge_model_name, ridge_cv_score, lasso_model, lasso_model_name, lasso_cv_score = regularizedRegression(poly_degree, X_train, Y_train)
 
                 # ridge MSE and RMSE on test set:
                 Y_test_ridge_pred = ridge_model.predict(X_test_poly)
@@ -347,14 +347,13 @@ def evaluateModel(_post_type, isUseLOF):
                 linear_cv_score = calcCV(linear_model.LinearRegression(fit_intercept=True, normalize=False), X_train, Y_train, 'r2')
                 poly_cv_score = calcCV(linear_model.LinearRegression(fit_intercept=True, normalize=False), X_train_poly, Y_train, 'r2')
 
-                print("Linear CV score = ", linear_cv_score)
-                print("Poly CV score = ", poly_cv_score)
-
                 models_cv_score = {
                     'Linear Regression': linear_cv_score,
                     'Polynomial Regression': poly_cv_score,
                     regularized_model_name: regularized_cv_score
                 }
+
+                print("Models CV score: ", models_cv_score)
 
                 max_cv_score = max(models_cv_score.values())
                 best_model_name = [key for key in models_cv_score if models_cv_score[key] == max_cv_score]
@@ -386,7 +385,7 @@ def evaluateModel(_post_type, isUseLOF):
                 if best_r2_score > 0.7:
                     # Save model:
                     if model_name != 'bannharieng_3/2_14_10' and model_name != 'bannharieng_3/2_12_10':
-                        # dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
+                        dump((best_model, best_degree), 'trained/' + model_name + ".joblib")
                         print("\nGood model\n")
                 if best_r2_score < 0.5:
                     overfit_models.append(model_name)
