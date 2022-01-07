@@ -28,7 +28,7 @@ import unidecode
 import numpy as np
 
 """
-Price predition libraries 
+Price predition libraries
 """
 
 # import FunctionTransformer from sklearn.preprocessing:
@@ -41,9 +41,10 @@ import io, base64
 
 import sys
 sys.path.append('D:\\Tuan_Minh\\bds\\price_prediction_model')
+
 from models.prepareData import getData, preprocessData, convertData
 from models.models import localOutlierFactor, linearRegressionModel, polynomialRegression, regularizedRegression
-from models.models import calcRMSE, calcCV 
+from models.models import calcRMSE, calcCV
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -61,14 +62,14 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 #             serializer_class.save()
 #             return Response(serializer_class.data, status=status.HTTP_201_CREATED)
 #         else:
-#             return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUESTS)          
+#             return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUESTS)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def current_user(request):
     # get current user:
     serializer = UserSerializer(request.user)
-    response = { 
+    response = {
         'username': serializer.data.get('username'),
         'is_superuser': serializer.data.get('is_superuser')
     }
@@ -164,7 +165,7 @@ class RealEstateDataView(generics.ListAPIView):
 
         if max_price == "max":
             max_price = RealEstateData.objects.aggregate(Max('price'))['price__max']
-        
+
         min_price = float(min_price)
         max_price = float(max_price)
 
@@ -188,7 +189,7 @@ class RealEstateDataView(generics.ListAPIView):
 
         # update full query:
         queryset = queryset.filter(price__range=[min_price, max_price], posted_date__range=[start_date, end_date]).order_by('id')
-        
+
         return queryset
 
 class CountView(APIView):
@@ -234,7 +235,7 @@ class CountView(APIView):
             'has_furniture': has_furniture,
         }
         return Response(counts, status=status.HTTP_200_OK)
-    
+
     def get(self, request):
         all = RealEstateData.objects.all().count()
 
@@ -471,8 +472,8 @@ class WardLst(APIView):
         request_page = self.request.data['request_page']
         property_type = self.request.data['property_type']
         district = self.request.data['district']
-        ward_lst = []   
-        
+        ward_lst = []
+
         # basic query:
         query = RealEstateData.objects.values('ward')
 
@@ -486,7 +487,7 @@ class WardLst(APIView):
 
         if request_page == "predict":
             query = query.annotate(count_street=Count('street')).filter(count_street__gt=70)
-        
+
         # update full query:
         query = query.order_by('ward').distinct()
 
@@ -507,7 +508,7 @@ class StreetLst(APIView):
         district = self.request.data['district']
         ward = self.request.data['ward']
         street_lst = []
-        
+
         # basic query:
         query = RealEstateData.objects.values('street')
 
@@ -523,7 +524,7 @@ class StreetLst(APIView):
 
         if request_page == "predict":
             query = query.annotate(count_street=Count('street')).filter(count_street__gt=70)
-        
+
         # update full query:
         query = query.order_by('street').distinct()
 
@@ -573,7 +574,7 @@ class PricePredict(APIView):
             predicted_price = str(predicted_price) + " billion"
 
             return Response(predicted_price, status=status.HTTP_200_OK)
-            
+
         except FileNotFoundError:
             return Response("Model not found!", status=status.HTTP_200_OK)
 
@@ -610,13 +611,13 @@ class TrainModel(APIView):
             # transform data into log1p
             data['area'] = (data['area']).transform(np.log1p)
             data['price'] = (data['price']).transform(np.log1p)
-            
+
             # preprocessing data:
             data = preprocessData(data)
 
             max_area = data['area'].max()
             max_price = data['price'].max()
-            
+
             if isEnableLOF:
                 # remove noise data:
                 data = localOutlierFactor(data, 10)
@@ -813,7 +814,7 @@ class TrainModel(APIView):
                     # R2 score:
                     best_train_r2_score = reg_train_r2_score
                     best_test_r2_score = reg_test_r2_score
-                    
+
                     print("Best Model is ", regularized_model_name)
 
                     # Plot model:
@@ -846,7 +847,7 @@ class TrainModel(APIView):
                     # Save model:
                     if saved_model_name != 'bannharieng_3/2_14_10':
                         dump((best_model, best_degree), '../price_prediction_model/trained/' + model_name + ".joblib")
-                
+
                 response = {
                     "message": "Model trained successfully!",
                     "model_name": model_name,

@@ -1,7 +1,9 @@
 from django.urls import path
 from django.conf.urls import include
 from rest_framework import routers
-from .views import current_user, check_authentication, BdsView, RegisterView, LoginView, LogoutView, RealEstateDataView, CountView, ChartCount, PieChart, WardLst, StreetLst, PricePredict, UserLstView, TrainModel
+from .views import current_user, check_authentication, BdsView, RegisterView, LoginView, LogoutView, RealEstateDataView, CountView, ChartCount, PieChart, WardLst, StreetLst, UserLstView
+
+from .views import PricePredict, TrainModel
 
 # router = routers.DefaultRouter()
 # router.register(r'realestatedata', RealEstateDataView, 'realestatedata')
