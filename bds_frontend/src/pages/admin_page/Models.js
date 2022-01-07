@@ -23,11 +23,16 @@ export default class Models extends Component {
       // property states:
       request_page: "predict",
       property_type: null,
-      district: null,
 
+      // district:
+      district_lst: [],
+      district: null,
+      
+      // ward:
       ward_lst: [],
       ward: null,
 
+      // street:
       street_lst: [],
       street: null,
 
@@ -47,23 +52,51 @@ export default class Models extends Component {
 
     this.handleChoosePropertyType = this.handleChoosePropertyType.bind(this);
     this.handleSelectMenuOpen = this.handleSelectMenuOpen.bind(this);
+
+    this.getDistrictLst = this.getDistrictLst.bind(this);
     this.getWardLst = this.getWardLst.bind(this);
     this.getStreetLst = this.getStreetLst.bind(this);
     this.convertIntoOptions = this.convertIntoOptions.bind(this);
+    
+    this.handleChoosePropertyType = this.handleChoosePropertyType.bind(this);
     this.handleChooseDistrictType = this.handleChooseDistrictType.bind(this);
     this.handleChooseWardType = this.handleChooseWardType.bind(this);
     this.handleChooseStreetType = this.handleChooseStreetType.bind(this);
+    
     this.handleChangeEnableLOF = this.handleChangeEnableLOF.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   componentDidMount() {
+    // this.getDistrictLst(this.state.property_type);
     this.getWardLst(this.state.district);
     this.getStreetLst(this.state.district, this.state.ward);
   }
 
   convertIntoOptions = (value, index, array) => {
     return { "label": value, "value": value }
+  }
+
+  getDistrictLst = (property_type) => {
+    let self = this;
+    axios
+      .post("/bds/api/realestatedata/district_lst/", {
+        request_page: self.state.request_page,
+        property_type: self.state.property_type,
+      },
+      {
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken')
+        }
+      }
+      )
+      .then((res) => {
+        console.log(res);
+        self.setState({ district_lst: res.data.map(self.convertIntoOptions) })
+      })
+      .catch((err) => {
+        console.log(err);
+      })
   }
 
   getWardLst = (district) => {
@@ -325,7 +358,7 @@ export default class Models extends Component {
 
                   <div>
                     <p className="font-weight-bold">Model Coefficients: </p>
-                    <span className="auto-newline">{"[" + this.state.model_coef.toString() + "]"}</span>
+                    <span className="auto-newline">{"[ " + this.state.model_coef.toString() + " ]"}</span>
                   </div>
 
                   <br />
